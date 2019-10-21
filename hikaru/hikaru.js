@@ -297,7 +297,8 @@ class Hikaru {
         'generator': this.generator,
         'translator': this.translator,
         'types': this.types,
-        'utils': this.utils
+        'utils': this.utils,
+        'site': this.site
       })
     })
   }
@@ -328,7 +329,8 @@ class Hikaru {
         'generator': this.generator,
         'translator': this.translator,
         'types': this.types,
-        'utils': this.utils
+        'utils': this.utils,
+        'site': this.site
       })
     })
   }
@@ -383,7 +385,6 @@ class Hikaru {
     })
 
     const stylConfig = this.site['siteConfig']['stylus'] || {}
-    const stylEnv =
     this.renderer.register('.styl', '.css', (file) => {
       return new Promise((resolve, reject) => {
         stylus(file['text']).use(nib()).use((style) => {
@@ -402,11 +403,12 @@ class Hikaru {
           style.define('getThemeConfig', (data) => {
             const keys = data['val'].toString().trim().split('.')
             let res = this.site['themeConfig']
-            for (const k in keys) {
+            for (const k of keys) {
               if (res[k] == null) {
                 return null
               }
               res = res[k]
+              console.log(res)
             }
             return res
           })
