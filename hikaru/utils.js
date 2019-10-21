@@ -393,7 +393,7 @@ const resolveHeaderIDs = ($) => {
       ''
     )
     let id
-    if (headerIDs[escaped] !== 0) {
+    if (headerIDs[escaped] != null) {
       id = `${escaped}-${headerIDs[escaped]++}`
     } else {
       id = escaped
