@@ -408,7 +408,6 @@ class Hikaru {
                 return null
               }
               res = res[k]
-              console.log(res)
             }
             return res
           })
