@@ -35,12 +35,12 @@ You can access Hikaru's `renderer`, `generator`, `processor`, `logger`, `transla
 
 # Plugins
 
-For users or devs who wants some independent functions to release, they can create plugins. Plugins are npm packages that starts with `hikaru-` in their name, Hikaru can load them before dealing with site files.
+For users or devs who wants some independent functions to release, they can create plugins. Plugins are npm packages that starts with `hikaru-` in their name and installed in site's `node_modules` dir, Hikaru can load dependencies in site's `package.json` before dealing with site files.
 
 They must export a main function like scripts, this will be the entry of a plugin when Hikaru is loading them.
 
-You are supposed to hint the plugin type with words like `renderer`, `generator`, `processor` or `utils`.
+You are supposed to hint the plugin type with words like `renderer`, `generator`, `processor`, `logger`, `translator`, `types`, `utils` and `site`.
 
-For more example, you can read the code of [hikaru-renderer-coffeescript](https://github.com/AlynxZhou/hikaru-renderer-coffeescript/), [hikaru-generator-feed](https://github.com/AlynxZhou/hikaru-generator-feed/).
+For more example, you can read the code of [hikaru-generator-feed](https://github.com/AlynxZhou/hikaru-generator-feed/).
 
 Prev Page: [Deploy](deploy.md)

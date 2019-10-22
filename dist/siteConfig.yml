@@ -5,14 +5,17 @@ author: Hikaru
 email:
 language: default
 
+# Those makes up your site's full URL.
 baseURL: https://yourdomain.com
 rootDir: /
+
+# Those paths exists on your disk.
 srcDir: srcs
 docDir: docs
 themeDir: themes/aria
 
 # Those paths are under `docDir`.
-indexDir: /
+indexDir: .
 archiveDir: archives
 categoryDir: categories
 tagDir: tags

@@ -221,6 +221,9 @@ const paginateCategories = (category, parentPath, site, perPage = 10) => {
 
 const getPathFn = (rootDir = path.posix.sep) => {
   rootDir = rootDir.replace(path.win32.sep, path.posix.sep)
+  if (!rootDir.endsWith(path.posix.sep)) {
+    rootDir = `${rootDir}${path.posix.sep}`
+  }
   return (docPath = '') => {
     if (!path.posix.isAbsolute(rootDir)) {
       rootDir = path.posix.join(path.posix.sep, rootDir)
@@ -244,7 +247,7 @@ const getURLFn = (baseURL, rootDir = path.posix.sep) => {
 }
 
 const isCurrentPathFn = (rootDir = path.posix.sep, currentPath = '') => {
-  // Must join a '/' before resolve or it will join current work dir.
+  // Must join a '/' before resolve or it will join current site dir.
   const getPath = getPathFn(rootDir)
   currentPath = getPath(currentPath)
   const currentToken = path.posix.resolve(path.posix.join(

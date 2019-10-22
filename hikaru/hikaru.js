@@ -65,29 +65,29 @@ class Hikaru {
     })
   }
 
-  init(workDir, configPath) {
-    return fse.mkdirp(workDir).then(() => {
+  init(siteDir, configPath) {
+    return fse.mkdirp(siteDir).then(() => {
       this.logger.debug(`Hikaru is copying \`${
-        this.logger.cyan(configPath || path.join(workDir, 'siteConfig.yml'))
+        this.logger.cyan(configPath || path.join(siteDir, 'siteConfig.yml'))
       }\`...`)
       this.logger.debug(`Hikaru is copying \`${
-        this.logger.cyan(path.join(workDir, 'package.json'))
+        this.logger.cyan(path.join(siteDir, 'package.json'))
       }\`...`)
       this.logger.debug(`Hikaru is creating \`${
-        this.logger.cyan(path.join(workDir, 'srcs', path.sep))
+        this.logger.cyan(path.join(siteDir, 'srcs', path.sep))
       }\`...`)
       this.logger.debug(`Hikaru is creating \`${
-        this.logger.cyan(path.join(workDir, 'docs', path.sep))
+        this.logger.cyan(path.join(siteDir, 'docs', path.sep))
       }\`...`)
       this.logger.debug(`Hikaru is creating \`${
-        this.logger.cyan(path.join(workDir, 'themes', path.sep))
+        this.logger.cyan(path.join(siteDir, 'themes', path.sep))
       }\`...`)
       this.logger.debug(`Hikaru is creating \`${
-        this.logger.cyan(path.join(workDir, 'scripts', path.sep))
+        this.logger.cyan(path.join(siteDir, 'scripts', path.sep))
       }\`...`)
       fse.copy(
         path.join(__dirname, '..', 'dist', 'siteConfig.yml'),
-        configPath || path.join(workDir, 'siteConfig.yml')
+        configPath || path.join(siteDir, 'siteConfig.yml')
       )
       fse.readFile(
         path.join(__dirname, '..', 'dist', 'package.json')
@@ -96,22 +96,22 @@ class Hikaru {
         // Set package name to site dir name.
         json['name'] = path.relative('..', '.')
         return fse.writeFile(
-          path.join(workDir, 'package.json'),
+          path.join(siteDir, 'package.json'),
           JSON.stringify(json, null, '  ')
         )
       })
-      fse.mkdirp(path.join(workDir, 'srcs'))
-      fse.mkdirp(path.join(workDir, 'docs'))
-      fse.mkdirp(path.join(workDir, 'themes'))
-      fse.mkdirp(path.join(workDir, 'scripts'))
+      fse.mkdirp(path.join(siteDir, 'srcs'))
+      fse.mkdirp(path.join(siteDir, 'docs'))
+      fse.mkdirp(path.join(siteDir, 'themes'))
+      fse.mkdirp(path.join(siteDir, 'scripts'))
     }).catch((error) => {
       this.logger.warn('Hikaru catched some error during initializing!')
       this.logger.error(error)
     })
   }
 
-  clean(workDir, configPath) {
-    configPath = configPath || path.join(workDir, 'siteConfig.yml')
+  clean(siteDir, configPath) {
+    configPath = configPath || path.join(siteDir, 'siteConfig.yml')
     let siteConfig
     try {
       siteConfig = yaml.safeLoad(fse.readFileSync(configPath, 'utf8'))
@@ -124,25 +124,25 @@ class Hikaru {
       return
     }
     matchFiles('*', {
-      'cwd': path.join(workDir, siteConfig['docDir']),
+      'cwd': path.join(siteDir, siteConfig['docDir']),
       'dot': true
     }).then((res) => {
       return res.map((r) => {
-        fse.stat(path.join(workDir, siteConfig['docDir'], r)).then((stats) => {
+        fse.stat(path.join(siteDir, siteConfig['docDir'], r)).then((stats) => {
           if (stats.isDirectory()) {
             this.logger.debug(`Hikaru is removing \`${
               this.logger.cyan(
-                path.join(workDir, siteConfig['docDir'], r, path.sep)
+                path.join(siteDir, siteConfig['docDir'], r, path.sep)
               )
             }\`...`)
           } else {
             this.logger.debug(`Hikaru is removing \`${
               this.logger.cyan(
-                path.join(workDir, siteConfig['docDir'], r)
+                path.join(siteDir, siteConfig['docDir'], r)
               )
             }\`...`)
           }
-          return fse.remove(path.join(workDir, siteConfig['docDir'], r))
+          return fse.remove(path.join(siteDir, siteConfig['docDir'], r))
         })
       })
     }).catch((error) => {
@@ -151,8 +151,8 @@ class Hikaru {
     })
   }
 
-  async build(workDir, configPath) {
-    this.loadSite(workDir, configPath)
+  async build(siteDir, configPath) {
+    this.loadSite(siteDir, configPath)
     this.loadModules()
     this.loadPlugins()
     await this.loadScripts()
@@ -170,11 +170,11 @@ class Hikaru {
     }
   }
 
-  async serve(workDir, configPath, ip = 'localhost', port = 2333) {
+  async serve(siteDir, configPath, ip = 'localhost', port = 2333) {
     if (isString(port)) {
       port = Number.parseInt(port)
     }
-    this.loadSite(workDir, configPath)
+    this.loadSite(siteDir, configPath)
     this.loadModules()
     this.loadPlugins()
     await this.loadScripts()
@@ -190,10 +190,10 @@ class Hikaru {
     }
   }
 
-  loadSite(workDir, configPath) {
-    this.site = new Site(workDir)
+  loadSite(siteDir, configPath) {
+    this.site = new Site(siteDir)
     configPath = configPath || path.join(
-      this.site['workDir'],
+      this.site['siteDir'],
       'siteConfig.yml'
     )
     try {
@@ -207,20 +207,20 @@ class Hikaru {
     }
     const siteConfig = this.site['siteConfig']
     siteConfig['srcDir'] = path.join(
-      this.site['workDir'], siteConfig['srcDir'] || 'srcs'
+      this.site['siteDir'], siteConfig['srcDir'] || 'srcs'
     )
     siteConfig['docDir'] = path.join(
-      this.site['workDir'], siteConfig['docDir'] || 'docs'
+      this.site['siteDir'], siteConfig['docDir'] || 'docs'
     )
     siteConfig['themeDir'] = path.join(
-      this.site['workDir'], siteConfig['themeDir']
+      this.site['siteDir'], siteConfig['themeDir']
     )
     siteConfig['themeSrcDir'] = path.join(
       siteConfig['themeDir'], 'srcs'
     )
     siteConfig['categoryDir'] = siteConfig['categoryDir'] || 'categories'
     siteConfig['tagDir'] = siteConfig['tagDir'] || 'tags'
-    const themeConfigPath = path.join(this.site['workDir'], 'themeConfig.yml')
+    const themeConfigPath = path.join(this.site['siteDir'], 'themeConfig.yml')
     try {
       this.site['themeConfig'] = yaml.safeLoad(
         fse.readFileSync(themeConfigPath, 'utf8')
@@ -274,23 +274,26 @@ class Hikaru {
 
   // Load local plugins for site.
   loadPlugins() {
-    const siteJsonPath = path.join(this.site['workDir'], 'package.json')
-    if (!fse.existsSync(siteJsonPath)) {
+    const sitePkgPath = path.join(this.site['siteDir'], 'package.json')
+    if (!fse.existsSync(sitePkgPath)) {
       return
     }
-    const plugins = JSON.parse(fse.readFileSync(siteJsonPath, 'utf8'))['dependencies']
+    const plugins = JSON.parse(
+      fse.readFileSync(sitePkgPath, 'utf8')
+    )['dependencies']
     if (plugins == null) {
       return
     }
     return Object.keys(plugins).filter((name) => {
       return /^hikaru-/.test(name)
     }).map((name) => {
+      return path.join(this.site['siteDir'], 'node_modules', name)
+    }).map((name) => {
       this.logger.debug(`Hikaru is loading plugin \`${
         this.logger.blue(name)
       }\`...`)
-      return require(require.resolve(name, {
-        'paths': [this.site['workDir'], '.', __dirname]
-      }))({
+      // Use absolute path to load from siteDir instead of program dir.
+      return require(path.resolve(name))({
         'logger': this.logger,
         'renderer': this.renderer,
         'processor': this.processor,
@@ -307,9 +310,9 @@ class Hikaru {
   async loadScripts() {
     const scripts = (await matchFiles(path.join('**', '*.js'), {
       'nodir': true,
-      'cwd': path.join(this.site['workDir'], 'scripts')
+      'cwd': path.join(this.site['siteDir'], 'scripts')
     })).map((filename) => {
-      return path.join(this.site['workDir'], 'scripts', filename)
+      return path.join(this.site['siteDir'], 'scripts', filename)
     }).concat((await matchFiles(path.join('**', '*.js'), {
       'nodir': true,
       'cwd': path.join(this.site['siteConfig']['themeDir'], 'scripts')
@@ -320,9 +323,8 @@ class Hikaru {
       this.logger.debug(`Hikaru is loading script \`${
         this.logger.cyan(path.basename(name))
       }\`...`)
-      return require(require.resolve(name, {
-        'paths': [this.site['workDir'], '.', __dirname]
-      }))({
+      // Use absolute path to load from siteDir instead of program dir.
+      return require(path.resolve(name))({
         'logger': this.logger,
         'renderer': this.renderer,
         'processor': this.processor,

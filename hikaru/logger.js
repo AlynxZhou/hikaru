@@ -1,11 +1,13 @@
 'use strict'
 
+const {isFunction} = require('./utils')
+
 class Logger extends console.Console {
   constructor(isDebug, opts = {
     'stdout': process.stdout,
     'stderr': process.stderr
   }) {
-    super(opts)
+    super(opts['stdout'], opts['stderr'])
     this.isDebug = isDebug
   }
 
@@ -39,7 +41,12 @@ class Logger extends console.Console {
 
   debug(...strs) {
     if (this.isDebug) {
-      super.debug(this.green('DEBUG:'), ...strs)
+      // Node.js 8 does not support `console.debug`.
+      if (isFunction(super.debug)) {
+        super.debug(this.green('DEBUG:'), ...strs)
+      } else {
+        super.log(this.green('DEBUG:'), ...strs)
+      }
     }
   }
 

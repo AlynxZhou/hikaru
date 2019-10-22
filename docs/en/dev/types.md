@@ -186,13 +186,13 @@ An array of `Toc`, which contains sub header.
 
 Site's properties and methods.
 
-## `workDir`
+## `siteDir`
 
 In which directory Hikaru works.
 
 ## `siteConfig`
 
-From site's `config.yml` file but `srcDir`, `docDir`, `themeDir`, `themeSrcDir` are converted to full path relative to `workDir` for easier to use.
+From site's `config.yml` file but `srcDir`, `docDir`, `themeDir`, `themeSrcDir` are converted to full path relative to `siteDir` for easier to use.
 
 ## `themeConfig`
 

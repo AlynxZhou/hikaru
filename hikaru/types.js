@@ -1,8 +1,8 @@
 'use strict'
 
 class Site {
-  constructor(workDir) {
-    this.workDir = workDir
+  constructor(siteDir) {
+    this.siteDir = siteDir
     this.siteConfig = {}
     this.themeConfig = {}
     this.templates = {}
