@@ -42,7 +42,7 @@ class Processor {
    * @return {Promise<Site>} Processed site.
    */
   async process(site) {
-    for (const [name, fn] of Object.entries(this._)) {
+    for (const {name, fn} of this._) {
       this.logger.debug(`Hikaru is processing \`${
         this.logger.blue(name)
       }\`...`)

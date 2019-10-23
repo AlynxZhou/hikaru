@@ -43,7 +43,7 @@ class Generator {
    */
   async generate(site) {
     let results = []
-    for (const [name, fn] of Object.entries(this._)) {
+    for (const {name, fn} of this._) {
       this.logger.debug(`Hikaru is generating \`${
         this.logger.blue(name)
       }\`...`)
