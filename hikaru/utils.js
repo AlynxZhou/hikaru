@@ -1,5 +1,9 @@
 'use strict'
 
+/**
+ * @module utils
+ */
+
 const fse = require('fs-extra')
 const path = require('path')
 const glob = require('glob')
@@ -10,6 +14,12 @@ const {File, Category, Tag, TOC} = require('./types')
 const pkg = require('../package.json')
 const extMIME = require('../dist/ext-mime.json')
 
+/**
+ * @description Returns true if `element` is in `array`.
+ * @param {Array} array
+ * @param {*} element
+ * @return {Boolean}
+ */
 const inside = (array, element) => {
   return array.indexOf(element) !== -1
 }
@@ -54,6 +64,11 @@ const isBuffer = (o) => {
   return Buffer.isBuffer(o)
 }
 
+/**
+ * @description Escape HTML chars.
+ * @param {String} str
+ * @return {String} Escaped HTML string.
+ */
 const escapeHTML = (str) => {
   return str.replace(/&/g, '&amp;')
   .replace(/</g, '&lt;')
@@ -62,9 +77,15 @@ const escapeHTML = (str) => {
   .replace(/'/g, '&#039;')
 }
 
-const matchFiles = (pattern, options) => {
+/**
+ * @description A Promised glob.
+ * @param {String} pattern
+ * @param {Objects} [opts] Optional glob opts.
+ * @return {Promise<String[]>}
+ */
+const matchFiles = (pattern, opts = {}) => {
   return new Promise((resolve, reject) => {
-    glob(pattern, options, (error, result) => {
+    glob(pattern, opts, (error, result) => {
       if (error != null) {
         return reject(error)
       }
@@ -73,15 +94,24 @@ const matchFiles = (pattern, options) => {
   })
 }
 
+/**
+ * @description Remove XML control chars.
+ * @param {String} str
+ * @return {String} XML string.
+ */
 const removeControlChars = (str) => {
   return str.replace(/[\x00-\x1F\x7F]/g, '')
 }
 
-// YAML ignores your local timezone and parse time as UTC.
-// This function will transpose it to a time without timezone.
-// Which looks the same as the original string.
-// If you keep timezone, you cannot easily parse it as another timezone.
-// https://github.com/nodeca/js-yaml/issues/91
+/**
+ * @description YAML ignores your local timezone and parse time as UTC.
+ * This function will transpose it to a time without timezone.
+ * Which looks the same as the original string.
+ * If you keep timezone, you cannot easily parse it as another timezone.
+ * @see https://github.com/nodeca/js-yaml/issues/91
+ * @param {(Date|String)} datetime
+ * @return {String}
+ */
 const transposeYAMLTime = (datetime) => {
   // If you don't write full YYYY-MM-DD HH:mm:ss, js-yaml will leave a string.
   if (isString(datetime)) {
@@ -92,6 +122,21 @@ const transposeYAMLTime = (datetime) => {
   ).format('YYYY-MM-DD HH:mm:ss')
 }
 
+/**
+ * @typedef {Object} FrontMatter
+ * @property {Object} attributes Parsed front-matter properties.
+ * @property {String} body String after front-matter.
+ * @property {String} frontMatter Front-matter string.
+ */
+/**
+ * @description Get front-matter from string,
+ * front-matter here is defined at the head of string (so don't use UTF-8 BOM),
+ * begins with one line that contains only `---`,
+ * and write properties in YAML after this line,
+ * then also ends with such a line.
+ * @param {String} str
+ * @return {FrontMatter}
+ */
 const getFrontMatter = (str) => {
   if (!isString(str) || !/^---\r?\n/g.test(str)) {
     return {'attributes': {}, 'body': str}
@@ -112,6 +157,11 @@ const getFrontMatter = (str) => {
   return result
 }
 
+/**
+ * @description Parse front-matter and set properties to file.
+ * @param {File} file
+ * @return {File}
+ */
 const parseFrontMatter = (file) => {
   if (!isString(file['raw'])) {
     return file
@@ -153,10 +203,22 @@ const parseFrontMatter = (file) => {
   return file
 }
 
+/**
+ * @description Detect Content-Type via filename.
+ * @param {String} docPath
+ * @return {String} Content-Type value.
+ */
 const getContentType = (docPath) => {
   return extMIME[path.extname(docPath)] || 'application/octet-stream'
 }
 
+/**
+ * @description Paginate page's posts.
+ * @param {File} p Original page.
+ * @param {File[]} posts Page related posts.
+ * @param {Number} [perPage=10] How many posts per page.
+ * @return {File[]} Paginated pages, original page's index is 0.
+ */
 const paginate = (p, posts, perPage = 10) => {
   const results = []
   let perPagePosts = []
@@ -184,6 +246,10 @@ const paginate = (p, posts, perPage = 10) => {
   return results
 }
 
+/**
+ * @description Sort categories and their posts recursively.
+ * @param {Category} category
+ */
 const sortCategories = (category) => {
   category['posts'].sort((a, b) => {
     return -(a['date'] - b['date'])
@@ -196,6 +262,15 @@ const sortCategories = (category) => {
   }
 }
 
+/**
+ * @description Generate and paginate pages for category and its subs.
+ * @param {Category} category
+ * @param {String} parentPath Parent category's dir,
+ * into which sub categories need to be put.
+ * @param {Site} site
+ * @param {Number} [perPage=10] How many posts per page.
+ * @return {File[]} All category and it's subs pages.
+ */
 const paginateCategories = (category, parentPath, site, perPage = 10) => {
   let results = []
   const sp = new File({
@@ -219,6 +294,16 @@ const paginateCategories = (category, parentPath, site, perPage = 10) => {
   return results
 }
 
+/**
+ * @callback getPath
+ * @param {String} [docPath]
+ * @return {String} Encoded URI path for web link.
+ */
+/**
+ * @description Get a function to handle full website path.
+ * @param {String} [rootDir] Site rootDir.
+ * @return {getPath}
+ */
 const getPathFn = (rootDir = path.posix.sep) => {
   rootDir = rootDir.replace(path.win32.sep, path.posix.sep)
   if (!rootDir.endsWith(path.posix.sep)) {
@@ -239,6 +324,17 @@ const getPathFn = (rootDir = path.posix.sep) => {
   }
 }
 
+/**
+ * @callback getURL
+ * @param {String} [docPath]
+ * @return {URL} Full website URL.
+ */
+/**
+ * @description Get a function to handle full website URL.
+ * @param {String} [baseURL] Site baseURL.
+ * @param {String} [rootDir] Site rootDir.
+ * @return {getURL}
+ */
 const getURLFn = (baseURL, rootDir = path.posix.sep) => {
   const getPath = getPathFn(rootDir)
   return (docPath = '') => {
@@ -246,6 +342,18 @@ const getURLFn = (baseURL, rootDir = path.posix.sep) => {
   }
 }
 
+/**
+ * @callback isCurrentPath
+ * @param {String} [testPath] Path needed to test.
+ * @param {Boolean} [strict=false] If false, sub dir will return true.
+ * @return {Boolean}
+ */
+/**
+ * @description Get a function to handle if parameter is current path.
+ * @param {String} [rootDir] Site rootDir.
+ * @param {String} [currentPath] current page's path.
+ * @return {isCurrentPath}
+ */
 const isCurrentPathFn = (rootDir = path.posix.sep, currentPath = '') => {
   // Must join a '/' before resolve or it will join current site dir.
   const getPath = getPathFn(rootDir)
@@ -254,6 +362,10 @@ const isCurrentPathFn = (rootDir = path.posix.sep, currentPath = '') => {
     path.posix.sep, currentPath.replace(path.win32.sep, path.posix.sep)
   )).split(path.posix.sep)
   return (testPath = '', strict = false) => {
+    if (!isString(testPath)) {
+      strict = testPath
+      testPath = ''
+    }
     testPath = getPath(testPath)
     if (currentPath === testPath) {
       return true
@@ -274,6 +386,16 @@ const isCurrentPathFn = (rootDir = path.posix.sep, currentPath = '') => {
   }
 }
 
+/**
+ * @typedef {Object} CategoriesData
+ * @property {Category[]} categories
+ * @property {Number} categoriesLength
+ */
+/**
+ * @description Generate categories from posts.
+ * @param {File[]} posts
+ * @return {CategoriesData}
+ */
 const genCategories = (posts) => {
   const categories = []
   let categoriesLength = 0
@@ -310,6 +432,16 @@ const genCategories = (posts) => {
   return {categories, categoriesLength}
 }
 
+/**
+ * @typedef {Object} TagsData
+ * @property {Category[]} tags
+ * @property {Number} tagsLength
+ */
+/**
+ * @description Generate tags from posts.
+ * @param {File[]} posts
+ * @return {TagsData}
+ */
 const genTags = (posts) => {
   const tags = []
   let tagsLength = 0
@@ -343,6 +475,13 @@ const genTags = (posts) => {
   return {tags, tagsLength}
 }
 
+/**
+ * @description Put file into an array in site,
+ * will replace file with the same output path.
+ * @param {Site} site
+ * @param {String} key
+ * @param {File} file
+ */
 const putSite = (site, key, file) => {
   if (key == null || file == null || !isArray(site[key])) {
     return
@@ -360,20 +499,33 @@ const putSite = (site, key, file) => {
   }
 }
 
+/**
+ * @description Delete file from an array in site,
+ * which have the same input path.
+ * @param {Site} site
+ * @param {String} key
+ * @param {File} file
+ */
 const delSite = (site, key, file) => {
   if (key == null || file == null || !isArray(site[key])) {
     return
   }
   for (let i = 0; i < site[key].length; ++i) {
     if (
-      site[key][i]['docPath'] === file['docPath'] &&
-      site[key][i]['docDir'] === file['docDir']
+      site[key][i]['srcPath'] === file['srcPath'] &&
+      site[key][i]['srcDir'] === file['srcDir']
     ) {
       site[key].splice(i, 1)
     }
   }
 }
 
+/**
+ * @description Get simpified layout for file.
+ * @param {File} file
+ * @param {String[]} available If not in available, fallback to `page`.
+ * @return {String}
+ */
 const getFileLayout = (file, available) => {
   if (file['layout'] == null) {
     return null
@@ -384,6 +536,10 @@ const getFileLayout = (file, available) => {
   return file['layout']
 }
 
+/**
+ * @description Update headers' ID for bootstrap scrollspy.
+ * @param {Object} $ Cheerio context.
+ */
 const resolveHeaderIDs = ($) => {
   const hNames = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']
   const headerIDs = {}
@@ -409,6 +565,10 @@ const resolveHeaderIDs = ($) => {
   })
 }
 
+/**
+ * @description Generate TOC from HTML headers.
+ * @param {Object} $ Cheerio context.
+ */
 const genTOC = ($) => {
   const hNames = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']
   const toc = []
@@ -429,6 +589,14 @@ const genTOC = ($) => {
   return toc
 }
 
+/**
+ * @description Update site's internal link to absolute path,
+ * and add attributes for external link.
+ * @param {Object} $ Cheerio context.
+ * @param {String} [baseURL] Site baseURL.
+ * @param {String} [rootDir] Site rootDir.
+ * @param {String} [docPath]
+ */
 const resolveLink = ($, baseURL, rootDir, docPath) => {
   const getURL = getURLFn(baseURL, rootDir)
   const getPath = getPathFn(rootDir)
@@ -455,6 +623,12 @@ const resolveLink = ($, baseURL, rootDir, docPath) => {
   })
 }
 
+/**
+ * @description Update site's internal image src to absolute path.
+ * @param {Object} $ Cheerio context.
+ * @param {String} [rootDir] Site rootDir.
+ * @param {String} [docPath]
+ */
 const resolveImage = ($, rootDir, docPath) => {
   const getPath = getPathFn(rootDir)
   // Replace relative path to absolute path.
@@ -476,10 +650,18 @@ const resolveImage = ($, rootDir, docPath) => {
   })
 }
 
+/**
+ * @description Get Hikaru version.
+ * @return {String}
+ */
 const getVersion = () => {
   return pkg['version']
 }
 
+/**
+ * @description Hikaru's default 404 page content for server.
+ * @type {String}
+ */
 const default404 = [
   '<!DOCTYPE html>',
   '<html>',

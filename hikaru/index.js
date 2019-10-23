@@ -1,5 +1,9 @@
 'use strict'
 
+/**
+ * @module index
+ */
+
 const commander = require('commander')
 const pkg = require('../package.json')
 const Hikaru = require('./hikaru')
@@ -45,6 +49,10 @@ commander.command('serve [dir]').alias('s')
   )
 })
 
-module.exports = (argv) => {
+/**
+ * @method
+ * @param {String[]} [argv]
+ */
+module.exports = (argv = process.argv) => {
   commander.parse(argv)
 }

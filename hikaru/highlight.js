@@ -1,10 +1,18 @@
 'use strict'
 
+/**
+ * @module highlight
+ */
+
 const hljs = require('highlight.js')
 const {escapeHTML} = require('./utils')
 
 let aliases = null
 
+/**
+ * @private
+ * @return {Object} Key is alias, value is hljs lang name.
+ */
 const loadLangAliases = () => {
   const aliases = {}
   const languages = hljs.listLanguages()
@@ -22,6 +30,18 @@ const loadLangAliases = () => {
   return aliases
 }
 
+/**
+ * @typedef {Object} Data
+ * @property {Number} [relevance]
+ * @property {String} [language] Detected language.
+ * @property {String} value Highlighted HTML string.
+ */
+/**
+ * @private
+ * @description Try to automatic highlight with detection.
+ * @param {String} str
+ * @return {Data}
+ */
 const highlightAuto = (str) => {
   for (const lang of Object.values(aliases)) {
     if (hljs.getLanguage(lang) == null) {
@@ -37,6 +57,14 @@ const highlightAuto = (str) => {
   return {'value': escapeHTML(str)}
 }
 
+/**
+ * @description Highlight a str.
+ * @param {String} str
+ * @param {Object} [opts] Optional hljs parameters.
+ * @param {Boolean} [opts.hljs] Add `hljs-` prefix to class name.
+ * @param {Boolean} [opts.gutter] Generate line numbers.
+ * @return {String} Highlighted HTML.
+ */
 const highlight = (str, opts = {}) => {
   if (aliases == null) {
     aliases = loadLangAliases()

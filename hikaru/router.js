@@ -1,5 +1,9 @@
 'use strict'
 
+/**
+ * @module Router
+ */
+
 const fse = require('fs-extra')
 const path = require('path')
 const yaml = require('js-yaml')
@@ -26,7 +30,19 @@ const {
   parseFrontMatter
 } = require('./utils')
 
+/**
+ * @description Core module that handling file routing.
+ */
 class Router {
+  /**
+   * @param {Logger} logger
+   * @param {Renderer} renderer
+   * @param {Processor} processor
+   * @param {Generator} generator
+   * @param {Translator} translator
+   * @param {Site} site
+   * @return {Router}
+   */
   constructor(logger, renderer, processor, generator, translator, site) {
     this.logger = logger
     this.renderer = renderer
@@ -46,11 +62,26 @@ class Router {
     moment.locale(this.site['siteConfig']['language'])
   }
 
+  /**
+   * @private
+   * @description Read file content.
+   * @param {String} filepath
+   * @return {Promise<Buffer>}
+   */
   read(filepath) {
     return fse.readFile(filepath)
   }
 
+  /**
+   * @private
+   * @description Write or copy file to docDir.
+   * @param {File} file
+   * @param {(Buffer|String)} content
+   */
   write(file, content) {
+    if (content == null) {
+      content = file['content']
+    }
     if (!file['isBinary']) {
       return fse.outputFile(
         path.join(file['docDir'], file['docPath']), content
@@ -62,6 +93,11 @@ class Router {
     )
   }
 
+  /**
+   * @private
+   * @description Load files into site data via parsing front-matter.
+   * @param {File} file
+   */
   async loadFile(file) {
     this.logger.debug(`Hikaru is reading \`${
       this.logger.cyan(path.join(file['srcDir'], file['srcPath']))
@@ -99,6 +135,11 @@ class Router {
     }
   }
 
+  /**
+   * @private
+   * @description Save file via layout.
+   * @param {File} file
+   */
   async saveFile(file) {
     this.logger.debug(`Hikaru is writing \`${
       this.logger.cyan(path.join(file['docDir'], file['docPath']))
@@ -113,6 +154,12 @@ class Router {
     }
   }
 
+  /**
+   * @private
+   * @description Load language dynamically.
+   * @param {File} file
+   * @return {String} Loaded language name.
+   */
   loadLanguage(file) {
     const lang = file['language'] || this.site['siteConfig']['language']
     if (!inside(this.translator.list(), lang)) {
@@ -134,6 +181,12 @@ class Router {
     return lang
   }
 
+  /**
+   * @private
+   * @description Load context for template rendering.
+   * @param {File} file
+   * @return {File} File with context that can be used by template.
+   */
   loadContext(file) {
     const lang = this.loadLanguage(file)
     return Object.assign(new File(), file, {
@@ -155,6 +208,11 @@ class Router {
     })
   }
 
+  /**
+   * @private
+   * @description Match all src files.
+   * @return {Promise<File[]>}
+   */
   async matchAll() {
     return (await matchFiles(path.join('**', '*'), {
       'nodir': true,
@@ -179,6 +237,11 @@ class Router {
     }))
   }
 
+  /**
+   * @private
+   * @description Build routes for all built files to serve.
+   * @param {File[]} allFiles All built files.
+   */
   buildServerRoutes(allFiles) {
     this._ = {}
     for (const f of allFiles) {
@@ -190,6 +253,10 @@ class Router {
     }
   }
 
+  /**
+   * @private
+   * @description Watch all src files.
+   */
   watchAll() {
     for (const srcDir of [
       this.site['siteConfig']['themeSrcDir'],
@@ -224,6 +291,10 @@ class Router {
     }
   }
 
+  /**
+   * @private
+   * @description Unwatch all src files.
+   */
   unwatchAll() {
     let w
     while ((w = this.watchers.shift()) != null) {
@@ -231,6 +302,10 @@ class Router {
     }
   }
 
+  /**
+   * @private
+   * @description Handle watcher events.
+   */
   async handleEvents() {
     // Keep handling atomic. Prevent repeatedly handling.
     if (this.watchedEvents.length === 0 || this.handling) {
@@ -260,6 +335,12 @@ class Router {
     this.handling = false
   }
 
+  /**
+   * @private
+   * @description Start a listening server.
+   * @param {String} ip
+   * @param {Number} port
+   */
   listen(ip, port) {
     const server = http.createServer(async (request, response) => {
       // Remove query string.
@@ -311,11 +392,18 @@ class Router {
     this.watchAll()
   }
 
+  /**
+   * @private
+   * @description Handle all processor and generator.
+   */
   async handle() {
     this.site = await this.processor.process(this.site)
     this.site['files'] = await this.generator.generate(this.site)
   }
 
+  /**
+   * @description Build all site docs.
+   */
   async build() {
     await Promise.all((await this.matchAll()).map(this.loadFile.bind(this)))
     await this.handle()
@@ -326,6 +414,9 @@ class Router {
     .map(this.saveFile.bind(this))
   }
 
+  /**
+   * @description Serve all site docs.
+   */
   async serve(ip, port) {
     await Promise.all((await this.matchAll()).map(this.loadFile.bind(this)))
     await this.handle()

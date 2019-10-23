@@ -1,14 +1,31 @@
 'use strict'
 
+/**
+ * @module Translator
+ */
+
 const {format} = require('util')
 const {isObject, isArray, isString} = require('./utils')
 
+/**
+ * @description String translator.
+ */
+
 class Translator {
+  /**
+   * @param {Logger} logger
+   * @return {Translator}
+   */
   constructor(logger) {
     this.logger = logger
     this._ = {}
   }
 
+  /**
+   * @description Register a kind of language.
+   * @param {(String|String[])} lang Language names.
+   * @param {Object} obj Language dict from yaml file.
+   */
   register(lang, obj) {
     if (!isObject(obj)) {
       throw new TypeError(
@@ -24,10 +41,26 @@ class Translator {
     }
   }
 
+  /**
+   * @description List registered language.
+   * @return {String[]}
+   */
   list() {
     return Object.keys(this._)
   }
 
+  /**
+   * @callback translate
+   * @description `printf()` like translator function.
+   * @param {String} key A string for a key in language dict.
+   * @param {...*} args Args to be formatted.
+   * @return {String}
+   */
+  /**
+   * @description Get a translator function for given language.
+   * @param {String} lang Registered language.
+   * @return {translate}
+   */
   getTranslateFn(lang) {
     return (key, ...args) => {
       const keys = key.toString().trim().split('.')

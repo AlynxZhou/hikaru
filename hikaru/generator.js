@@ -1,13 +1,34 @@
 'use strict'
 
+/**
+ * @module Generator
+ */
+
 const {isArray, isFunction} = require('./utils')
 
+/**
+ * @description File generator.
+ */
 class Generator {
+  /**
+   * @param {Logger} logger
+   * @return {Generator}
+   */
   constructor(logger) {
     this.logger = logger
     this._ = []
   }
 
+  /**
+   * @callback generateCallback
+   * @param {Site} site
+   * @return {File}
+   */
+  /**
+   * @description Register a generator function.
+   * @param {String} name
+   * @param {generateCallback} fn
+   */
   register(name, fn) {
     if (!isFunction(fn)) {
       throw new TypeError('fn must be a Function')
@@ -15,9 +36,14 @@ class Generator {
     this._.push({name, fn})
   }
 
+  /**
+   * @description Generator files for site.
+   * @param {Site} site
+   * @return {Promise<(File|File[])>} Generated files.
+   */
   async generate(site) {
     let results = []
-    for (const {name, fn} of this._) {
+    for (const [name, fn] of Object.entries(this._)) {
       this.logger.debug(`Hikaru is generating \`${
         this.logger.blue(name)
       }\`...`)

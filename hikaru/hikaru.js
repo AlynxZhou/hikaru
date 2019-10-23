@@ -1,5 +1,9 @@
 'use strict'
 
+/**
+ * @module Hikaru
+ */
+
 const fse = require('fs-extra')
 const path = require('path')
 const {URL} = require('url')
@@ -42,7 +46,22 @@ const {
   genTOC
 } = utils
 
+/**
+ * @description Hikaru main class.
+ */
 class Hikaru {
+  /**
+   * @param {Boolean} [isDebug=false]
+   * @property {Logger} logger
+   * @property {Renderer} renderer
+   * @property {Processor} processor
+   * @property {Generator} generator
+   * @property {Translator} translator
+   * @property {Object} types
+   * @property {Object} utils
+   * @property {Site} site
+   * @return {Hikaru}
+   */
   constructor(isDebug = false) {
     this.isDebug = isDebug
     this.logger = new Logger(this.isDebug)
@@ -65,6 +84,11 @@ class Hikaru {
     })
   }
 
+  /**
+   * @description Create a Hikaru site dir with needed files.
+   * @param {String} siteDir Working site dir.
+   * @param {String} [configPath] Alternative config file path.
+   */
   init(siteDir, configPath) {
     return fse.mkdirp(siteDir).then(() => {
       this.logger.debug(`Hikaru is copying \`${
@@ -110,6 +134,11 @@ class Hikaru {
     })
   }
 
+  /**
+   * @description Clean a Hikaru site's built docs.
+   * @param {String} siteDir Working site dir.
+   * @param {String} [configPath] Alternative config file path.
+   */
   clean(siteDir, configPath) {
     configPath = configPath || path.join(siteDir, 'siteConfig.yml')
     let siteConfig
@@ -151,6 +180,11 @@ class Hikaru {
     })
   }
 
+  /**
+   * @description Build and write docs from srcs.
+   * @param {String} siteDir Working site dir.
+   * @param {String} [configPath] Alternative config file path.
+   */
   async build(siteDir, configPath) {
     this.loadSite(siteDir, configPath)
     this.loadModules()
@@ -170,6 +204,13 @@ class Hikaru {
     }
   }
 
+  /**
+   * @description Build and serve docs with a HTTP server from srcs.
+   * @param {String} siteDir Working site dir.
+   * @param {String} [configPath] Alternative config file path.
+   * @param {String} [ip=localhost] Alternative listening IP address.
+   * @param {Number} [port=2333] Alternative listening port.
+   */
   async serve(siteDir, configPath, ip = 'localhost', port = 2333) {
     if (isString(port)) {
       port = Number.parseInt(port)
@@ -190,6 +231,12 @@ class Hikaru {
     }
   }
 
+  /**
+   * @private
+   * @description Load site and theme's config.
+   * @param {String} siteDir Working site dir.
+   * @param {String} [configPath] Alternative config file path.
+   */
   loadSite(siteDir, configPath) {
     this.site = new Site(siteDir)
     configPath = configPath || path.join(
@@ -233,6 +280,10 @@ class Hikaru {
     }
   }
 
+  /**
+   * @private
+   * @description Load Hikaru's internal module.
+   */
   loadModules() {
     this.renderer = new Renderer(
       this.logger,
@@ -272,7 +323,11 @@ class Hikaru {
     }
   }
 
-  // Load local plugins for site.
+  /**
+   * @private
+   * @description Load local plugins for site,
+   * which are installed into site's dir and starts with `hikaru-`.
+   */
   loadPlugins() {
     const sitePkgPath = path.join(this.site['siteDir'], 'package.json')
     if (!fse.existsSync(sitePkgPath)) {
@@ -306,7 +361,11 @@ class Hikaru {
     })
   }
 
-  // Load local scripts for site and theme.
+  /**
+   * @private
+   * @description Load local scripts for site and theme,
+   * which are js files installed into scripts dir.
+   */
   async loadScripts() {
     const scripts = (await matchFiles(path.join('**', '*.js'), {
       'nodir': true,
@@ -337,6 +396,9 @@ class Hikaru {
     })
   }
 
+  /**
+   * @private
+   */
   registerInternalRenderers() {
     const njkConfig = Object.assign(
       {'autoescape': false, 'noCache': true},
@@ -428,6 +490,9 @@ class Hikaru {
     })
   }
 
+  /**
+   * @private
+   */
   registerInternalProcessors() {
     this.processor.register('post sequence', (site) => {
       site['posts'].sort((a, b) => {
@@ -487,6 +552,9 @@ class Hikaru {
     })
   }
 
+  /**
+   * @private
+   */
   registerInternalGenerators() {
     this.generator.register('index pages', (site) => {
       let perPage
