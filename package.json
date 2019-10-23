@@ -7,6 +7,7 @@
     "hikaru": "bin/hikaru"
   },
   "scripts": {
+    "build:doc": "jsdoc -c jsdoc.json -R README.md -u tutorials/",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -21,7 +22,7 @@
   "bugs": {
     "url": "https://github.com/AlynxZhou/hikaru/issues"
   },
-  "homepage": "https://github.com/AlynxZhou/hikaru#readme",
+  "homepage": "https://hikaru.alynx.moe/",
   "author": "Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.moe/)",
   "license": "Apache-2.0",
   "dependencies": {
@@ -37,5 +38,8 @@
     "nib": "^1.1.2",
     "nunjucks": "^3.2.0",
     "stylus": "latest"
+  },
+  "devDependencies": {
+    "jsdoc": "^3.6.3"
   }
 }
