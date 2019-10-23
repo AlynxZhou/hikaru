@@ -98,6 +98,8 @@ $ hikaru b
 
 Docs: <https://hikaru.alynx.moe/>
 
+Repo: [GitHub](https://github.com/AlynxZhou/hikaru/)
+
 Default theme ARIA: [hikaru-theme-aria](https://github.com/AlynxZhou/hikaru-theme-aria/)
 
 My blog built with Hikaru and ARIA: [喵's StackHarbor](https://sh.alynx.moe/)
