@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Tutorial: Lifecycle</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Tutorial: Lifecycle</h1>
+
+    <section>
+
+<header>
+    
+
+    <h2>Lifecycle</h2>
+</header>
+
+<article>
+    <h1>Lifecycle</h1>
+<p>This page contains what hikaru do when you run a command.</p>
+<h1><code>init</code></h1>
+<p>It's really simple because it is just a function that make directories and copy files ... and I don't think you need to extend this function.</p>
+<h1><code>clean</code></h1>
+<p>This is also a simple function that remove files in docs directory, you don't need to modify this function.</p>
+<h1><code>build</code> and <code>serve</code></h1>
+<p>So those are complex functions and Hikaru does them by different modules. You should remind that Hikaru is designed as a command line program instead of a library, so you cannot take parts of Hikaru and use only this part, they are not designed for this.</p>
+<p>At first you see a class called <code>Hikaru</code>, but it just a collection of instances of modules and variables. When you enter a command, you will get an instance of Hikaru and run different methods, if you use <code>build</code> or <code>serve</code>, it first load config files and prepare variables, then create different instances of modules, and it register some internal methods to those modules to provide basic functions for creating a site. To allow you to modify it, Hikaru will then load plugins and script, it will pass itself to plugins and allow them register methods to different modules. Then it is prepared for making the site.</p>
+<p>Making the site is done by a special module called <code>Router</code>, it is special because it call other modules to create a site. Hikaru call <code>Router::build</code> or <code>Router::serve</code> to start this process. First router will read files in srcs directory and theme srcs directory, and detect whether a file is binary or text (to make it easier only support UTF-8 encoding), and then classify them to <code>asset</code>, <code>template</code>, <code>post</code> or <code>page</code> by file type or layout property in front matter.</p>
+<p>And then <code>Router</code> will call first module <code>Renderer</code>, it contains registered functions, and will render file content by different extend names of file's srcPath, after rendering it replaces file extend name, and save it in file's docPath.</p>
+<p>Then <code>Router</code> call <code>Processor</code> to edit some page with cheerio or other libs.</p>
+<p>After processing <code>Router</code> will call <code>Generator</code>. Though Hikaru builds routes with directory structures, some output files don't have source files like sitemap files. So we create <code>File</code> objects manually in generator functions before saving.</p>
+<p>Finally if you called <code>Router::build</code>, <code>Router</code> will save them to doc directory with their <code>docPath</code>, posts and pages will be compiled with different templates, which is depend on their layout. And if you called <code>Router::serve</code>, <code>Router</code> will build an object with <code>docPath</code> and files, then start a http server, if you request a path, it will find it in the object and return a page, posts and pages will be compiled before return, too. Also it will watch file and reload them automatically.</p>
+</article>
+
+</section>
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Generator.html">Generator</a></li><li><a href="module-highlight.html">highlight</a></li><li><a href="module-Hikaru.html">Hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-Logger.html">Logger</a></li><li><a href="module-Processor.html">Processor</a></li><li><a href="module-Renderer.html">Renderer</a></li><li><a href="module-Router.html">Router</a></li><li><a href="module-Translator.html">Translator</a></li><li><a href="module-type.html">type</a></li><li><a href="module-utils.html">utils</a></li></ul><h3>Classes</h3><ul><li><a href="module-Generator-Generator.html">Generator</a></li><li><a href="module-Hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-Logger-Logger.html">Logger</a></li><li><a href="module-Processor-Processor.html">Processor</a></li><li><a href="module-Renderer-Renderer.html">Renderer</a></li><li><a href="module-Router-Router.html">Router</a></li><li><a href="module-Translator-Translator.html">Translator</a></li><li><a href="module-type-Category.html">Category</a></li><li><a href="module-type-File.html">File</a></li><li><a href="module-type-Site.html">Site</a></li><li><a href="module-type-Tag.html">Tag</a></li><li><a href="module-type-TOC.html">TOC</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Oct 23 2019 12:51:21 GMT+0800 (China Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

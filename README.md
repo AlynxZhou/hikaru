@@ -92,7 +92,7 @@ $ hikaru b
 
 # More
 
-Docs: [Here](docs/en/index.md)(Needs to update)
+Docs: <https://hikaru.alynx.moe/>
 
 Default theme ARIA: [hikaru-theme-aria](https://github.com/AlynxZhou/hikaru-theme-aria/)
 

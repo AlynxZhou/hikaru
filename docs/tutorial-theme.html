@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Tutorial: Theme</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Tutorial: Theme</h1>
+
+    <section>
+
+<header>
+    
+
+    <h2>Theme</h2>
+</header>
+
+<article>
+    <h1>Theme</h1>
+<p>This page tells you how to create a Hikaru theme.</p>
+<p>For code examples, visit <a href="https://github.com/AlynxZhou/hikaru-theme-aria/">hikaru-themes-aria</a>.</p>
+<h1>Structure</h1>
+<p>A dir of Hikaru theme looks like this:</p>
+<pre class="source"><code>themename/
+    |- scripts/
+    |- srcs/
+    |- languages/
+    |- themeConfig.yml
+</code></pre>
+<h2><code>themeConfig.yml</code></h2>
+<p>This is theme's config, you can access it with <code>site[&quot;themeConfig&quot;]</code> in template.</p>
+<h2><code>scripts</code></h2>
+<p>This is theme's scripts. If you want to regist some functions, write it here.</p>
+<h2><code>languages</code></h2>
+<p>Put different language files in here, and you can use <code>__()</code> in template to load them. They must be YAML files.</p>
+<h2><code>srcs</code></h2>
+<p>This dir stores templates and assets. If a file is under srcs directly, it will be treat as templates and if a file is in sub dir, they are assets and will be copied to <code>docDir</code>.</p>
+<h1>Template</h1>
+<p>Hikaru works with template, it supports Nunjucks, and can support others by registing renderers.</p>
+<p><strong>The base name of template files will be used as layouts</strong>. So you must have files of following:</p>
+<ul>
+<li><code>index</code>: Site index page.</li>
+<li><code>archives</code>: Site archive page.</li>
+<li><code>tags</code>: This page shows all tags of this site.</li>
+<li><code>tag</code>: This pages shows <strong>all posts that has a tag</strong>.</li>
+<li><code>categories</code>: This page shows all categories of this site.</li>
+<li><code>category</code>: This pages shows <strong>all posts that has a category</strong>.</li>
+<li><code>post</code>: A post.</li>
+<li><code>page</code>: Fallback layout.</li>
+</ul>
+<p>You can use following helpers in template:</p>
+<ul>
+<li><code>site</code>: A raw site object.</li>
+<li><code>siteConfig</code>: Just <code>site[&quot;siteConfig&quot;]</code>.</li>
+<li><code>themeConfig</code>: Just <code>site[&quot;themeConfig&quot;]</code>.</li>
+<li><code>moment()</code>: Moment.js functions.</li>
+<li><code>getVersion()</code>: Hikaru version.</li>
+<li><code>getURL(docPath)</code>: Convert a path to a full URL.</li>
+<li><code>getPath(docPath)</code>: Convert a path to a full path.</li>
+<li><code>isCurrentPath(testPath, strict)</code>: Whether test path is current path, if <code>strict</code> is <code>false</code>, it return <code>true</code> when current path is a sub dir of test path.</li>
+<li><code>__()</code>: Language translator via <a href="https://nodejs.org/api/util.html#util_util_format_format_args"><code>util.format</code></a>.</li>
+</ul>
+<h1>Assets</h1>
+<p>Assets may be CSS or JavaScript files, Hikaru internally supports stylus, so you can write it instead pure CSS. You can also add other preprocessors via registing renderers.</p>
+<p>You can use <code>getThemeConfig(key)</code> or <code>getSiteConfig(key)</code> in CSS preprocessors to get config.</p>
+<h1>Language Files</h1>
+<p>You can create file as language files, and their name will be options of site's <code>language</code> config. For example you can create <code>en.yml</code>:</p>
+<pre class="prettyprint source lang-yaml"><code>postcount:
+  none: You have no post, write now!
+  one: You have %d post, keep on!
+  more: You have %d posts!
+</code></pre>
+<p>and set <code>config.yml</code> to <code>language: en</code>, you can use <code>__()</code> in template like this:</p>
+<pre class="prettyprint source lang-html"><code>&lt;p>{{ __(&quot;postcount.more&quot;, 233)}}&lt;/p>
+</code></pre>
+<p><strong>Each page can have their own language property</strong>, <code>Translator</code> will load language automatically.</p>
+<h1>Scripts</h1>
+<p>Scripts are just JavaScript files that export a function, which receives a <code>Hikaru</code> object as argument:</p>
+<pre class="prettyprint source lang-javascript"><code>module.exports = (hikaru) => {
+  hikaru.processor.register(&quot;description&quot;, (site) => {
+    // Do something...
+    return site
+  })
+}
+</code></pre>
+<p>Plugins are the same but they work as npm packages.</p>
+</article>
+
+</section>
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Generator.html">Generator</a></li><li><a href="module-highlight.html">highlight</a></li><li><a href="module-Hikaru.html">Hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-Logger.html">Logger</a></li><li><a href="module-Processor.html">Processor</a></li><li><a href="module-Renderer.html">Renderer</a></li><li><a href="module-Router.html">Router</a></li><li><a href="module-Translator.html">Translator</a></li><li><a href="module-type.html">type</a></li><li><a href="module-utils.html">utils</a></li></ul><h3>Classes</h3><ul><li><a href="module-Generator-Generator.html">Generator</a></li><li><a href="module-Hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-Logger-Logger.html">Logger</a></li><li><a href="module-Processor-Processor.html">Processor</a></li><li><a href="module-Renderer-Renderer.html">Renderer</a></li><li><a href="module-Router-Router.html">Router</a></li><li><a href="module-Translator-Translator.html">Translator</a></li><li><a href="module-type-Category.html">Category</a></li><li><a href="module-type-File.html">File</a></li><li><a href="module-type-Site.html">Site</a></li><li><a href="module-type-Tag.html">Tag</a></li><li><a href="module-type-TOC.html">TOC</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Oct 23 2019 12:51:21 GMT+0800 (China Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

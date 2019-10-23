@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: highlight.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: highlight.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>'use strict'
+
+/**
+ * @module highlight
+ */
+
+const hljs = require('highlight.js')
+const {escapeHTML} = require('./utils')
+
+let aliases = null
+
+/**
+ * @private
+ * @return {Object} Key is alias, value is hljs lang name.
+ */
+const loadLangAliases = () => {
+  const aliases = {}
+  const languages = hljs.listLanguages()
+  for (const lang of languages) {
+    aliases[lang] = lang
+    const lAliases = require(
+      `highlight.js/lib/languages/${lang}`
+    )(hljs)['aliases']
+    if (lAliases != null) {
+      for (const alias of lAliases) {
+        aliases[alias] = lang
+      }
+    }
+  }
+  return aliases
+}
+
+/**
+ * @typedef {Object} Data
+ * @property {Number} [relevance]
+ * @property {String} [language] Detected language.
+ * @property {String} value Highlighted HTML string.
+ */
+/**
+ * @private
+ * @description Try to automatic highlight with detection.
+ * @param {String} str
+ * @return {Data}
+ */
+const highlightAuto = (str) => {
+  for (const lang of Object.values(aliases)) {
+    if (hljs.getLanguage(lang) == null) {
+      hljs.registerLanguage(
+        lang, require(`highlight.js/lib/languages/${lang}`)
+      )
+    }
+  }
+  const data = hljs.highlightAuto(str)
+  if (data['relevance'] > 0 &amp;&amp; data['language'] != null) {
+    return data
+  }
+  return {'value': escapeHTML(str)}
+}
+
+/**
+ * @description Highlight a str.
+ * @param {String} str
+ * @param {Object} [opts] Optional hljs parameters.
+ * @param {Boolean} [opts.hljs] Add `hljs-` prefix to class name.
+ * @param {Boolean} [opts.gutter] Generate line numbers.
+ * @return {String} Highlighted HTML.
+ */
+const highlight = (str, opts = {}) => {
+  if (aliases == null) {
+    aliases = loadLangAliases()
+  }
+  if (opts['hljs']) {
+    hljs.configure({'classPrefix': 'hljs-'})
+  }
+
+  let data
+  if (opts['lang'] == null) {
+    // Guess when no lang was given.
+    data = highlightAuto(str)
+  } else if (opts['lang'] === 'plain') {
+    // Skip auto guess when user sets lang to plain,
+    // plain is not in the alias list, so judge it first.
+    data = {'value': escapeHTML(str)}
+  } else if (aliases[opts['lang']] == null) {
+    // Guess when lang is given but not in highlightjs' alias list, too.
+    data = highlightAuto(str)
+  } else {
+    // We have correct lang alias, tell highlightjs to handle it.
+    // If given language does not match string content,
+    // highlightjs will set language to undefined.
+    data = hljs.highlight(aliases[opts['lang']], str)
+  }
+
+  // Language in &lt;figure>'s class is highlight's detected result,
+  // not user input. To get user input, marked set it to parent &lt;code>'s class.
+  let results = ['&lt;figure class="highlight hljs']
+  if (data['language'] != null) {
+    results.push(` ${data['language'].toLowerCase()}">`)
+  } else {
+    results.push('">')
+  }
+
+  if (opts['gutter']) {
+    const gutters = ['&lt;pre class="gutter">']
+    const lines = data['value'].split(/\r?\n/g).length
+    for (let i = 0; i &lt; lines; ++i) {
+      gutters.push(`&lt;span class="line">${i + 1}&lt;/span>`)
+      if (i !== lines - 1) {
+        gutters.push('&lt;br>')
+      }
+    }
+    gutters.push('&lt;/pre>')
+    results = results.concat(gutters)
+  }
+  results.push('&lt;pre class="code">&lt;code>')
+  results.push(data['value'])
+  results.push('&lt;/code>&lt;/pre>&lt;/figure>')
+  return results.join('')
+}
+
+module.exports = highlight
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Generator.html">Generator</a></li><li><a href="module-highlight.html">highlight</a></li><li><a href="module-Hikaru.html">Hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-Logger.html">Logger</a></li><li><a href="module-Processor.html">Processor</a></li><li><a href="module-Renderer.html">Renderer</a></li><li><a href="module-Router.html">Router</a></li><li><a href="module-Translator.html">Translator</a></li><li><a href="module-type.html">type</a></li><li><a href="module-utils.html">utils</a></li></ul><h3>Classes</h3><ul><li><a href="module-Generator-Generator.html">Generator</a></li><li><a href="module-Hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-Logger-Logger.html">Logger</a></li><li><a href="module-Processor-Processor.html">Processor</a></li><li><a href="module-Renderer-Renderer.html">Renderer</a></li><li><a href="module-Router-Router.html">Router</a></li><li><a href="module-Translator-Translator.html">Translator</a></li><li><a href="module-type-Category.html">Category</a></li><li><a href="module-type-File.html">File</a></li><li><a href="module-type-Site.html">Site</a></li><li><a href="module-type-Tag.html">Tag</a></li><li><a href="module-type-TOC.html">TOC</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Oct 23 2019 12:51:21 GMT+0800 (China Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

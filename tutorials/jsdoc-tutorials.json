@@ -1,0 +1,54 @@
+{
+  "index": {
+    "title": "Overview"
+  },
+  "user": {
+	  "title": "User",
+    "children": {
+      "install": {
+        "title": "Install"
+      },
+      "command": {
+        "title": "Command"
+      },
+      "init": {
+        "title": "Init"
+      },
+      "config": {
+        "title": "Config"
+      },
+      "write": {
+        "title": "Write"
+      },
+      "plugins-and-scripts": {
+        "title": "Plugins and Scripts"
+      },
+      "deploy": {
+        "title": "Deploy"
+      }
+    }
+  },
+  "dev": {
+	  "title": "Dev",
+    "children": {
+      "hikaru": {
+        "title": "Hikaru"
+      },
+      "lifecycle": {
+        "title": "Lifecycle"
+      },
+      "theme": {
+        "title": "Theme"
+      },
+      "extend": {
+        "title": "Extend"
+      },
+      "types": {
+        "title": "Types"
+      },
+      "utils": {
+        "title": "Utils"
+      }
+    }
+  }
+}

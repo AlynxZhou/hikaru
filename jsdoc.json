@@ -1,0 +1,13 @@
+{
+  "source": {
+    "include": ["hikaru/"]
+  },
+  "plugins": ["plugins/markdown"],
+  "opts": {
+    "template": "templates/default",
+    "encoding": "utf8",
+    "destination": "./docs/",
+    "recurse": true,
+    "verbose": true
+  }
+}

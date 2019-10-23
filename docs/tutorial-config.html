@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Tutorial: Config</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Tutorial: Config</h1>
+
+    <section>
+
+<header>
+    
+
+    <h2>Config</h2>
+</header>
+
+<article>
+    <h1>Site Config</h1>
+<h1>Site info</h1>
+<h2><code>title</code></h2>
+<p>Your site title.</p>
+<h2><code>subtitle</code></h2>
+<p>Your site subtitle.</p>
+<h2><code>description</code></h2>
+<p>Your site description.</p>
+<h2><code>author</code></h2>
+<p>Usually, this is your name or nickname.</p>
+<h2><code>email</code></h2>
+<p>Your email.</p>
+<h2><code>language</code></h2>
+<p>Your site's language, please refer to your theme for available options list. Hikaru does <strong>NOT</strong> support multi-lingual site. In fact only few people can write their site in different languages totally, most people do part of translation and makes their site a mess. It's more convenient to create two site with different languages, then you can arrange them by yourself. Multi-lingual site makes theme harder to write.</p>
+<p>Hikaru contains <strong>NO</strong> timezone settings, it use your system timezone.</p>
+<h1>Dir config</h1>
+<h2><code>baseURL</code></h2>
+<p>Your site's base URL, like <code>https://example.com</code>. <strong>Don't add trailing <code>/</code> to URL.</strong></p>
+<h2><code>rootDir</code></h2>
+<p>Your site's root dir, starts with <code>/</code> like UNIX path, and also end with a <code>/</code> to hint that it is a dir.</p>
+<p>For example, if you want to put your site in <code>https://example.com/blog/</code>, you can set it to <code>/blog/</code>, or if you create different sites with different languages, you can set it to <code>/en/</code> or <code>/zh_CN/</code>. If you don't need to put your site into a subdir, just set it to <code>/</code>.</p>
+<h2><code>srcDir</code></h2>
+<p>Your site's src dir, you can move <code>srcs/</code> to another name and change this.</p>
+<h2><code>docDir</code></h2>
+<p>Your site's doc dir, you can move <code>docs/</code> to another name and change this.</p>
+<h2><code>themeDir</code></h2>
+<p>Your site's theme, this is a sub dir relative to site dir, for example, you cloned <code>hikaru-theme-aria</code> to <code>themes/aria</code>, you need to set it to <code>themes/aria</code>.</p>
+<h2><code>indexDir</code></h2>
+<p>A dir to place your site's index sub page generated automatically by Hikaru (No source path), relative to <code>docDir</code>.</p>
+<h2><code>archiveDir</code></h2>
+<p>A dir to place your site's archive sub page generated automatically by Hikaru (No source path), relative to <code>docDir</code>.</p>
+<h2><code>categoryDir</code></h2>
+<p>A dir to place your site's category sub page generated automatically by Hikaru (No source path), relative to <code>docDir</code>.</p>
+<h2><code>tagDir</code></h2>
+<p>A dir to place your site's tag sub page generated automatically by Hikaru (No source path), relative to <code>docDir</code>.</p>
+<h1>Other options</h1>
+<h2><code>perPage</code></h2>
+<p>When paginating, how many posts in a single page. You can just set a number for all layout, or you can set it as an object to let different layout hold different number of posts.</p>
+<pre class="prettyprint source lang-yaml"><code># One for all.
+perPage: 10
+
+# Differs from layouts.
+perPage:
+  index: 10
+  archives: 15
+  category: 15
+  tag: 15
+</code></pre>
+<h2><code>skipRender</code></h2>
+<p>A list for files that won't be rendered, for example:</p>
+<pre class="prettyprint source lang-yaml"><code>skipRender:
+  - README.md
+  - EXAMPLE.md
+  - TOC.md
+</code></pre>
+<p>For different npm modules, you can set their options as their docs, and it will be passed when rendering.</p>
+</article>
+
+</section>
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Generator.html">Generator</a></li><li><a href="module-highlight.html">highlight</a></li><li><a href="module-Hikaru.html">Hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-Logger.html">Logger</a></li><li><a href="module-Processor.html">Processor</a></li><li><a href="module-Renderer.html">Renderer</a></li><li><a href="module-Router.html">Router</a></li><li><a href="module-Translator.html">Translator</a></li><li><a href="module-type.html">type</a></li><li><a href="module-utils.html">utils</a></li></ul><h3>Classes</h3><ul><li><a href="module-Generator-Generator.html">Generator</a></li><li><a href="module-Hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-Logger-Logger.html">Logger</a></li><li><a href="module-Processor-Processor.html">Processor</a></li><li><a href="module-Renderer-Renderer.html">Renderer</a></li><li><a href="module-Router-Router.html">Router</a></li><li><a href="module-Translator-Translator.html">Translator</a></li><li><a href="module-type-Category.html">Category</a></li><li><a href="module-type-File.html">File</a></li><li><a href="module-type-Site.html">Site</a></li><li><a href="module-type-Tag.html">Tag</a></li><li><a href="module-type-TOC.html">TOC</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Wed Oct 23 2019 12:51:21 GMT+0800 (China Standard Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
