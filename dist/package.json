@@ -2,7 +2,7 @@
   "name": "hikaru-site",
   "dependencies": {
     "hikaru-generator-feed": "^2.0.2",
-    "hikaru-generator-search": "^2.1.1",
+    "hikaru-generator-search": "^2.2.0",
     "hikaru-generator-sitemap": "^2.0.2"
   }
 }
