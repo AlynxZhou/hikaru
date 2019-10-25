@@ -73,7 +73,7 @@ class Translator {
       }
       for (const k of keys) {
         if (res[k] == null) {
-          // If not found, return original string.
+          // If not found, return original parameter.
           res = key
           break
         }

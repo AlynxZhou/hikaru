@@ -156,39 +156,12 @@ class Router {
 
   /**
    * @private
-   * @description Load language dynamically.
-   * @param {File} file
-   * @return {String} Loaded language name.
-   */
-  loadLanguage(file) {
-    const lang = file['language'] || this.site['siteConfig']['language']
-    if (!inside(this.translator.list(), lang)) {
-      try {
-        const language = yaml.safeLoad(fse.readFileSync(path.join(
-          this.site['siteConfig']['themeDir'], 'languages', `${lang}.yml`
-        )))
-        this.translator.register(lang, language)
-      } catch (error) {
-        if (error['code'] === 'ENOENT') {
-          this.logger.warn(
-            `Hikaru cannot find \`${
-              this.logger.blue(lang)
-            }\` language file in your theme.`
-          )
-        }
-      }
-    }
-    return lang
-  }
-
-  /**
-   * @private
    * @description Load context for template rendering.
    * @param {File} file
    * @return {File} File with context that can be used by template.
    */
   loadContext(file) {
-    const lang = this.loadLanguage(file)
+    const lang = file['language'] || this.site['siteConfig']['language']
     return Object.assign(new File(), file, {
       'site': this.site,
       'siteConfig': this.site['siteConfig'],

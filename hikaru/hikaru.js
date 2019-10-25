@@ -26,6 +26,7 @@ const {Site, File, Category, Tag} = types
 const highlight = require('./highlight')
 const utils = require('./utils')
 const {
+  inside,
   isArray,
   isString,
   isFunction,
@@ -187,7 +188,7 @@ class Hikaru {
    */
   async build(siteDir, configPath) {
     this.loadSite(siteDir, configPath)
-    this.loadModules()
+    await this.loadModules()
     this.loadPlugins()
     await this.loadScripts()
     process.on('unhandledRejection', (error) => {
@@ -216,7 +217,7 @@ class Hikaru {
       port = Number.parseInt(port)
     }
     this.loadSite(siteDir, configPath)
-    this.loadModules()
+    await this.loadModules()
     this.loadPlugins()
     await this.loadScripts()
     process.on('unhandledRejection', (error) => {
@@ -265,6 +266,9 @@ class Hikaru {
     siteConfig['themeSrcDir'] = path.join(
       siteConfig['themeDir'], 'srcs'
     )
+    siteConfig['themeLangDir'] = path.join(
+      siteConfig['themeDir'], 'languages'
+    )
     siteConfig['categoryDir'] = siteConfig['categoryDir'] || 'categories'
     siteConfig['tagDir'] = siteConfig['tagDir'] || 'tags'
     const themeConfigPath = path.join(this.site['siteDir'], 'themeConfig.yml')
@@ -284,7 +288,7 @@ class Hikaru {
    * @private
    * @description Load Hikaru's internal module.
    */
-  loadModules() {
+  async loadModules() {
     this.renderer = new Renderer(
       this.logger,
       this.site['siteConfig']['skipRender']
@@ -292,18 +296,6 @@ class Hikaru {
     this.processor = new Processor(this.logger)
     this.generator = new Generator(this.logger)
     this.translator = new Translator(this.logger)
-    try {
-      const defaultLanguage = yaml.safeLoad(fse.readFileSync(path.join(
-        this.site['siteConfig']['themeDir'], 'languages', 'default.yml'
-      ), 'utf8'))
-      this.translator.register('default', defaultLanguage)
-    } catch (error) {
-      if (error['code'] === 'ENOENT') {
-        this.logger.warn(
-          'Hikaru cannot find default language file in your theme!'
-        )
-      }
-    }
     this.router = new Router(
       this.logger,
       this.renderer,
@@ -314,6 +306,7 @@ class Hikaru {
     )
     try {
       this.registerInternalRenderers()
+      await this.registerInternalTranslators()
       this.registerInternalProcessors()
       this.registerInternalGenerators()
     } catch (error) {
@@ -488,6 +481,32 @@ class Hikaru {
         })
       })
     })
+  }
+
+  /**
+   * @private
+   */
+  async registerInternalTranslators() {
+    const ext = '.yml'
+    const filenames = await matchFiles(`*${ext}`, {
+      'nodir': true,
+      'dot': false,
+      'cwd': this.site['siteConfig']['themeLangDir']
+    })
+    if (!inside(filenames, `default${ext}`)) {
+      this.logger.warn(
+        'Hikaru cannot find default language file in your theme!'
+      )
+    }
+    for (const filename of filenames) {
+      const lang = path.basename(filename, ext)
+      const filepath = path.join(
+        this.site['siteConfig']['themeLangDir'],
+        filename
+      )
+      const language = yaml.safeLoad(fse.readFileSync(filepath, 'utf8'))
+      this.translator.register(lang, language)
+    }
   }
 
   /**
