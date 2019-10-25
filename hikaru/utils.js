@@ -313,14 +313,16 @@ const getPathFn = (rootDir = path.posix.sep) => {
     rootDir = path.posix.join(path.posix.sep, rootDir)
   }
   return (docPath = '') => {
-    if (docPath.endsWith('index.html')) {
-      docPath = docPath.substring(0, docPath.length - 'index.html'.length)
-    } else if (docPath.endsWith('index.htm')) {
-      docPath = docPath.substring(0, docPath.length - 'index.htm'.length)
+    // Handle link with query string or hash.
+    // Use assertion to prevent `?` and `#` to be removed.
+    const array = docPath.split(/(?=[?#])/)
+    array[0].replace(path.win32.sep, path.posix.sep)
+    if (array[0].endsWith('index.html')) {
+      array[0] = array[0].substring(0, array[0].length - 'index.html'.length)
+    } else if (array[0].endsWith('index.htm')) {
+      array[0] = array[0].substring(0, array[0].length - 'index.htm'.length)
     }
-    return encodeURI(path.posix.join(
-      rootDir, docPath.replace(path.win32.sep, path.posix.sep)
-    ))
+    return encodeURI(path.posix.join(rootDir, ...array))
   }
 }
 
