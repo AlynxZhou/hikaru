@@ -346,6 +346,7 @@ const getURLFn = (baseURL, rootDir = path.posix.sep) => {
 
 /**
  * @callback isCurrentPath
+ * @description This function does not care query string and hash.
  * @param {String} [testPath] Path needed to test.
  * @param {Boolean} [strict=false] If false, sub dir will return true.
  * @return {Boolean}
@@ -359,7 +360,7 @@ const getURLFn = (baseURL, rootDir = path.posix.sep) => {
 const isCurrentPathFn = (rootDir = path.posix.sep, currentPath = '') => {
   // Must join a '/' before resolve or it will join current site dir.
   const getPath = getPathFn(rootDir)
-  currentPath = getPath(currentPath)
+  currentPath = getPath(currentPath).split(/[?#]/)[0]
   const currentToken = path.posix.resolve(path.posix.join(
     path.posix.sep, currentPath.replace(path.win32.sep, path.posix.sep)
   )).split(path.posix.sep)
@@ -368,7 +369,7 @@ const isCurrentPathFn = (rootDir = path.posix.sep, currentPath = '') => {
       strict = testPath
       testPath = ''
     }
-    testPath = getPath(testPath)
+    testPath = getPath(testPath).split(/[?#]/)[0]
     if (currentPath === testPath) {
       return true
     }
