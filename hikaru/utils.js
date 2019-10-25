@@ -13,6 +13,7 @@ const moment = require('moment-timezone')
 const {File, Category, Tag, TOC} = require('./types')
 const pkg = require('../package.json')
 const extMIME = require('../dist/ext-mime.json')
+const uriSchemes = require('../dist/uri-schemes.json')
 
 /**
  * @description Returns true if `element` is in `array`.
@@ -210,6 +211,20 @@ const parseFrontMatter = (file) => {
  */
 const getContentType = (docPath) => {
   return extMIME[path.extname(docPath)] || 'application/octet-stream'
+}
+
+/**
+ * @description Detect whether a URL is absolute by schemes.
+ * @param {String} url
+ * @return {String} Detected scheme or null.
+ */
+const hasURIScheme = (url) => {
+  for (const scheme of uriSchemes) {
+    if (url.startsWith(scheme)) {
+      return scheme
+    }
+  }
+  return null
 }
 
 /**
@@ -611,9 +626,8 @@ const resolveLink = ($, baseURL, rootDir, docPath) => {
       $(a).attr('rel', 'noreferrer noopener')
     }
     if (
-      href.startsWith('https://') || href.startsWith('http://') ||
-      href.startsWith('//') || href.startsWith('/') ||
-      href.startsWith('javascript:') || href.startsWith('mailto:')
+      hasURIScheme(href) != null ||
+      href.startsWith('//') || href.startsWith('/')
     ) {
       return
     }
@@ -638,9 +652,8 @@ const resolveImage = ($, rootDir, docPath) => {
       return
     }
     if (
-      src.startsWith('https://') || src.startsWith('http://') ||
-      src.startsWith('//') || src.startsWith('/') ||
-      src.startsWith('data:image/')
+      hasURIScheme(src) != null ||
+      src.startsWith('//') || src.startsWith('/')
     ) {
       return
     }
@@ -694,6 +707,7 @@ module.exports = {
   removeControlChars,
   parseFrontMatter,
   getContentType,
+  hasURIScheme,
   paginate,
   sortCategories,
   paginateCategories,
