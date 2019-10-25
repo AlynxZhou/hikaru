@@ -13,7 +13,6 @@ const moment = require('moment-timezone')
 const {File, Category, Tag, TOC} = require('./types')
 const pkg = require('../package.json')
 const extMIME = require('../dist/ext-mime.json')
-const uriSchemes = require('../dist/uri-schemes.json')
 
 /**
  * @description Returns true if `element` is in `array`.
@@ -214,20 +213,6 @@ const getContentType = (docPath) => {
 }
 
 /**
- * @description Detect whether a URL is absolute by schemes.
- * @param {String} url
- * @return {String} Detected scheme or null.
- */
-const hasURIScheme = (url) => {
-  for (const scheme of uriSchemes) {
-    if (url.startsWith(scheme)) {
-      return scheme
-    }
-  }
-  return null
-}
-
-/**
  * @description Paginate page's posts.
  * @param {File} p Original page.
  * @param {File[]} posts Page related posts.
@@ -322,12 +307,12 @@ const paginateCategories = (category, parentPath, site, perPage = 10) => {
 const getPathFn = (rootDir = path.posix.sep) => {
   rootDir = rootDir.replace(path.win32.sep, path.posix.sep)
   if (!rootDir.endsWith(path.posix.sep)) {
-    rootDir = `${rootDir}${path.posix.sep}`
+    rootDir = path.posix.join(rootDir, path.posix.sep)
+  }
+  if (!path.posix.isAbsolute(rootDir)) {
+    rootDir = path.posix.join(path.posix.sep, rootDir)
   }
   return (docPath = '') => {
-    if (!path.posix.isAbsolute(rootDir)) {
-      rootDir = path.posix.join(path.posix.sep, rootDir)
-    }
     if (docPath.endsWith('index.html')) {
       docPath = docPath.substring(0, docPath.length - 'index.html'.length)
     } else if (docPath.endsWith('index.htm')) {
@@ -605,6 +590,20 @@ const genTOC = ($) => {
 }
 
 /**
+ * @description Get protocol of a URL.
+ * @param {String} url
+ * @return {String} If no protocol return null.
+ */
+const getURLProtocol = (url) => {
+  try {
+    // If no protocol in url, `URL()` will throw an error.
+    return new URL(url).protocol
+  } catch (error) {
+    return null
+  }
+}
+
+/**
  * @description Update site's internal link to absolute path,
  * and add attributes for external link.
  * @param {Object} $ Cheerio context.
@@ -621,19 +620,16 @@ const resolveLink = ($, baseURL, rootDir, docPath) => {
     if (href == null) {
       return
     }
-    if (new URL(href, baseURL).host !== getURL(docPath).host) {
+    // If `href` is a valid URL, `baseURL` will be ignored.
+    // So we can compare host for all links here.
+    if (new URL(href, baseURL).origin !== getURL(docPath).origin) {
       $(a).attr('target', '_blank')
       $(a).attr('rel', 'noreferrer noopener')
     }
-    if (
-      hasURIScheme(href) != null ||
-      href.startsWith('//') || href.startsWith('/')
-    ) {
-      return
+    // `path.posix.isAbsolute()` detects `/` or `//`.
+    if (!(path.posix.isAbsolute(href) || getURLProtocol(href) != null)) {
+      $(a).attr('href', getPath(path.join(path.dirname(docPath), href)))
     }
-    $(a).attr('href', getPath(path.join(
-      path.dirname(docPath), href
-    )))
   })
 }
 
@@ -651,15 +647,10 @@ const resolveImage = ($, rootDir, docPath) => {
     if (src == null) {
       return
     }
-    if (
-      hasURIScheme(src) != null ||
-      src.startsWith('//') || src.startsWith('/')
-    ) {
-      return
+    // `path.posix.isAbsolute()` detects `/` or `//`.
+    if (!(path.posix.isAbsolute(src) || getURLProtocol(src) != null)) {
+      $(e).attr('src', getPath(path.join(path.dirname(docPath), src)))
     }
-    $(e).attr('src', getPath(path.join(
-      path.dirname(docPath), src
-    )))
   })
 }
 
@@ -707,7 +698,6 @@ module.exports = {
   removeControlChars,
   parseFrontMatter,
   getContentType,
-  hasURIScheme,
   paginate,
   sortCategories,
   paginateCategories,
@@ -720,6 +710,7 @@ module.exports = {
   getFileLayout,
   isCurrentPathFn,
   resolveHeaderIDs,
+  getURLProtocol,
   resolveLink,
   resolveImage,
   genTOC,
