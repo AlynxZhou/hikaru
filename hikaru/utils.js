@@ -613,7 +613,7 @@ const resolveLink = ($, baseURL, rootDir, docPath) => {
     if (
       href.startsWith('https://') || href.startsWith('http://') ||
       href.startsWith('//') || href.startsWith('/') ||
-      href.startsWith('javascript:')
+      href.startsWith('javascript:') || href.startsWith('mailto:')
     ) {
       return
     }
@@ -640,7 +640,7 @@ const resolveImage = ($, rootDir, docPath) => {
     if (
       src.startsWith('https://') || src.startsWith('http://') ||
       src.startsWith('//') || src.startsWith('/') ||
-      src.startsWith('file:image')
+      src.startsWith('data:image/')
     ) {
       return
     }
