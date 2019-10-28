@@ -17,7 +17,7 @@ class Logger extends console.Console {
    * @param {Boolean} [opts.color=true] Enable colored output.
    * @param {Object} [opts.stdout=process.stdout]
    * @param {Object} [opts.stderr=process.stderr]
-   * @return {BotLogger}
+   * @return {Logger}
    */
   constructor(opts = {}) {
     super(
