@@ -1,7 +1,7 @@
 'use strict'
 
 /**
- * @module Router
+ * @module router
  */
 
 const fse = require('fs-extra')

@@ -1,7 +1,7 @@
 'use strict'
 
 /**
- * @module Processor
+ * @module processor
  */
 
 const {isFunction} = require('./utils')

@@ -37,44 +37,58 @@ const pkg = require('../package.json')
 const Hikaru = require('./hikaru')
 
 commander
-.version(pkg['version'])
+.version(pkg['version'], '-v, --version', 'Print version number.')
 .usage('&lt;subcommand> [options] [dir]')
 .description(pkg['description'])
+.helpOption('-h, --help', 'Print help infomation.')
 
 commander.command('init [dir]').alias('i')
 .description('Init a Hikaru site dir.')
-.option('-d, --debug', 'Print debug messages.')
+.option('-d, --debug', 'Enable debug output.')
+.option('-n, --no-color', 'Disable colored output.')
 .option('-c, --config &lt;yml>', 'Alternative site config path.')
-.action((dir, cmd) => {
-  new Hikaru(cmd['debug']).init(dir || '.', cmd['config'])
+.helpOption('-h, --help', 'Print help infomation.')
+.action((dir, opts) => {
+  new Hikaru(opts).init(dir || '.')
 })
 
 commander.command('clean [dir]').alias('c')
 .description('Clean built docs.')
-.option('-d, --debug', 'Print debug messages.')
+.option('-d, --debug', 'Enable debug output.')
+.option('-n, --no-color', 'Disable colored output.')
 .option('-c, --config &lt;yml>', 'Alternative site config path.')
-.action((dir, cmd) => {
-  new Hikaru(cmd['debug']).clean(dir || '.')
+.helpOption('-h, --help', 'Print help infomation.')
+.action((dir, opts) => {
+  new Hikaru(opts).clean(dir || '.')
 })
 
 commander.command('build [dir]').alias('b')
 .description('Build site.')
-.option('-d, --debug', 'Print debug messages.')
+.option('-d, --debug', 'Enable debug output.')
+.option('-n, --no-color', 'Disable colored output.')
 .option('-c, --config &lt;yml>', 'Alternative site config path.')
-.action((dir, cmd) => {
-  new Hikaru(cmd['debug']).build(dir || '.', cmd['config'])
+.helpOption('-h, --help', 'Print help infomation.')
+.action((dir, opts) => {
+  new Hikaru(opts).build(dir || '.')
 })
 
 commander.command('serve [dir]').alias('s')
 .description('Serve site.')
-.option('-d, --debug', 'Print debug messages.')
+.option('-d, --debug', 'Enable debug output.')
+.option('-n, --no-color', 'Disable colored output.')
 .option('-c, --config &lt;yml>', 'Alternative site config path.')
 .option('-i, --ip &lt;ip>', 'Alternative listening IP address.')
-.option('-p, --port &lt;port>', 'Alternative listening port.')
-.action((dir, cmd) => {
-  new Hikaru(cmd['debug']).serve(
-    dir || '.', cmd['config'], cmd['ip'], cmd['port']
-  )
+.option('-p, --port &lt;port>', 'Alternative listening port.', Number.parseInt)
+.helpOption('-h, --help', 'Print help infomation.')
+.action((dir, opts) => {
+  new Hikaru(opts).serve(dir || '.')
+})
+
+// Handle unknown commands.
+commander.on('command:*', () => {
+  console.error(`Invalid command: ${commander.args.join(' ')}`)
+  console.error('Run `hikaru --help` for a list of available commands.')
+  process.exit(1);
 })
 
 /**
@@ -94,13 +108,13 @@ module.exports = (argv = process.argv) => {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Generator.html">Generator</a></li><li><a href="module-highlight.html">highlight</a></li><li><a href="module-Hikaru.html">Hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-Logger.html">Logger</a></li><li><a href="module-Processor.html">Processor</a></li><li><a href="module-Renderer.html">Renderer</a></li><li><a href="module-Router.html">Router</a></li><li><a href="module-Translator.html">Translator</a></li><li><a href="module-type.html">type</a></li><li><a href="module-utils.html">utils</a></li></ul><h3>Classes</h3><ul><li><a href="module-Generator-Generator.html">Generator</a></li><li><a href="module-Hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-Logger-Logger.html">Logger</a></li><li><a href="module-Processor-Processor.html">Processor</a></li><li><a href="module-Renderer-Renderer.html">Renderer</a></li><li><a href="module-Router-Router.html">Router</a></li><li><a href="module-Translator-Translator.html">Translator</a></li><li><a href="module-type-Category.html">Category</a></li><li><a href="module-type-File.html">File</a></li><li><a href="module-type-Site.html">Site</a></li><li><a href="module-type-Tag.html">Tag</a></li><li><a href="module-type-TOC.html">TOC</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-generator.html">generator</a></li><li><a href="module-highlight.html">highlight</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li></ul><h3>Classes</h3><ul><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-types-TOC.html">TOC</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Fri Oct 25 2019 15:41:55 GMT+0800 (China Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Mon Oct 28 2019 11:40:28 GMT+0800 (China Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

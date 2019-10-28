@@ -1,7 +1,7 @@
 'use strict'
 
 /**
- * @module Hikaru
+ * @module hikaru
  */
 
 const fse = require('fs-extra')

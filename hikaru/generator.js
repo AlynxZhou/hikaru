@@ -1,7 +1,7 @@
 'use strict'
 
 /**
- * @module Generator
+ * @module generator
  */
 
 const {isArray, isFunction} = require('./utils')

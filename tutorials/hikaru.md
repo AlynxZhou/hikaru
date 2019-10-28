@@ -19,6 +19,10 @@ Many helper functions provided by Hikaru.
 
 A `Site` instance that stores all info of the site.
 
+# `Hikaru::opts`
+
+A Object that stores all `commander.js` options.
+
 # `Hikaru::router`
 
 A `Router` instance used by Hikaru, don't touch it.
@@ -35,6 +39,6 @@ A `Renderer` instance, you can register your renderer function to it.
 
 A `Processor` instance, you can register your processor function to it.
 
-# `Hikaru::Generator`
+# `Hikaru::generator`
 
 A `Generator` instance, you can register your generator function to it.

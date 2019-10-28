@@ -1,7 +1,7 @@
 'use strict'
 
 /**
- * @module Renderer
+ * @module renderer
  */
 
 const path = require('path')

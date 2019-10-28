@@ -1,7 +1,7 @@
 'use strict'
 
 /**
- * @module Logger
+ * @module logger
  */
 
 const {isFunction} = require('./utils')

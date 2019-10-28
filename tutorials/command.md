@@ -17,9 +17,10 @@ $ hikaru init|i [options] [dir]
 
 | Options                | Description                   |
 | :--------------------- | :---------------------------- |
-| `-d`, `--debug`        | Print debug messages.         |
+| `-d`, `--debug`        | Enable debug output.          |
+| `-n`, `--no-color`     | Disable colored output.       |
 | `-c`, `--config <yml>` | Alternative site config path. |
-| `-h`, `--help`         | output usage information      |
+| `-h`, `--help`         | Print help infomation.        |
 
 # `clean`
 
@@ -35,9 +36,10 @@ $ hikaru clean|c [options] [dir]
 
 | Options                | Description                   |
 | :--------------------- | :---------------------------- |
-| `-d`, `--debug`        | Print debug messages.         |
+| `-d`, `--debug`        | Enable debug output.          |
+| `-n`, `--no-color`     | Disable colored output.       |
 | `-c`, `--config <yml>` | Alternative site config path. |
-| `-h`, `--help`         | output usage information      |
+| `-h`, `--help`         | Print help infomation.        |
 
 # `build`
 
@@ -53,9 +55,10 @@ $ hikaru build|b [options] [dir]
 
 | Options                | Description                   |
 | :--------------------- | :---------------------------- |
-| `-d`, `--debug`        | Print debug messages.         |
+| `-d`, `--debug`        | Enable debug output.          |
+| `-n`, `--no-color`     | Disable colored output.       |
 | `-c`, `--config <yml>` | Alternative site config path. |
-| `-h`, `--help`         | output usage information      |
+| `-h`, `--help`         | Print help infomation.        |
 
 # `serve`
 
@@ -71,8 +74,9 @@ $ hikaru serve|s [options] [dir]
 
 | Options                | Description                            |
 | :--------------------- | :------------------------------------- |
-| `-d`, `--debug`        | Print debug messages.                  |
+| `-d`, `--debug`        | Enable debug output.                   |
+| `-n`, `--no-color`     | Disable colored output.                |
 | `-c`, `--config <yml>` | Alternative site config path.          |
 | `-i`, `--ip <ip>`      | Alternative listening IP address.      |
 | `-p`, `--port <port>`  | Alternative listening port.            |
-| `-h`, `--help`         | output usage information               |
+| `-h`, `--help`         | Print help infomation.                 |

@@ -29,7 +29,7 @@
 <header>
     
         <h2><span class="attribs"><span class="type-signature"></span></span>
-            <span class="ancestors"><a href="module-Hikaru.html">Hikaru</a>~</span>Hikaru<span class="signature">(isDebug<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Hikaru}</span></h2>
+            <span class="ancestors"><a href="module-Hikaru.html">Hikaru</a>~</span>Hikaru<span class="signature">(opts<span class="signature-attributes">opt</span>, debug<span class="signature-attributes">opt</span>, color<span class="signature-attributes">opt</span>, config<span class="signature-attributes">opt</span>, ip<span class="signature-attributes">opt</span>, port<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Hikaru}</span></h2>
         
     
 </header>
@@ -42,7 +42,7 @@
     
 
     
-    <h4 class="name" id="Hikaru"><span class="type-signature"></span>new Hikaru<span class="signature">(isDebug<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Hikaru}</span></h4>
+    <h4 class="name" id="Hikaru"><span class="type-signature"></span>new Hikaru<span class="signature">(opts<span class="signature-attributes">opt</span>, debug<span class="signature-attributes">opt</span>, color<span class="signature-attributes">opt</span>, config<span class="signature-attributes">opt</span>, ip<span class="signature-attributes">opt</span>, port<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Hikaru}</span></h4>
     
 
     
@@ -90,7 +90,44 @@
 
         <tr>
             
-                <td class="name"><code>isDebug</code></td>
+                <td class="name"><code>opts</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>debug</code></td>
             
 
             <td class="type">
@@ -122,7 +159,161 @@
                 </td>
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>Enable debug output for logger.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>color</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last"><p>Enable colored output for logger.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>config</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                </td>
+            
+
+            <td class="description last"><p>Alternative site config path.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>ip</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    localhost
+                
+                </td>
+            
+
+            <td class="description last"><p>Alternative listening IP address for router.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>port</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Number</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    2333
+                
+                </td>
+            
+
+            <td class="description last"><p>Alternative listening port for router.</p></td>
         </tr>
 
     
@@ -321,6 +512,29 @@
 
         <tr>
             
+                <td class="name"><code>opts</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
                 <td class="name"><code>site</code></td>
             
 
@@ -376,7 +590,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="hikaru.js.html">hikaru.js</a>, <a href="hikaru.js.html#line66">line 66</a>
+        <a href="hikaru.js.html">hikaru.js</a>, <a href="hikaru.js.html#line72">line 72</a>
     </li></ul></dd>
     
 
@@ -450,7 +664,7 @@
     
 
     
-    <h4 class="name" id="build"><span class="type-signature">(async) </span>build<span class="signature">(siteDir, configPath<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="build"><span class="type-signature">(async) </span>build<span class="signature">(siteDir)</span><span class="type-signature"></span></h4>
     
 
     
@@ -482,8 +696,6 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
         
 
@@ -509,51 +721,10 @@
             </td>
 
             
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
 
             
 
             <td class="description last"><p>Working site dir.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>configPath</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>Alternative config file path.</p></td>
         </tr>
 
     
@@ -594,7 +765,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="hikaru.js.html">hikaru.js</a>, <a href="hikaru.js.html#line189">line 189</a>
+        <a href="hikaru.js.html">hikaru.js</a>, <a href="hikaru.js.html#line197">line 197</a>
     </li></ul></dd>
     
 
@@ -630,7 +801,7 @@
     
 
     
-    <h4 class="name" id="clean"><span class="type-signature"></span>clean<span class="signature">(siteDir, configPath<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="clean"><span class="type-signature"></span>clean<span class="signature">(siteDir)</span><span class="type-signature"></span></h4>
     
 
     
@@ -662,8 +833,6 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
         
 
@@ -689,51 +858,10 @@
             </td>
 
             
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
 
             
 
             <td class="description last"><p>Working site dir.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>configPath</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>Alternative config file path.</p></td>
         </tr>
 
     
@@ -774,7 +902,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="hikaru.js.html">hikaru.js</a>, <a href="hikaru.js.html#line143">line 143</a>
+        <a href="hikaru.js.html">hikaru.js</a>, <a href="hikaru.js.html#line150">line 150</a>
     </li></ul></dd>
     
 
@@ -810,7 +938,7 @@
     
 
     
-    <h4 class="name" id="init"><span class="type-signature"></span>init<span class="signature">(siteDir, configPath<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="init"><span class="type-signature"></span>init<span class="signature">(siteDir)</span><span class="type-signature"></span></h4>
     
 
     
@@ -842,8 +970,6 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
         
 
@@ -869,51 +995,10 @@
             </td>
 
             
-                <td class="attributes">
-                
-
-                
-
-                
-                </td>
-            
 
             
 
             <td class="description last"><p>Working site dir.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>configPath</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-
-            <td class="description last"><p>Alternative config file path.</p></td>
         </tr>
 
     
@@ -954,7 +1039,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="hikaru.js.html">hikaru.js</a>, <a href="hikaru.js.html#line93">line 93</a>
+        <a href="hikaru.js.html">hikaru.js</a>, <a href="hikaru.js.html#line98">line 98</a>
     </li></ul></dd>
     
 
@@ -990,7 +1075,7 @@
     
 
     
-    <h4 class="name" id="serve"><span class="type-signature">(async) </span>serve<span class="signature">(siteDir, configPath<span class="signature-attributes">opt</span>, ip<span class="signature-attributes">opt</span>, port<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="serve"><span class="type-signature">(async) </span>serve<span class="signature">(siteDir)</span><span class="type-signature"></span></h4>
     
 
     
@@ -1022,11 +1107,7 @@
         <th>Type</th>
 
         
-        <th>Attributes</th>
-        
 
-        
-        <th>Default</th>
         
 
         <th class="last">Description</th>
@@ -1051,137 +1132,10 @@
             </td>
 
             
-                <td class="attributes">
-                
 
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
             
 
             <td class="description last"><p>Working site dir.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>configPath</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                </td>
-            
-
-            <td class="description last"><p>Alternative config file path.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>ip</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    localhost
-                
-                </td>
-            
-
-            <td class="description last"><p>Alternative listening IP address.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>port</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Number</span>
-
-
-            
-            </td>
-
-            
-                <td class="attributes">
-                
-                    &lt;optional><br>
-                
-
-                
-
-                
-                </td>
-            
-
-            
-                <td class="default">
-                
-                    2333
-                
-                </td>
-            
-
-            <td class="description last"><p>Alternative listening port.</p></td>
         </tr>
 
     
@@ -1222,7 +1176,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="hikaru.js.html">hikaru.js</a>, <a href="hikaru.js.html#line215">line 215</a>
+        <a href="hikaru.js.html">hikaru.js</a>, <a href="hikaru.js.html#line220">line 220</a>
     </li></ul></dd>
     
 
@@ -1274,7 +1228,7 @@
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Fri Oct 25 2019 15:41:55 GMT+0800 (China Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Mon Oct 28 2019 11:38:25 GMT+0800 (China Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

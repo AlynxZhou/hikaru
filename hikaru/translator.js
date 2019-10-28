@@ -1,7 +1,7 @@
 'use strict'
 
 /**
- * @module Translator
+ * @module translator
  */
 
 const {format} = require('util')
