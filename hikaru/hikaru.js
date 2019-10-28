@@ -52,7 +52,12 @@ const {
  */
 class Hikaru {
   /**
-   * @param {Boolean} [isDebug=false]
+   * @param {Object} [opts]
+   * @param {Boolean} [debug=false] Enable debug output for logger.
+   * @param {Boolean} [color=true] Enable colored output for logger.
+   * @param {String} [config] Alternative site config path.
+   * @param {String} [ip=localhost] Alternative listening IP address for router.
+   * @param {Number} [port=2333] Alternative listening port for router.
    * @property {Logger} logger
    * @property {Renderer} renderer
    * @property {Processor} processor
@@ -60,12 +65,13 @@ class Hikaru {
    * @property {Translator} translator
    * @property {Object} types
    * @property {Object} utils
+   * @property {Object} opts
    * @property {Site} site
    * @return {Hikaru}
    */
-  constructor(isDebug = false) {
-    this.isDebug = isDebug
-    this.logger = new Logger(this.isDebug)
+  constructor(opts = {}) {
+    this.opts = opts
+    this.logger = new Logger(this.opts)
     this.logger.debug('Hikaru is starting...')
     this.types = types
     this.utils = utils
@@ -88,12 +94,14 @@ class Hikaru {
   /**
    * @description Create a Hikaru site dir with needed files.
    * @param {String} siteDir Working site dir.
-   * @param {String} [configPath] Alternative config file path.
    */
-  init(siteDir, configPath) {
+  init(siteDir) {
+    const configPath = this.opts['config'] || path.join(
+      siteDir, 'siteConfig.yml'
+    )
     return fse.mkdirp(siteDir).then(() => {
       this.logger.debug(`Hikaru is copying \`${
-        this.logger.cyan(configPath || path.join(siteDir, 'siteConfig.yml'))
+        this.logger.cyan(configPath)
       }\`...`)
       this.logger.debug(`Hikaru is copying \`${
         this.logger.cyan(path.join(siteDir, 'package.json'))
@@ -138,10 +146,11 @@ class Hikaru {
   /**
    * @description Clean a Hikaru site's built docs.
    * @param {String} siteDir Working site dir.
-   * @param {String} [configPath] Alternative config file path.
    */
-  clean(siteDir, configPath) {
-    configPath = configPath || path.join(siteDir, 'siteConfig.yml')
+  clean(siteDir) {
+    const configPath = this.opts['config'] || path.join(
+      siteDir, 'siteConfig.yml'
+    )
     let siteConfig
     try {
       siteConfig = yaml.safeLoad(fse.readFileSync(configPath, 'utf8'))
@@ -184,10 +193,9 @@ class Hikaru {
   /**
    * @description Build and write docs from srcs.
    * @param {String} siteDir Working site dir.
-   * @param {String} [configPath] Alternative config file path.
    */
-  async build(siteDir, configPath) {
-    this.loadSite(siteDir, configPath)
+  async build(siteDir) {
+    this.loadSite(siteDir, this.opts['config'])
     await this.loadModules()
     this.loadPlugins()
     await this.loadScripts()
@@ -208,15 +216,11 @@ class Hikaru {
   /**
    * @description Build and serve docs with a HTTP server from srcs.
    * @param {String} siteDir Working site dir.
-   * @param {String} [configPath] Alternative config file path.
-   * @param {String} [ip=localhost] Alternative listening IP address.
-   * @param {Number} [port=2333] Alternative listening port.
    */
-  async serve(siteDir, configPath, ip = 'localhost', port = 2333) {
-    if (isString(port)) {
-      port = Number.parseInt(port)
-    }
-    this.loadSite(siteDir, configPath)
+  async serve(siteDir) {
+    const ip = this.opts['ip'] || 'localhost'
+    const port = this.opts['port'] || 2333
+    this.loadSite(siteDir, this.opts['config'])
     await this.loadModules()
     this.loadPlugins()
     await this.loadScripts()
@@ -349,6 +353,7 @@ class Hikaru {
         'translator': this.translator,
         'types': this.types,
         'utils': this.utils,
+        'opts': this.opts,
         'site': this.site
       })
     })
@@ -384,6 +389,7 @@ class Hikaru {
         'translator': this.translator,
         'types': this.types,
         'utils': this.utils,
+        'opts': this.opts,
         'site': this.site
       })
     })
