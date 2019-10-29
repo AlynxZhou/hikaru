@@ -10,10 +10,10 @@ A page usually is a Markdown file which has a YAML front matter and a Markdown c
 ```markdown
 ---
 title: Your page title
-createdTime: 2018-08-08 09:27:00        # key `date` also works but `createdTime` is recommended now
-#updatedTime: 2019-01-01 19:07:00   # Typically you can ignore this because Hikaru will read modified time from your filesystem.
+createdDate: 2018-08-08 09:27:00        # key `createdTime` also works but `createdDate` is recommended now
+#updatedDate: 2019-01-01 19:07:00   # Typically you can ignore this because Hikaru will read modified time from your filesystem.
 layout: post
-#zone: Asia/Tokyo   # If `createdTime`'s timezone is not the same as your local zone, set here.
+#zone: Asia/Tokyo   # If `createdDate`'s timezone is not the same as your local zone, set here.
 ---
 Text before more will become excerpt.
 
