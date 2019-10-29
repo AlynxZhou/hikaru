@@ -158,17 +158,17 @@ const parseFrontMatter = (file) => {
       file['srcDir'], file['srcPath']
     ))['mtime']
     // JS Date already have timezone so we convert it.
-    file['updateMoment'] = moment.tz(
+    file['updatedMoment'] = moment.tz(
       file['updatedDate'],
       file['zone'] || moment.tz.guess()
     )
   } else {
     // String does not have timezone so we add it.
-    file['updateMoment'] = moment.tz(
+    file['updatedMoment'] = moment.tz(
       file['updatedDate'],
       file['zone'] || moment.tz.guess()
     )
-    file['updatedDate'] = file['updateMoment'].toDate()
+    file['updatedDate'] = file['updatedMoment'].toDate()
   }
   if (file['createdDate'] == null) {
     file['createdDate'] = file['updatedDate']
