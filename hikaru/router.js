@@ -6,7 +6,7 @@
 
 const fse = require('fs-extra')
 const path = require('path')
-const yaml = require('js-yaml')
+const YAML = require('yaml')
 const http = require('http')
 const moment = require('moment-timezone')
 const chokidar = require('chokidar')
@@ -59,7 +59,6 @@ class Router {
       this.site['siteConfig']['baseURL'], this.site['siteConfig']['rootDir']
     )
     this.getPath = getPathFn(this.site['siteConfig']['rootDir'])
-    moment.locale(this.site['siteConfig']['language'])
   }
 
   /**
@@ -167,6 +166,7 @@ class Router {
       'siteConfig': this.site['siteConfig'],
       'themeConfig': this.site['themeConfig'],
       'moment': moment,
+      'momenttz': moment.tz,
       'getVersion': getVersion,
       'getURL': this.getURL,
       'getPath': this.getPath,
@@ -258,7 +258,7 @@ class Router {
             // Not found.
             this.watchedEvents.push({event, srcDir, srcPath})
           }
-          setImmediate(this.handleEvents)
+          setImmediate(this.handleEvents.bind(this))
         })
       }
     }
@@ -295,7 +295,7 @@ class Router {
           delSite(this.site, key, file)
         }
       } else {
-        file = await this.loadFile(file)
+        await this.loadFile(file)
       }
     }
     await this.handle()

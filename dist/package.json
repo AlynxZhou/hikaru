@@ -1,8 +1,8 @@
 {
   "name": "hikaru-site",
   "dependencies": {
-    "hikaru-generator-feed": "^2.0.2",
+    "hikaru-generator-feed": "^2.0.3",
     "hikaru-generator-search": "^2.2.0",
-    "hikaru-generator-sitemap": "^2.0.2"
+    "hikaru-generator-sitemap": "^2.0.3"
   }
 }

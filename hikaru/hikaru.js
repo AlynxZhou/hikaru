@@ -9,7 +9,7 @@ const path = require('path')
 const {URL} = require('url')
 const cheerio = require('cheerio')
 
-const yaml = require('js-yaml')
+const YAML = require('yaml')
 const nunjucks = require('nunjucks')
 const marked = require('marked')
 const stylus = require('stylus')
@@ -153,7 +153,7 @@ class Hikaru {
     )
     let siteConfig
     try {
-      siteConfig = yaml.safeLoad(fse.readFileSync(configPath, 'utf8'))
+      siteConfig = YAML.parse(fse.readFileSync(configPath, 'utf8'))
     } catch (error) {
       this.logger.warn('Hikaru cannot find site config!')
       this.logger.error(error)
@@ -199,6 +199,7 @@ class Hikaru {
     await this.loadModules()
     this.loadPlugins()
     await this.loadScripts()
+    await this.loadLanguages()
     process.on('unhandledRejection', (error) => {
       this.logger.warn('Hikaru catched some error during building!')
       this.logger.error(error)
@@ -224,6 +225,7 @@ class Hikaru {
     await this.loadModules()
     this.loadPlugins()
     await this.loadScripts()
+    await this.loadLanguages()
     process.on('unhandledRejection', (error) => {
       this.logger.warn('Hikaru catched some error during serving!')
       this.logger.error(error)
@@ -249,9 +251,7 @@ class Hikaru {
       'siteConfig.yml'
     )
     try {
-      this.site['siteConfig'] = yaml.safeLoad(
-        fse.readFileSync(configPath, 'utf8')
-      )
+      this.site['siteConfig'] = YAML.parse(fse.readFileSync(configPath, 'utf8'))
     } catch (error) {
       this.logger.warn('Hikaru cannot find site config!')
       this.logger.error(error)
@@ -277,7 +277,7 @@ class Hikaru {
     siteConfig['tagDir'] = siteConfig['tagDir'] || 'tags'
     const themeConfigPath = path.join(this.site['siteDir'], 'themeConfig.yml')
     try {
-      this.site['themeConfig'] = yaml.safeLoad(
+      this.site['themeConfig'] = YAML.parse(
         fse.readFileSync(themeConfigPath, 'utf8')
       )
     } catch (error) {
@@ -310,7 +310,6 @@ class Hikaru {
     )
     try {
       this.registerInternalRenderers()
-      await this.registerInternalTranslators()
       this.registerInternalProcessors()
       this.registerInternalGenerators()
     } catch (error) {
@@ -393,6 +392,35 @@ class Hikaru {
         'site': this.site
       })
     })
+  }
+
+  /**
+   * @private
+   */
+  async loadLanguages() {
+    const ext = '.yml'
+    const filenames = await matchFiles(`*${ext}`, {
+      'nodir': true,
+      'dot': false,
+      'cwd': this.site['siteConfig']['themeLangDir']
+    })
+    if (!inside(filenames, `default${ext}`)) {
+      this.logger.warn(
+        'Hikaru cannot find default language file in your theme!'
+      )
+    }
+    for (const filename of filenames) {
+      const lang = path.basename(filename, ext)
+      const filepath = path.join(
+        this.site['siteConfig']['themeLangDir'],
+        filename
+      )
+      this.logger.debug(`Hikaru is loading language \`${
+        this.logger.blue(lang)
+      }\`...`)
+      const language = YAML.parse(fse.readFileSync(filepath, 'utf8'))
+      this.translator.register(lang, language)
+    }
   }
 
   /**
@@ -492,36 +520,10 @@ class Hikaru {
   /**
    * @private
    */
-  async registerInternalTranslators() {
-    const ext = '.yml'
-    const filenames = await matchFiles(`*${ext}`, {
-      'nodir': true,
-      'dot': false,
-      'cwd': this.site['siteConfig']['themeLangDir']
-    })
-    if (!inside(filenames, `default${ext}`)) {
-      this.logger.warn(
-        'Hikaru cannot find default language file in your theme!'
-      )
-    }
-    for (const filename of filenames) {
-      const lang = path.basename(filename, ext)
-      const filepath = path.join(
-        this.site['siteConfig']['themeLangDir'],
-        filename
-      )
-      const language = yaml.safeLoad(fse.readFileSync(filepath, 'utf8'))
-      this.translator.register(lang, language)
-    }
-  }
-
-  /**
-   * @private
-   */
   registerInternalProcessors() {
     this.processor.register('post sequence', (site) => {
       site['posts'].sort((a, b) => {
-        return -(a['createdTime'] - b['createdTime'])
+        return -(a['createdDate'] - b['createdDate'])
       })
       for (let i = 0; i < site['posts'].length; ++i) {
         if (i > 0) {
