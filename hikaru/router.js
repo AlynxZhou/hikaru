@@ -17,6 +17,7 @@ const {
   isString,
   isFunction,
   isObject,
+  isBinary,
   default404,
   matchFiles,
   getVersion,
@@ -39,15 +40,17 @@ class Router {
    * @param {Renderer} renderer
    * @param {Processor} processor
    * @param {Generator} generator
+   * @param {Decorator} decorator
    * @param {Translator} translator
    * @param {Site} site
    * @return {Router}
    */
-  constructor(logger, renderer, processor, generator, translator, site) {
+  constructor(logger, renderer, processor, generator, decorator, translator, site) {
     this.logger = logger
     this.renderer = renderer
     this.processor = processor
     this.generator = generator
+    this.decorator = decorator
     this.translator = translator
     this.site = site
     this._ = {}
@@ -101,27 +104,14 @@ class Router {
     this.logger.debug(`Hikaru is reading \`${
       this.logger.cyan(path.join(file['srcDir'], file['srcPath']))
     }\`...`)
-    let raw = await this.read(path.join(file['srcDir'], file['srcPath']))
-    // Auto detect if a file is a binary file or a UTF-8 encoding text file.
-    file['isBinary'] = true
-    if (raw.equals(Buffer.from(raw.toString('utf8'), 'utf8'))) {
-      raw = raw.toString('utf8')
-      file['isBinary'] = false
-    }
-    file['raw'] = raw
-    file['text'] = raw
-    // Theme sources do not have front-matter.
-    if (file['srcDir'] === this.site['siteConfig']['srcDir']) {
-      file = parseFrontMatter(file)
-    }
+    const raw = await this.read(path.join(file['srcDir'], file['srcPath']))
+    file['isBinary'] = isBinary(raw)
+    file['raw'] = file['isBinary'] ? raw : raw.toString('utf8')
+    file['text'] = file['raw']
+    file = parseFrontMatter(file)
     const results = await Promise.all(this.renderer.render(file))
     for (const result of results) {
-      if (isFunction(result['content'])) {
-        result['type'] = 'template'
-        this.site['templates'][path.basename(
-          result['srcPath'], path.extname(result['srcPath'])
-        )] = result['content']
-      } else if (result['layout'] === 'post') {
+      if (result['layout'] === 'post') {
         result['type'] = 'post'
         putSite(this.site, 'posts', result)
       } else if (result['layout'] != null) {
@@ -143,14 +133,10 @@ class Router {
     this.logger.debug(`Hikaru is writing \`${
       this.logger.cyan(path.join(file['docDir'], file['docPath']))
     }\`...`)
-    const layout = getFileLayout(file, Object.keys(this.site['templates']))
-    if (layout != null) {
-      this.write(
-        file, await this.site['templates'][layout](this.loadContext(file))
-      )
-    } else {
-      this.write(file, file['content'])
-    }
+    this.write(
+      file,
+      await this.decorator.decorate(file, this.loadContext(file))
+    )
   }
 
   /**
@@ -161,7 +147,7 @@ class Router {
    */
   loadContext(file) {
     const lang = file['language'] || this.site['siteConfig']['language']
-    return Object.assign(new File(), file, {
+    return {
       'site': this.site,
       'siteConfig': this.site['siteConfig'],
       'themeConfig': this.site['themeConfig'],
@@ -178,7 +164,7 @@ class Router {
       'isFunction': isFunction,
       'isObject': isObject,
       '__': this.translator.getTranslateFn(lang)
-    })
+    }
   }
 
   /**
@@ -187,9 +173,9 @@ class Router {
    * @return {Promise<File[]>}
    */
   async matchAll() {
-    return (await matchFiles(path.join('**', '*'), {
+    return (await matchFiles(path.join('*', '*'), {
       'nodir': true,
-      'dot': true,
+      'dot': false,
       'cwd': this.site['siteConfig']['themeSrcDir']
     })).map((srcPath) => {
       return new File(
@@ -318,31 +304,26 @@ class Router {
     const server = http.createServer(async (request, response) => {
       // Remove query string.
       const url = request['url'].split(/[?#]/)[0]
-      let res
+      let file
       if (this._[url] == null) {
         this.logger.log(`404: ${url}`)
-        res = this._[this.getPath('404.html')] || new File({
+        file = this._[this.getPath('404.html')] || new File({
           'content': default404,
           'docPath': this.getPath('404.html')
         })
         response.writeHead(404, {
-          'Content-Type': getContentType(res['docPath'])
+          'Content-Type': getContentType(file['docPath'])
         })
       } else {
         this.logger.log(`200: ${url}`)
-        res = this._[url]
+        file = this._[url]
         response.writeHead(200, {
-          'Content-Type': getContentType(res['docPath'])
+          'Content-Type': getContentType(file['docPath'])
         })
       }
-      const layout = getFileLayout(res, Object.keys(this.site['templates']))
-      if (layout != null) {
-        response.write(
-          await this.site['templates'][layout](this.loadContext(res))
-        )
-      } else {
-        response.write(res['content'])
-      }
+      response.write(
+        await this.decorator.decorate(file, this.loadContext(file))
+      )
       response.end()
     })
     process.prependListener('exit', () => {
@@ -370,7 +351,7 @@ class Router {
    * @description Handle all processor and generator.
    */
   async handle() {
-    this.site = await this.processor.process(this.site)
+    await this.processor.process(this.site)
     this.site['files'] = await this.generator.generate(this.site)
   }
 

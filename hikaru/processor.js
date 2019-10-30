@@ -46,9 +46,8 @@ class Processor {
       this.logger.debug(`Hikaru is processing \`${
         this.logger.blue(name)
       }\`...`)
-      site = await fn(site)
+      await fn(site)
     }
-    return site
   }
 }
 

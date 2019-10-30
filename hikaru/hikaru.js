@@ -19,6 +19,7 @@ const Logger = require('./logger')
 const Renderer = require('./renderer')
 const Processor = require('./processor')
 const Generator = require('./generator')
+const Decorator = require('./decorator')
 const Translator = require('./translator')
 const Router = require('./router')
 const types = require('./types')
@@ -62,6 +63,7 @@ class Hikaru {
    * @property {Renderer} renderer
    * @property {Processor} processor
    * @property {Generator} generator
+   * @property {Decorator} decorator
    * @property {Translator} translator
    * @property {Object} types
    * @property {Object} utils
@@ -200,6 +202,7 @@ class Hikaru {
     this.loadPlugins()
     await this.loadScripts()
     await this.loadLanguages()
+    await this.loadLayouts()
     process.on('unhandledRejection', (error) => {
       this.logger.warn('Hikaru catched some error during building!')
       this.logger.error(error)
@@ -226,6 +229,7 @@ class Hikaru {
     this.loadPlugins()
     await this.loadScripts()
     await this.loadLanguages()
+    await this.loadLayouts()
     process.on('unhandledRejection', (error) => {
       this.logger.warn('Hikaru catched some error during serving!')
       this.logger.error(error)
@@ -299,24 +303,20 @@ class Hikaru {
     )
     this.processor = new Processor(this.logger)
     this.generator = new Generator(this.logger)
+    this.decorator = new Decorator(this.logger)
     this.translator = new Translator(this.logger)
     this.router = new Router(
       this.logger,
       this.renderer,
       this.processor,
       this.generator,
+      this.decorator,
       this.translator,
       this.site
     )
-    try {
-      this.registerInternalRenderers()
-      this.registerInternalProcessors()
-      this.registerInternalGenerators()
-    } catch (error) {
-      this.logger.warn('Hikaru cannot register internal functions!')
-      this.logger.error(error)
-      process.exit(-2)
-    }
+    this.registerInternalRenderers()
+    this.registerInternalProcessors()
+    this.registerInternalGenerators()
   }
 
   /**
@@ -349,6 +349,7 @@ class Hikaru {
         'renderer': this.renderer,
         'processor': this.processor,
         'generator': this.generator,
+        'decorator': this.decorator,
         'translator': this.translator,
         'types': this.types,
         'utils': this.utils,
@@ -385,6 +386,7 @@ class Hikaru {
         'renderer': this.renderer,
         'processor': this.processor,
         'generator': this.generator,
+        'decorator': this.decorator,
         'translator': this.translator,
         'types': this.types,
         'utils': this.utils,
@@ -420,6 +422,32 @@ class Hikaru {
       }\`...`)
       const language = YAML.parse(fse.readFileSync(filepath, 'utf8'))
       this.translator.register(lang, language)
+    }
+  }
+
+  /**
+   * @private
+   */
+  async loadLayouts() {
+    const filenames = await matchFiles(`*`, {
+      'nodir': true,
+      'dot': false,
+      'cwd': this.site['siteConfig']['themeSrcDir']
+    })
+    for (const filename of filenames) {
+      const ext = path.extname(filename)
+      const layout = path.basename(filename, ext)
+      this.logger.debug(`Hikaru is loading layout \`${
+        this.logger.blue(layout)
+      }\`...`)
+      const filepath = path.join(
+        this.site['siteConfig']['themeSrcDir'],
+        filename
+      )
+      const fileContent = await fse.readFile(filepath, 'utf8')
+      this.decorator.register(layout, await this.renderer.render(
+        new File({'srcPath': filename, 'text': fileContent})
+      )[0]['content'])
     }
   }
 
@@ -533,21 +561,18 @@ class Hikaru {
           site['posts'][i]['prev'] = site['posts'][i + 1]
         }
       }
-      return site
     })
 
     this.processor.register('categories collection', (site) => {
       const result = genCategories(site['posts'])
       site['categories'] = result['categories']
       site['categoriesLength'] = result['categoriesLength']
-      return site
     })
 
     this.processor.register('tags collection', (site) => {
       const result = genTags(site['posts'])
       site['tags'] = result['tags']
       site['tagsLength'] = result['tagsLength']
-      return site
     })
 
     this.processor.register('toc and link resolving', (site) => {
@@ -575,7 +600,6 @@ class Hikaru {
           p['content'] = split.join('<a id=\'more\'></a>')
         }
       }
-      return site
     })
   }
 

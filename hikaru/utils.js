@@ -65,6 +65,14 @@ const isBuffer = (o) => {
 }
 
 /**
+ * @param {Buffer} b
+ * @return {Boolean}
+ */
+const isBinary = (b) => {
+  return isBuffer(b) && !b.equals(Buffer.from(b.toString('utf8'), 'utf8'))
+}
+
+/**
  * @description Escape HTML chars.
  * @param {String} str
  * @return {String} Escaped HTML string.
@@ -506,22 +514,6 @@ const delSite = (site, key, file) => {
 }
 
 /**
- * @description Get simpified layout for file.
- * @param {File} file
- * @param {String[]} available If not in available, fallback to `page`.
- * @return {String}
- */
-const getFileLayout = (file, available) => {
-  if (file['layout'] == null) {
-    return null
-  }
-  if (!inside(available, file['layout'])) {
-    return 'page'
-  }
-  return file['layout']
-}
-
-/**
  * @description Update headers' ID for bootstrap scrollspy.
  * @param {Object} $ Cheerio context.
  */
@@ -678,6 +670,7 @@ module.exports = {
   isFunction,
   isObject,
   isBuffer,
+  isBinary,
   escapeHTML,
   matchFiles,
   removeControlChars,
@@ -692,7 +685,6 @@ module.exports = {
   genTags,
   putSite,
   delSite,
-  getFileLayout,
   isCurrentPathFn,
   resolveHeaderIDs,
   getURLProtocol,

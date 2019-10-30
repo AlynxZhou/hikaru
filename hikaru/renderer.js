@@ -82,9 +82,9 @@ class Renderer {
     } else {
       const output = new File(input)
       output['docPath'] = output['srcPath']
-      this.logger.debug(`Hikaru is rendering \`${
-        this.logger.cyan(output['srcPath'])
-      }\`...`)
+      // this.logger.debug(`Hikaru is rendering \`${
+      //   this.logger.cyan(output['srcPath'])
+      // }\`...`)
       output['content'] = output['raw']
       results.push(output)
     }
