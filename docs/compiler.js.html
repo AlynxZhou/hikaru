@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Source: processor.js</title>
+    <title>JSDoc: Source: compiler.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Source: processor.js</h1>
+    <h1 class="page-title">Source: compiler.js</h1>
 
     
 
@@ -29,56 +29,61 @@
             <pre class="prettyprint source linenums"><code>'use strict'
 
 /**
- * @module processor
+ * @module compiler
  */
 
+const fse = require('fs-extra')
+const path = require('path')
 const {isFunction} = require('./utils')
 
-/**
- * @description Site processor.
- */
-class Processor {
-  /**
-   * @param {Logger} logger
-   * @return {Processor}
+ /**
+  * @description Template compiler.
+  */
+class Compiler {
+	/**
+	 * @param {Logger} logger
+	 * @return {Compiler}
    */
-  constructor(logger) {
-    this.logger = logger
-    this._ = []
-  }
+	constructor(logger) {
+		this.logger = logger
+		this._ = {}
+	}
+
+	/**
+	 * @callback compileCallback
+	 * @param {String} filepath
+	 * @param {String} content
+	 * @return {Function}
+	 */
+	/**
+	 * @description Register a compile funtion.
+	 * @param {String} ext Template extname starts with `.`.
+	 * @param {compileCallback}
+	 */
+	 register(ext, fn) {
+ 		if (!isFunction(fn)) {
+       throw new TypeError('fn must be a Function')
+     }
+ 		this._[ext] = {ext, fn}
+ 	}
 
   /**
-   * @callback processCallback
-   * @param {Site} site
-   * @return {site}
-   */
-  /**
-   * @description Register a processor function.
-   * @param {String} name
-   * @param {processCallback} fn
-   */
-  register(name, fn) {
-    if (!isFunction(fn)) {
-      throw new TypeError('fn must be a Function')
+	 * @description Compile template into function.
+	 * @param {String} filepath
+	 * @param {String} content
+	 * @return {Function}
+	 */
+ 	async compile(filepath, content) {
+    if (content == null) {
+      content = await fse.readFile(filepath, 'utf8')
     }
-    this._.push({name, fn})
-  }
-
-  /**
-   * @description Process site.
-   * @param {Site} site
-   */
-  async process(site) {
-    for (const {name, fn} of this._) {
-      this.logger.debug(`Hikaru is processing \`${
-        this.logger.blue(name)
-      }\`...`)
-      await fn(site)
-    }
-  }
+ 		const ext = path.extname(filepath)
+ 		const handler = this._[ext]
+ 		return await handler['fn'](filepath, content)
+ 	}
 }
 
-module.exports = Processor
+module.exports = Compiler
 </code></pre>
         </article>
     </section>

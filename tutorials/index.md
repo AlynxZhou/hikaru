@@ -68,17 +68,19 @@ hikura-site/
     |   |- aria/
     |   |   |- scripts/ # custom scripts
     |   |   |- srcs/ # this will be render to docs/
-    |   |   |   |- layout.njk # templates
-    |   |   |   |- index.njk
-    |   |   |   |- tags.njk
-    |   |   |   |- tag.njk
-    |   |   |   |- page.njk # if no layout specific, fallback to this
     |   |   |   |- css/
     |   |   |   |   |- index.styl
     |   |   |   |- js/
     |   |   |   |   |- index.js
     |   |   |   |- images/
     |   |   |   |   |- logo.png
+    |   |   |- layouts/
+    |   |   |   |- index.njk
+    |   |   |   |- tags.njk
+    |   |   |   |- tag.njk
+    |   |   |   |- page.njk # if no layout specific, fallback to this
+    |   |   |- languages/
+    |   |   |   |- default.yml
     |   |- README.md
     |- package.json # store site plugin list
     |- siteConfig.yml

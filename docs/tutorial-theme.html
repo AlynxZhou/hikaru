@@ -37,6 +37,7 @@
     |- scripts/
     |- srcs/
     |- languages/
+    |- layouts/
     |- themeConfig.yml
 </code></pre>
 <h2><code>themeConfig.yml</code></h2>
@@ -46,10 +47,13 @@
 <h2><code>languages</code></h2>
 <p>Put different language files in here, and you can use <code>__()</code> in template to load them. They must be YAML files.</p>
 <h2><code>srcs</code></h2>
-<p>This dir stores templates and assets. If a file is under srcs directly, it will be treat as templates and if a file is in sub dir, they are assets and will be copied to <code>docDir</code>.</p>
-<h1>Template</h1>
-<p>Hikaru works with template, it supports Nunjucks, and can support others by registing renderers.</p>
-<p><strong>The base name of template files will be used as layouts</strong>. So you must have files of following:</p>
+<p>This dir stores assets. Assets will be rendered and written to <code>docDir</code>.</p>
+<h2><code>layouts</code></h2>
+<p>This dir stores html templates.</p>
+<h1>Layouts</h1>
+<p>Hikaru works with templates, it supports Nunjucks, and can support others by registing compilers.</p>
+<p><strong>The base name of first level template files will be used as layouts</strong>. So you must have files of following:</p>
+<p>Templates in subdir won't be treat as layouts so you can use them as modules.</p>
 <ul>
 <li><code>index</code>: Site index page.</li>
 <li><code>archives</code>: Site archive page.</li>
@@ -65,7 +69,8 @@
 <li><code>site</code>: A raw site object.</li>
 <li><code>siteConfig</code>: Just <code>site[&quot;siteConfig&quot;]</code>.</li>
 <li><code>themeConfig</code>: Just <code>site[&quot;themeConfig&quot;]</code>.</li>
-<li><code>moment()</code>: Moment.js functions.</li>
+<li><code>moment</code>: Moment.js Object.</li>
+<li><code>momenttz</code>: Moment-timezone Object.</li>
 <li><code>getVersion()</code>: Hikaru version.</li>
 <li><code>getURL(docPath)</code>: Convert a path to a full URL.</li>
 <li><code>getPath(docPath)</code>: Convert a path to a full path.</li>
@@ -91,7 +96,6 @@
 <pre class="prettyprint source lang-javascript"><code>module.exports = (hikaru) => {
   hikaru.processor.register(&quot;description&quot;, (site) => {
     // Do something...
-    return site
   })
 }
 </code></pre>
@@ -103,13 +107,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-generator.html">generator</a></li><li><a href="module-highlight.html">highlight</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li></ul><h3>Classes</h3><ul><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-types-TOC.html">TOC</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-compiler.html">compiler</a></li><li><a href="module-decorator.html">decorator</a></li><li><a href="module-generator.html">generator</a></li><li><a href="module-highlight.html">highlight</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li></ul><h3>Classes</h3><ul><li><a href="module-compiler-Compiler.html">Compiler</a></li><li><a href="module-decorator-Decorator.html">Decorator</a></li><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-types-TOC.html">TOC</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Tue Oct 29 2019 22:26:26 GMT+0800 (China Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Thu Oct 31 2019 12:47:16 GMT+0800 (China Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: Processor</title>
+    <title>JSDoc: Class: Compiler</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: Processor</h1>
+    <h1 class="page-title">Class: Compiler</h1>
 
     
 
@@ -29,7 +29,7 @@
 <header>
     
         <h2><span class="attribs"><span class="type-signature"></span></span>
-            <span class="ancestors"><a href="module-processor.html">processor</a>~</span>Processor<span class="signature">(logger)</span><span class="type-signature"> &rarr; {Processor}</span></h2>
+            <span class="ancestors"><a href="module-compiler.html">compiler</a>~</span>Compiler<span class="signature">(logger)</span><span class="type-signature"> &rarr; {Compiler}</span></h2>
         
     
 </header>
@@ -42,7 +42,7 @@
     
 
     
-    <h4 class="name" id="Processor"><span class="type-signature"></span>new Processor<span class="signature">(logger)</span><span class="type-signature"> &rarr; {Processor}</span></h4>
+    <h4 class="name" id="Compiler"><span class="type-signature"></span>new Compiler<span class="signature">(logger)</span><span class="type-signature"> &rarr; {Compiler}</span></h4>
     
 
     
@@ -50,7 +50,7 @@
 
 
 <div class="description">
-    <p>Site processor.</p>
+    <p>Template compiler.</p>
 </div>
 
 
@@ -143,7 +143,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="processor.js.html">processor.js</a>, <a href="processor.js.html#line17">line 17</a>
+        <a href="compiler.js.html">compiler.js</a>, <a href="compiler.js.html#line19">line 19</a>
     </li></ul></dd>
     
 
@@ -179,7 +179,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Processor</span>
+<span class="param-type">Compiler</span>
 
 
     </dd>
@@ -217,7 +217,7 @@
     
 
     
-    <h4 class="name" id="process"><span class="type-signature">(async) </span>process<span class="signature">(site)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="compile"><span class="type-signature">(async) </span>compile<span class="signature">(filepath, content)</span><span class="type-signature"> &rarr; {function}</span></h4>
     
 
     
@@ -225,7 +225,7 @@
 
 
 <div class="description">
-    <p>Process site.</p>
+    <p>Compile template into function.</p>
 </div>
 
 
@@ -261,13 +261,36 @@
 
         <tr>
             
-                <td class="name"><code>site</code></td>
+                <td class="name"><code>filepath</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Site</span>
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>content</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
 
 
             
@@ -318,7 +341,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="processor.js.html">processor.js</a>, <a href="processor.js.html#line43">line 43</a>
+        <a href="compiler.js.html">compiler.js</a>, <a href="compiler.js.html#line48">line 48</a>
     </li></ul></dd>
     
 
@@ -343,6 +366,24 @@
 
 
 
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">function</span>
+
+
+    </dd>
+</dl>
+
+    
 
 
 
@@ -354,7 +395,7 @@
     
 
     
-    <h4 class="name" id="register"><span class="type-signature"></span>register<span class="signature">(name, fn)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="register"><span class="type-signature"></span>register<span class="signature">(ext, fn)</span><span class="type-signature"></span></h4>
     
 
     
@@ -362,7 +403,7 @@
 
 
 <div class="description">
-    <p>Register a processor function.</p>
+    <p>Register a compile funtion.</p>
 </div>
 
 
@@ -398,7 +439,7 @@
 
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>ext</code></td>
             
 
             <td class="type">
@@ -414,7 +455,7 @@
 
             
 
-            <td class="description last"></td>
+            <td class="description last"><p>Template extname starts with <code>.</code>.</p></td>
         </tr>
 
     
@@ -427,7 +468,7 @@
             <td class="type">
             
                 
-<span class="param-type">processCallback</span>
+<span class="param-type">compileCallback</span>
 
 
             
@@ -478,7 +519,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="processor.js.html">processor.js</a>, <a href="processor.js.html#line32">line 32</a>
+        <a href="compiler.js.html">compiler.js</a>, <a href="compiler.js.html#line35">line 35</a>
     </li></ul></dd>
     
 

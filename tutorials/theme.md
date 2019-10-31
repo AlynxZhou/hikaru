@@ -14,6 +14,7 @@ themename/
     |- scripts/
     |- srcs/
     |- languages/
+    |- layouts/
     |- themeConfig.yml
 ```
 
@@ -31,13 +32,19 @@ Put different language files in here, and you can use `__()` in template to load
 
 ## `srcs`
 
-This dir stores templates and assets. If a file is under srcs directly, it will be treat as templates and if a file is in sub dir, they are assets and will be copied to `docDir`.
+This dir stores assets. Assets will be rendered and written to `docDir`.
 
-# Template
+## `layouts`
 
-Hikaru works with template, it supports Nunjucks, and can support others by registing renderers.
+This dir stores html templates.
 
-**The base name of template files will be used as layouts**. So you must have files of following:
+# Layouts
+
+Hikaru works with templates, it supports Nunjucks, and can support others by registing compilers.
+
+**The base name of first level template files will be used as layouts**. So you must have files of following:
+
+Templates in subdir won't be treat as layouts so you can use them as modules.
 
 - `index`: Site index page.
 - `archives`: Site archive page.
@@ -53,7 +60,8 @@ You can use following helpers in template:
 - `site`: A raw site object.
 - `siteConfig`: Just `site["siteConfig"]`.
 - `themeConfig`: Just `site["themeConfig"]`.
-- `moment()`: Moment.js functions.
+- `moment`: Moment.js Object.
+- `momenttz`: Moment-timezone Object.
 - `getVersion()`: Hikaru version.
 - `getURL(docPath)`: Convert a path to a full URL.
 - `getPath(docPath)`: Convert a path to a full path.
@@ -93,7 +101,6 @@ Scripts are just JavaScript files that export a function, which receives a `Hika
 module.exports = (hikaru) => {
   hikaru.processor.register("description", (site) => {
     // Do something...
-    return site
   })
 }
 ```

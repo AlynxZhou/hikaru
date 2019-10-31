@@ -45,8 +45,10 @@ const nib = require('nib')
 
 const Logger = require('./logger')
 const Renderer = require('./renderer')
+const Compiler = require('./compiler')
 const Processor = require('./processor')
 const Generator = require('./generator')
+const Decorator = require('./decorator')
 const Translator = require('./translator')
 const Router = require('./router')
 const types = require('./types')
@@ -90,6 +92,7 @@ class Hikaru {
    * @property {Renderer} renderer
    * @property {Processor} processor
    * @property {Generator} generator
+   * @property {Decorator} decorator
    * @property {Translator} translator
    * @property {Object} types
    * @property {Object} utils
@@ -228,6 +231,7 @@ class Hikaru {
     this.loadPlugins()
     await this.loadScripts()
     await this.loadLanguages()
+    await this.loadLayouts()
     process.on('unhandledRejection', (error) => {
       this.logger.warn('Hikaru catched some error during building!')
       this.logger.error(error)
@@ -254,6 +258,7 @@ class Hikaru {
     this.loadPlugins()
     await this.loadScripts()
     await this.loadLanguages()
+    await this.loadLayouts()
     process.on('unhandledRejection', (error) => {
       this.logger.warn('Hikaru catched some error during serving!')
       this.logger.error(error)
@@ -301,6 +306,9 @@ class Hikaru {
     siteConfig['themeLangDir'] = path.join(
       siteConfig['themeDir'], 'languages'
     )
+    siteConfig['themeLayoutDir'] = path.join(
+      siteConfig['themeDir'], 'layouts'
+    )
     siteConfig['categoryDir'] = siteConfig['categoryDir'] || 'categories'
     siteConfig['tagDir'] = siteConfig['tagDir'] || 'tags'
     const themeConfigPath = path.join(this.site['siteDir'], 'themeConfig.yml')
@@ -325,26 +333,24 @@ class Hikaru {
       this.logger,
       this.site['siteConfig']['skipRender']
     )
+    this.compiler = new Compiler(this.logger)
     this.processor = new Processor(this.logger)
     this.generator = new Generator(this.logger)
+    this.decorator = new Decorator(this.logger, this.compiler)
     this.translator = new Translator(this.logger)
     this.router = new Router(
       this.logger,
       this.renderer,
       this.processor,
       this.generator,
+      this.decorator,
       this.translator,
       this.site
     )
-    try {
-      this.registerInternalRenderers()
-      this.registerInternalProcessors()
-      this.registerInternalGenerators()
-    } catch (error) {
-      this.logger.warn('Hikaru cannot register internal functions!')
-      this.logger.error(error)
-      process.exit(-2)
-    }
+    this.registerInternalRenderers()
+    this.registerInternalCompilers()
+    this.registerInternalProcessors()
+    this.registerInternalGenerators()
   }
 
   /**
@@ -375,8 +381,10 @@ class Hikaru {
       return require(path.resolve(name))({
         'logger': this.logger,
         'renderer': this.renderer,
+        'compiler': this.compiler,
         'processor': this.processor,
         'generator': this.generator,
+        'decorator': this.decorator,
         'translator': this.translator,
         'types': this.types,
         'utils': this.utils,
@@ -411,8 +419,10 @@ class Hikaru {
       return require(path.resolve(name))({
         'logger': this.logger,
         'renderer': this.renderer,
+        'compiler': this.compiler,
         'processor': this.processor,
         'generator': this.generator,
+        'decorator': this.decorator,
         'translator': this.translator,
         'types': this.types,
         'utils': this.utils,
@@ -454,33 +464,30 @@ class Hikaru {
   /**
    * @private
    */
-  registerInternalRenderers() {
-    const njkConfig = Object.assign(
-      {'autoescape': false, 'noCache': true},
-      this.site['siteConfig']['nunjucks']
-    )
-    const njkEnv = nunjucks.configure(
-      this.site['siteConfig']['themeSrcDir'],
-      njkConfig
-    )
-    const njkRenderer = (file) => {
-      const template = nunjucks.compile(file['text'], njkEnv, file['srcPath'])
-      // For template you must give a render function as content.
-      file['content'] = (ctx) => {
-        return new Promise((resolve, reject) => {
-          template.render(ctx, (error, result) => {
-            if (error != null) {
-              return reject(error)
-            }
-            return resolve(result)
-          })
-        })
-      }
-      return file
+  async loadLayouts() {
+    const filenames = await matchFiles('*', {
+      'nodir': true,
+      'dot': false,
+      'cwd': this.site['siteConfig']['themeLayoutDir']
+    })
+    for (const filename of filenames) {
+      const ext = path.extname(filename)
+      const layout = path.basename(filename, ext)
+      this.logger.debug(`Hikaru is loading layout \`${
+        this.logger.blue(layout)
+      }\`...`)
+      const filepath = path.join(
+        this.site['siteConfig']['themeLayoutDir'],
+        filename
+      )
+      this.decorator.register(layout, filepath)
     }
-    this.renderer.register('.njk', null, njkRenderer)
-    this.renderer.register('.j2', null, njkRenderer)
+  }
 
+  /**
+   * @private
+   */
+  registerInternalRenderers() {
     this.renderer.register('.html', '.html', (file) => {
       file['content'] = file['text']
       return file
@@ -548,6 +555,35 @@ class Hikaru {
   /**
    * @private
    */
+  registerInternalCompilers() {
+    const njkConfig = Object.assign(
+      {'autoescape': false},
+      this.site['siteConfig']['nunjucks']
+    )
+    const njkRenderer = (filepath, content) => {
+      const njkEnv = nunjucks.configure(
+        path.dirname(filepath), njkConfig
+      )
+      const template = nunjucks.compile(content, njkEnv, filepath)
+      // For template you must give a render function as content.
+      return (ctx) => {
+        return new Promise((resolve, reject) => {
+          template.render(ctx, (error, result) => {
+            if (error != null) {
+              return reject(error)
+            }
+            return resolve(result)
+          })
+        })
+      }
+    }
+    this.compiler.register('.njk', njkRenderer)
+    this.compiler.register('.j2', njkRenderer)
+  }
+
+  /**
+   * @private
+   */
   registerInternalProcessors() {
     this.processor.register('post sequence', (site) => {
       site['posts'].sort((a, b) => {
@@ -561,21 +597,18 @@ class Hikaru {
           site['posts'][i]['prev'] = site['posts'][i + 1]
         }
       }
-      return site
     })
 
     this.processor.register('categories collection', (site) => {
       const result = genCategories(site['posts'])
       site['categories'] = result['categories']
       site['categoriesLength'] = result['categoriesLength']
-      return site
     })
 
     this.processor.register('tags collection', (site) => {
       const result = genTags(site['posts'])
       site['tags'] = result['tags']
       site['tagsLength'] = result['tagsLength']
-      return site
     })
 
     this.processor.register('toc and link resolving', (site) => {
@@ -603,7 +636,6 @@ class Hikaru {
           p['content'] = split.join('&lt;a id=\'more\'>&lt;/a>')
         }
       }
-      return site
     })
   }
 
@@ -720,13 +752,13 @@ module.exports = Hikaru
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-generator.html">generator</a></li><li><a href="module-highlight.html">highlight</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li></ul><h3>Classes</h3><ul><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-types-TOC.html">TOC</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-compiler.html">compiler</a></li><li><a href="module-decorator.html">decorator</a></li><li><a href="module-generator.html">generator</a></li><li><a href="module-highlight.html">highlight</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li></ul><h3>Classes</h3><ul><li><a href="module-compiler-Compiler.html">Compiler</a></li><li><a href="module-decorator-Decorator.html">Decorator</a></li><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-types-TOC.html">TOC</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Tue Oct 29 2019 22:26:26 GMT+0800 (China Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.3</a> on Thu Oct 31 2019 12:47:16 GMT+0800 (China Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

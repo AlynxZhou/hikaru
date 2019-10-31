@@ -35,6 +35,10 @@ A `Translator` instance which will be used by other module automatically.
 
 A `Renderer` instance, you can register your renderer function to it.
 
+# `Hikaru::compiler`
+
+A `Compiler` instance, you can register your template compiler function to it.
+
 # `Hikaru::processor`
 
 A `Processor` instance, you can register your processor function to it.
@@ -42,3 +46,7 @@ A `Processor` instance, you can register your processor function to it.
 # `Hikaru::generator`
 
 A `Generator` instance, you can register your generator function to it.
+
+# `Hikaru::decorator`
+
+A `Decorator` instance, you can register your layout decorator function to it.

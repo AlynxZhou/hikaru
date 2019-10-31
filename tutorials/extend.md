@@ -1,6 +1,8 @@
 Extend
 ======
 
+**Outdated, needs to update.**
+
 Hikaru supports plugins and scripts, but not all part of Hikaru is designed for them. There are some parts that you can add your code.
 
 # `Renderer`

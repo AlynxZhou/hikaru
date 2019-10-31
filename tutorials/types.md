@@ -69,8 +69,7 @@ File's text content.
 
 ## `content`
 
-- For posts, pages and text assets, it's the **rendered text**.
-- For templates, it should be **a compiled render function**.
+For posts, pages and text assets, it's the **rendered text**.
 
 ## `type`
 
@@ -179,10 +178,6 @@ From site's `config.yml` file but `srcDir`, `docDir`, `themeDir`, `themeSrcDir` 
 ## `themeConfig`
 
 From theme's `config.yml` file.
-
-## `templates`
-
-An object of theme's all templates, keys are layouts and values are `File`s.
 
 ## `assets`
 
