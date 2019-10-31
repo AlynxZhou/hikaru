@@ -12,7 +12,6 @@ class Site {
    * @param {String} siteDir
    * @property {Object} siteConfig
    * @property {Object} themeConfig
-   * @property {Object} templates
    * @property {File[]} posts
    * @property {File[]} pages
    * @property {File[]} assets
@@ -27,7 +26,6 @@ class Site {
     this.siteDir = siteDir
     this.siteConfig = {}
     this.themeConfig = {}
-    this.templates = {}
     this.posts = []
     this.pages = []
     this.assets = []

@@ -17,6 +17,7 @@ const nib = require('nib')
 
 const Logger = require('./logger')
 const Renderer = require('./renderer')
+const Compiler = require('./compiler')
 const Processor = require('./processor')
 const Generator = require('./generator')
 const Decorator = require('./decorator')
@@ -277,6 +278,9 @@ class Hikaru {
     siteConfig['themeLangDir'] = path.join(
       siteConfig['themeDir'], 'languages'
     )
+    siteConfig['themeLayoutDir'] = path.join(
+      siteConfig['themeDir'], 'layouts'
+    )
     siteConfig['categoryDir'] = siteConfig['categoryDir'] || 'categories'
     siteConfig['tagDir'] = siteConfig['tagDir'] || 'tags'
     const themeConfigPath = path.join(this.site['siteDir'], 'themeConfig.yml')
@@ -301,9 +305,10 @@ class Hikaru {
       this.logger,
       this.site['siteConfig']['skipRender']
     )
+    this.compiler = new Compiler(this.logger)
     this.processor = new Processor(this.logger)
     this.generator = new Generator(this.logger)
-    this.decorator = new Decorator(this.logger)
+    this.decorator = new Decorator(this.logger, this.compiler)
     this.translator = new Translator(this.logger)
     this.router = new Router(
       this.logger,
@@ -315,6 +320,7 @@ class Hikaru {
       this.site
     )
     this.registerInternalRenderers()
+    this.registerInternalCompilers()
     this.registerInternalProcessors()
     this.registerInternalGenerators()
   }
@@ -347,6 +353,7 @@ class Hikaru {
       return require(path.resolve(name))({
         'logger': this.logger,
         'renderer': this.renderer,
+        'compiler': this.compiler,
         'processor': this.processor,
         'generator': this.generator,
         'decorator': this.decorator,
@@ -384,6 +391,7 @@ class Hikaru {
       return require(path.resolve(name))({
         'logger': this.logger,
         'renderer': this.renderer,
+        'compiler': this.compiler,
         'processor': this.processor,
         'generator': this.generator,
         'decorator': this.decorator,
@@ -429,10 +437,10 @@ class Hikaru {
    * @private
    */
   async loadLayouts() {
-    const filenames = await matchFiles(`*`, {
+    const filenames = await matchFiles('*', {
       'nodir': true,
       'dot': false,
-      'cwd': this.site['siteConfig']['themeSrcDir']
+      'cwd': this.site['siteConfig']['themeLayoutDir']
     })
     for (const filename of filenames) {
       const ext = path.extname(filename)
@@ -441,13 +449,10 @@ class Hikaru {
         this.logger.blue(layout)
       }\`...`)
       const filepath = path.join(
-        this.site['siteConfig']['themeSrcDir'],
+        this.site['siteConfig']['themeLayoutDir'],
         filename
       )
-      const fileContent = await fse.readFile(filepath, 'utf8')
-      this.decorator.register(layout, await this.renderer.render(
-        new File({'srcPath': filename, 'text': fileContent})
-      )[0]['content'])
+      this.decorator.register(layout, filepath)
     }
   }
 
@@ -455,32 +460,6 @@ class Hikaru {
    * @private
    */
   registerInternalRenderers() {
-    const njkConfig = Object.assign(
-      {'autoescape': false, 'noCache': true},
-      this.site['siteConfig']['nunjucks']
-    )
-    const njkEnv = nunjucks.configure(
-      this.site['siteConfig']['themeSrcDir'],
-      njkConfig
-    )
-    const njkRenderer = (file) => {
-      const template = nunjucks.compile(file['text'], njkEnv, file['srcPath'])
-      // For template you must give a render function as content.
-      file['content'] = (ctx) => {
-        return new Promise((resolve, reject) => {
-          template.render(ctx, (error, result) => {
-            if (error != null) {
-              return reject(error)
-            }
-            return resolve(result)
-          })
-        })
-      }
-      return file
-    }
-    this.renderer.register('.njk', null, njkRenderer)
-    this.renderer.register('.j2', null, njkRenderer)
-
     this.renderer.register('.html', '.html', (file) => {
       file['content'] = file['text']
       return file
@@ -543,6 +522,35 @@ class Hikaru {
         })
       })
     })
+  }
+
+  /**
+   * @private
+   */
+  registerInternalCompilers() {
+    const njkConfig = Object.assign(
+      {'autoescape': false},
+      this.site['siteConfig']['nunjucks']
+    )
+    const njkRenderer = (filepath, content) => {
+      const njkEnv = nunjucks.configure(
+        path.dirname(filepath), njkConfig
+      )
+      const template = nunjucks.compile(content, njkEnv, filepath)
+      // For template you must give a render function as content.
+      return (ctx) => {
+        return new Promise((resolve, reject) => {
+          template.render(ctx, (error, result) => {
+            if (error != null) {
+              return reject(error)
+            }
+            return resolve(result)
+          })
+        })
+      }
+    }
+    this.compiler.register('.njk', njkRenderer)
+    this.compiler.register('.j2', njkRenderer)
   }
 
   /**

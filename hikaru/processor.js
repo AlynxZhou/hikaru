@@ -39,7 +39,6 @@ class Processor {
   /**
    * @description Process site.
    * @param {Site} site
-   * @return {Promise<Site>} Processed site.
    */
   async process(site) {
     for (const {name, fn} of this._) {

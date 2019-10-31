@@ -130,13 +130,11 @@ class Router {
    * @param {File} file
    */
   async saveFile(file) {
+    const content = await this.decorator.decorate(file, this.loadContext(file))
     this.logger.debug(`Hikaru is writing \`${
       this.logger.cyan(path.join(file['docDir'], file['docPath']))
     }\`...`)
-    this.write(
-      file,
-      await this.decorator.decorate(file, this.loadContext(file))
-    )
+    this.write(file, content)
   }
 
   /**

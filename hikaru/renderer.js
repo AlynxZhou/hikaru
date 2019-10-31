@@ -50,9 +50,9 @@ class Renderer {
   /**
    * @description Render file with renderer function.
    * @param {File} input
-   * @return {Promise<File>} Rendered file.
+   * @return {File} Rendered file.
    */
-  render(input) {
+  async render(input) {
     const srcExt = path.extname(input['srcPath'])
     const results = []
     if (
@@ -77,7 +77,7 @@ class Renderer {
             this.logger.cyan(output['srcPath'])
           }\`...`)
         }
-        results.push(handler['fn'](output))
+        results.push(await handler['fn'](output))
       }
     } else {
       const output = new File(input)

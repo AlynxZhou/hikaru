@@ -39,7 +39,7 @@ class Generator {
   /**
    * @description Generator files for site.
    * @param {Site} site
-   * @return {Promise<(File|File[])>} Generated files.
+   * @return {(File|File[])} Generated files.
    */
   async generate(site) {
     let results = []
