@@ -428,7 +428,7 @@ class Hikaru {
       this.logger.debug(`Hikaru is loading language \`${
         this.logger.blue(lang)
       }\`...`)
-      const language = YAML.parse(fse.readFileSync(filepath, 'utf8'))
+      const language = YAML.parse(await fse.readFile(filepath, 'utf8'))
       this.translator.register(lang, language)
     }
   }
