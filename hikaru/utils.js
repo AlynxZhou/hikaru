@@ -486,7 +486,7 @@ const putSite = (site, key, file) => {
     )
   })
   if (i !== -1) {
-    site[key][i] == file
+    site[key][i] = file
   } else {
     site[key].push(file)
   }
