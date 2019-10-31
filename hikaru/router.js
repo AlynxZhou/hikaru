@@ -109,7 +109,7 @@ class Router {
     file['raw'] = file['isBinary'] ? raw : raw.toString('utf8')
     file['text'] = file['raw']
     file = parseFrontMatter(file)
-    const results = await Promise.all(this.renderer.render(file))
+    const results = await this.renderer.render(file)
     for (const result of results) {
       if (result['layout'] === 'post') {
         result['type'] = 'post'
@@ -171,7 +171,7 @@ class Router {
    * @return {Promise<File[]>}
    */
   async matchAll() {
-    return (await matchFiles(path.join('*', '*'), {
+    return (await matchFiles(path.join('**', '*'), {
       'nodir': true,
       'dot': false,
       'cwd': this.site['siteConfig']['themeSrcDir']
