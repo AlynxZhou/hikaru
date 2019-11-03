@@ -15,16 +15,6 @@ const pkg = require('../package.json')
 const extMIME = require('../dist/ext-mime.json')
 
 /**
- * @description Returns true if `element` is in `array`.
- * @param {Array} array
- * @param {*} element
- * @return {Boolean}
- */
-const inside = (array, element) => {
-  return array.indexOf(element) !== -1
-}
-
-/**
  * @param {*} o
  * @return {Boolean}
  */
@@ -664,7 +654,6 @@ const default404 = [
 ].join('')
 
 module.exports = {
-  inside,
   isString,
   isArray,
   isFunction,

@@ -6,7 +6,7 @@
 
 const path = require('path')
 const {File} = require('./types')
-const {inside, isFunction, isString} = require('./utils')
+const {isFunction, isString} = require('./utils')
 
 /**
  * @description Layout decorator.
@@ -89,7 +89,7 @@ class Decorator {
 	  if (file['layout'] == null) {
 	    return null
 	  }
-	  if (!inside(this.list(), file['layout'])) {
+	  if (!this.list().includes(file['layout'])) {
 	    return 'page'
 	  }
 	  return file['layout']

@@ -28,7 +28,6 @@ const {Site, File, Category, Tag} = types
 const highlight = require('./highlight')
 const utils = require('./utils')
 const {
-  inside,
   isArray,
   isString,
   isFunction,
@@ -414,7 +413,7 @@ class Hikaru {
       'dot': false,
       'cwd': this.site['siteConfig']['themeLangDir']
     })
-    if (!inside(filenames, `default${ext}`)) {
+    if (!filenames.includes(`default${ext}`)) {
       this.logger.warn(
         'Hikaru cannot find default language file in your theme!'
       )

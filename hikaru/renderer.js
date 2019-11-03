@@ -6,7 +6,7 @@
 
 const path = require('path')
 const {File} = require('./types')
-const {inside, isFunction} = require('./utils')
+const {isFunction} = require('./utils')
 
 /**
  * @description File renderer.
@@ -56,8 +56,7 @@ class Renderer {
     const srcExt = path.extname(input['srcPath'])
     const results = []
     if (
-      this._[srcExt] != null &&
-      !inside(this.skipRenderList, input['srcPath'])
+      this._[srcExt] != null && !this.skipRenderList.includes(input['srcPath'])
     ) {
       for (const handler of this._[srcExt]) {
         const output = new File(input)
