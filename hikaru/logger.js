@@ -30,7 +30,7 @@ class Logger extends console.Console {
     this.opts['debug'] = opts['debug'] || false
     this.opts['color'] = opts['color'] == null ? true : opts['color']
     // Disable colored output if piped.
-    if (this.opts['stdout'].isTTY || this.opts['stderr'].isTTY) {
+    if (!this.opts['stdout'].isTTY || !this.opts['stderr'].isTTY) {
       this.opts['color'] = false
     }
   }
