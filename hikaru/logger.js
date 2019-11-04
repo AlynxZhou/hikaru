@@ -25,8 +25,14 @@ class Logger extends console.Console {
       opts['stderr'] || process.stderr
     )
     this.opts = {}
+    this.opts['stdout'] = opts['stdout'] || process.stdout
+    this.opts['stderr'] = opts['stderr'] || process.stderr
     this.opts['debug'] = opts['debug'] || false
     this.opts['color'] = opts['color'] == null ? true : opts['color']
+    // Disable colored output if piped.
+    if (this.opts['stdout'].isTTY || this.opts['stderr'].isTTY) {
+      this.opts['color'] = false
+    }
   }
 
   /**
@@ -95,7 +101,7 @@ class Logger extends console.Console {
    * @param {...*} strs
    */
   info(...strs) {
-    return super.info(this.blue('INFO:'), ...strs)
+    return super.info(`${this.blue('INFO')}:`, ...strs)
   }
 
   /**
@@ -105,9 +111,9 @@ class Logger extends console.Console {
     if (this.opts['debug']) {
       // Node.js 8 does not support `console.debug`.
       if (isFunction(super.debug)) {
-        return super.debug(this.green('DEBUG:'), ...strs)
+        return super.debug(`${this.green('DEBUG')}:`, ...strs)
       }
-      return super.log(this.green('DEBUG:'), ...strs)
+      return super.log(`${this.green('DEBUG')}:`, ...strs)
     }
   }
 
@@ -115,14 +121,14 @@ class Logger extends console.Console {
    * @param {...*} strs
    */
   warn(...strs) {
-    return super.warn(this.yellow('WARN:'), ...strs)
+    return super.warn(`${this.yellow('WARN')}:`, ...strs)
   }
 
   /**
    * @param {...*} strs
    */
   error(...strs) {
-    return super.error(this.red('ERROR:'), ...strs)
+    return super.error(`${this.red('ERROR')}:`, ...strs)
   }
 }
 
