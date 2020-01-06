@@ -7,7 +7,7 @@
     "hikaru": "bin/hikaru"
   },
   "scripts": {
-    "build:doc": "jsdoc -c jsdoc.json -R README.md -u tutorials/",
+    "build:doc": "jsdoc -c jsdoc.json -R README.md -u tutorials/ && echo 'hikaru.alynx.moe' > docs/CNAME",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
