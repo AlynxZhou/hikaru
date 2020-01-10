@@ -451,7 +451,8 @@ class Hikaru {
         this.site['siteConfig']['themeLayoutDir'],
         filename
       )
-      this.decorator.register(layout, filepath)
+      const fn = await this.compiler.compile(filepath)
+      this.decorator.register(layout, fn)
     }
   }
 
@@ -469,7 +470,7 @@ class Hikaru {
       'langPrefix': '',
       'highlight': (code, lang) => {
         return highlight(code, Object.assign({
-          'lang': lang != null? lang.toLowerCase() : null,
+          'lang': lang != null ? lang.toLowerCase() : null,
           'hljs': true,
           'gutter': true
         }, this.site['siteConfig']['highlight']))

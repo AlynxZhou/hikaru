@@ -12,47 +12,47 @@ const {isFunction} = require('./utils')
   * @description Template compiler.
   */
 class Compiler {
-	/**
-	 * @param {Logger} logger
-	 * @return {Compiler}
+  /**
+   * @param {Logger} logger
+   * @return {Compiler}
    */
-	constructor(logger) {
-		this.logger = logger
-		this._ = {}
-	}
-
-	/**
-	 * @callback compileCallback
-	 * @param {String} filepath
-	 * @param {String} content
-	 * @return {Function}
-	 */
-	/**
-	 * @description Register a compile funtion.
-	 * @param {String} ext Template extname starts with `.`.
-	 * @param {compileCallback}
-	 */
-	 register(ext, fn) {
- 		if (!isFunction(fn)) {
-       throw new TypeError('fn must be a Function')
-     }
- 		this._[ext] = {ext, fn}
- 	}
+  constructor(logger) {
+    this.logger = logger
+    this._ = {}
+  }
 
   /**
-	 * @description Compile template into function.
-	 * @param {String} filepath
-	 * @param {String} content
-	 * @return {Function}
-	 */
- 	async compile(filepath, content) {
+   * @callback compileCallback
+   * @param {String} filepath
+   * @param {String} content
+   * @return {Function}
+   */
+  /**
+   * @description Register a compile funtion.
+   * @param {String} ext Template extname starts with `.`.
+   * @param {compileCallback}
+   */
+  register(ext, fn) {
+    if (!isFunction(fn)) {
+      throw new TypeError('fn must be a Function')
+    }
+    this._[ext] = {ext, fn}
+  }
+
+  /**
+   * @description Compile template into function.
+   * @param {String} filepath
+   * @param {String} content
+   * @return {Function}
+   */
+  async compile(filepath, content) {
     if (content == null) {
       content = await fse.readFile(filepath, 'utf8')
     }
- 		const ext = path.extname(filepath)
- 		const handler = this._[ext]
- 		return await handler['fn'](filepath, content)
- 	}
+    const ext = path.extname(filepath)
+    const handler = this._[ext]
+    return await handler['fn'](filepath, content)
+  }
 }
 
 module.exports = Compiler
