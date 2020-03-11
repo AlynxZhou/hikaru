@@ -101,13 +101,13 @@ $ hikaru b
 
 # More
 
-Docs: <https://hikaru.alynx.moe/>
+Docs: <https://hikaru.alynx.one/>
 
 Repo: [GitHub](https://github.com/AlynxZhou/hikaru/)
 
 Default theme ARIA: [hikaru-theme-aria](https://github.com/AlynxZhou/hikaru-theme-aria/)
 
-My blog built with Hikaru and ARIA: [喵's StackHarbor](https://sh.alynx.moe/)
+My blog built with Hikaru and ARIA: [喵's StackHarbor](https://sh.alynx.one/)
 
 # License
 
