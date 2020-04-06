@@ -285,7 +285,9 @@ const paginateCategories = (category, parentPath, site, perPage = 10) => {
  * @return {getPath}
  */
 const getPathFn = (rootDir = path.posix.sep) => {
-  rootDir = rootDir.replace(path.win32.sep, path.posix.sep)
+  // Anyway, we need to escape backslash literally using RegExp.
+  const winSepRegExp = new RegExp(`\\${path.win32.sep}`, 'g')
+  rootDir = rootDir.replace(winSepRegExp, path.posix.sep)
   if (!rootDir.endsWith(path.posix.sep)) {
     rootDir = path.posix.join(rootDir, path.posix.sep)
   }
@@ -296,7 +298,7 @@ const getPathFn = (rootDir = path.posix.sep) => {
     // Handle link with query string or hash.
     // Use assertion to prevent `?` and `#` to be removed.
     const array = docPath.split(/(?=[?#])/)
-    array[0].replace(path.win32.sep, path.posix.sep)
+    array[0] = array[0].replace(winSepRegExp, path.posix.sep)
     if (array[0].endsWith('index.html')) {
       array[0] = array[0].substring(0, array[0].length - 'index.html'.length)
     } else if (array[0].endsWith('index.htm')) {
@@ -340,9 +342,11 @@ const getURLFn = (baseURL, rootDir = path.posix.sep) => {
 const isCurrentPathFn = (rootDir = path.posix.sep, currentPath = '') => {
   // Must join a '/' before resolve or it will join current site dir.
   const getPath = getPathFn(rootDir)
+  // Anyway, we need to escape backslash literally using RegExp.
+  const winSepRegExp = new RegExp(`\\${path.win32.sep}`, 'g')
   currentPath = getPath(currentPath).split(/[?#]/)[0]
   const currentToken = path.posix.resolve(path.posix.join(
-    path.posix.sep, currentPath.replace(path.win32.sep, path.posix.sep)
+    path.posix.sep, currentPath.replace(winSepRegExp, path.posix.sep)
   )).split(path.posix.sep)
   return (testPath = '', strict = false) => {
     if (!isString(testPath)) {
@@ -354,7 +358,7 @@ const isCurrentPathFn = (rootDir = path.posix.sep, currentPath = '') => {
       return true
     }
     const testToken = path.posix.resolve(path.posix.join(
-      path.posix.sep, testPath.replace(path.win32.sep, path.posix.sep)
+      path.posix.sep, testPath.replace(winSepRegExp, path.posix.sep)
     )).split(path.posix.sep)
     if (strict && testToken.length !== currentToken.length) {
       return false
