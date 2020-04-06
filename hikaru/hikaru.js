@@ -77,19 +77,11 @@ class Hikaru {
     this.logger.debug('Hikaru is starting...')
     this.types = types
     this.utils = utils
-    process.on('exit', () => {
-      this.logger.debug('Hikaru is stopping...')
-    })
-    if (process.platform === 'win32') {
-      require('readline').createInterface({
-        'input': process.stdin,
-        'output': process.stdout
-      }).on('SIGINT', () => {
-        process.emit('SIGINT')
-      })
-    }
     process.on('SIGINT', () => {
       process.exit(0)
+    })
+    process.on('exit', () => {
+      this.logger.debug('Hikaru is stopping...')
     })
   }
 
