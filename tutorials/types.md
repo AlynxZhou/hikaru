@@ -29,7 +29,7 @@ File's created time from its front matter. Only available for posts and pages.
 
 ## `updatedDate`
 
-File's updated time from its front matter or file system. Only available for posts and pages.
+File's updated time from its front matter. Only available for posts and pages.
 
 ## `zone`
 
