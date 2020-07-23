@@ -150,17 +150,7 @@ const parseFrontMatter = (file) => {
   file['frontMatter'] = parsed['attributes']
   file = Object.assign(file, parsed['attributes'])
   file['updatedDate'] = file['updatedDate'] || file['updatedTime']
-  file['createdDate'] = file['createdDate'] || file['createdTime']
-  if (file['updatedDate'] == null) {
-    file['updatedDate'] = fse.statSync(path.join(
-      file['srcDir'], file['srcPath']
-    ))['mtime']
-    // JS Date already have timezone so we convert it.
-    file['updatedMoment'] = moment.tz(
-      file['updatedDate'],
-      file['zone'] || moment.tz.guess()
-    )
-  } else {
+  if (file['updatedDate'] != null) {
     // String does not have timezone so we add it.
     file['updatedMoment'] = moment.tz(
       file['updatedDate'],
@@ -168,18 +158,15 @@ const parseFrontMatter = (file) => {
     )
     file['updatedDate'] = file['updatedMoment'].toDate()
   }
-  if (file['createdDate'] == null) {
-    file['createdDate'] = file['updatedDate']
-    file['createdMoment'] = file['updatedMoment']
-  } else {
+  file['createdDate'] = file['createdDate'] || file['createdTime']
+  if (file['createdDate'] != null) {
+    // String does not have timezone so we add it.
     file['createdMoment'] = moment.tz(
       file['createdDate'],
       file['zone'] || moment.tz.guess()
     )
     file['createdDate'] = file['createdMoment'].toDate()
   }
-  file['updatedTime'] = file['updatedDate']
-  file['createdTime'] = file['createdDate']
   return file
 }
 
