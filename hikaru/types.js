@@ -112,19 +112,21 @@ class File {
 }
 
 /**
- * @description Categroy data.
+ * @description Category data.
  */
 class Category {
   /**
    * @param {String} name
    * @param {File[]} posts
-   * @param {Categroy[]} subs Sub categories.
+   * @param {Category[]} subs Sub categories.
    * @property {String} name
+   * @property {String} docPath
    * @property {File[]} posts
-   * @property {Categroy[]} subs Sub categories.
+   * @property {Category[]} subs Sub categories.
    */
   constructor(name, posts = [], subs = []) {
     this.name = name
+    this.docPath = null
     this.posts = posts
     this.subs = subs
   }
@@ -136,12 +138,14 @@ class Category {
 class Tag {
   /**
    * @param {String} name
+   * @property {String} docPath
    * @param {File[]} posts
    * @property {String} name
    * @property {File[]} posts
    */
   constructor(name, posts = []) {
     this.name = name
+    this.docPath = null
     this.posts = posts
   }
 }
@@ -152,17 +156,19 @@ class Tag {
 class TOC {
   /**
    * @param {String} name
-   * @param {String} archor HTML ID as archor,
+   * @param {String} anchor HTML ID as anchor,
    * @param {String} text Title text.
    * @param {TOC[]} subs Sub TOCs.
    * @property {String} name
-   * @property {String} archor HTML ID as archor,
+   * @property {String} anchor HTML ID as anchor,
    * @property {String} text Title text.
    * @property {TOC[]} subs Sub TOCs.
    */
-  constructor(name, archor, text, subs = []) {
+  constructor(name, anchor, text, subs = []) {
     this.name = name
-    this.archor = archor
+    this.anchor = anchor
+    // Fix a typo without an API break...
+    this.archor = anchor
     this.text = text
     this.subs = subs
   }

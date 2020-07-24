@@ -540,7 +540,7 @@ const genTOC = ($) => {
     ) {
       level = level[level.length - 1]['subs']
     }
-    // Don't set archor to absolute path because bootstrap scrollspy
+    // Don't set anchor to absolute path because bootstrap scrollspy
     // can only accept relative path for ID.
     level.push(new TOC(h['name'], `#${$(h).attr('id')}`, $(h).text().trim()))
   })

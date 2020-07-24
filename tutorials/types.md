@@ -155,9 +155,9 @@ Header's text to display.
 
 Header's tag name.
 
-## `archor`
+## `anchor`
 
-HTML archor for this header.
+HTML anchor for this header.
 
 ## `subs`
 
