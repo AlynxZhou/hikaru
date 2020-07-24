@@ -518,7 +518,7 @@ const resolveHeaderIDs = ($) => {
     }
     $(h).attr('id', id)
     $(h).html(
-      `<a class='header-link' href='#${id}' title='${escaped}'></a>${text}`
+      `<a class="header-link" href="#${id}" title="${escaped}"></a>${text}`
     )
   })
 }
