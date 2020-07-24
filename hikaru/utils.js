@@ -517,6 +517,8 @@ const resolveHeaderIDs = ($) => {
       headerIDs[escaped] = 1
     }
     $(h).attr('id', id)
+    // Unlike TOC, anchor here will be resolved to absolute link,
+    // because this might be copied to other pages as excerpt.
     $(h).html(
       `<a class="header-link" href="#${id}" title="${escaped}"></a>${text}`
     )
@@ -540,8 +542,8 @@ const genTOC = ($) => {
     ) {
       level = level[level.length - 1]['subs']
     }
-    // Don't set anchor to absolute path because bootstrap scrollspy
-    // can only accept relative path for ID.
+    // Don't set anchor to absolute path,
+    // because it's hard to write selector for scrollspy.
     level.push(new TOC(h['name'], `#${$(h).attr('id')}`, $(h).text().trim()))
   })
   return toc
