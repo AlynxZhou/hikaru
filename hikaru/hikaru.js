@@ -76,6 +76,11 @@ class Hikaru {
     this.logger.debug('Hikaru is starting...')
     this.types = types
     this.utils = utils
+    // Catch all unhandled error in promises.
+    process.on('unhandledRejection', (error) => {
+      this.logger.warn('Hikaru catched some error during running!')
+      this.logger.error(error)
+    })
     process.on('SIGINT', () => {
       process.exit(0)
     })
@@ -189,22 +194,17 @@ class Hikaru {
    */
   async build(siteDir) {
     this.loadSite(siteDir, this.opts['config'])
-    await this.loadModules()
-    this.loadPlugins()
-    await this.loadScripts()
-    await this.loadLanguages()
-    await this.loadLayouts()
-    process.on('unhandledRejection', (error) => {
-      this.logger.warn('Hikaru catched some error during building!')
-      this.logger.error(error)
-      this.logger.warn('Hikaru advise you to check built files!')
-    })
     try {
+      await this.loadModules()
+      await this.loadPlugins()
+      await this.loadScripts()
+      await this.loadLanguages()
+      await this.loadLayouts()
       await this.router.build()
     } catch (error) {
       this.logger.warn('Hikaru catched some error during building!')
       this.logger.error(error)
-      this.logger.warn('Hikaru advise you to check built files!')
+      this.logger.warn('Hikaru suggests you to check built files!')
     }
   }
 
@@ -216,16 +216,12 @@ class Hikaru {
     const ip = this.opts['ip'] || 'localhost'
     const port = this.opts['port'] || 2333
     this.loadSite(siteDir, this.opts['config'])
-    await this.loadModules()
-    this.loadPlugins()
-    await this.loadScripts()
-    await this.loadLanguages()
-    await this.loadLayouts()
-    process.on('unhandledRejection', (error) => {
-      this.logger.warn('Hikaru catched some error during serving!')
-      this.logger.error(error)
-    })
     try {
+      await this.loadModules()
+      await this.loadPlugins()
+      await this.loadScripts()
+      await this.loadLanguages()
+      await this.loadLayouts()
       await this.router.serve(ip, port)
     } catch (error) {
       this.logger.warn('Hikaru catched some error during serving!')
@@ -320,7 +316,7 @@ class Hikaru {
    * @description Load local plugins for site,
    * which are installed into site's dir and starts with `hikaru-`.
    */
-  loadPlugins() {
+  async loadPlugins() {
     const sitePkgPath = path.join(this.site['siteDir'], 'package.json')
     if (!fse.existsSync(sitePkgPath)) {
       return
@@ -333,14 +329,13 @@ class Hikaru {
     }
     return Object.keys(plugins).filter((name) => {
       return /^hikaru-/.test(name)
-    }).map((name) => {
-      return path.join(this.site['siteDir'], 'node_modules', name)
-    }).map((name) => {
+    }).map(async (name) => {
+      const modulePath = path.join(this.site['siteDir'], 'node_modules', name)
       this.logger.debug(`Hikaru is loading plugin \`${
         this.logger.blue(name)
       }\`...`)
       // Use absolute path to load from siteDir instead of program dir.
-      return require(path.resolve(name))({
+      return await require(path.resolve(modulePath))({
         'logger': this.logger,
         'renderer': this.renderer,
         'compiler': this.compiler,
@@ -373,12 +368,12 @@ class Hikaru {
     })).map((filename) => {
       return path.join(this.site['siteConfig']['themeDir'], 'scripts', filename)
     }))
-    return scripts.map((name) => {
+    return scripts.map(async (filepath) => {
       this.logger.debug(`Hikaru is loading script \`${
-        this.logger.cyan(path.basename(name))
+        this.logger.cyan(filepath)
       }\`...`)
       // Use absolute path to load from siteDir instead of program dir.
-      return require(path.resolve(name))({
+      return await require(path.resolve(filepath))({
         'logger': this.logger,
         'renderer': this.renderer,
         'compiler': this.compiler,
