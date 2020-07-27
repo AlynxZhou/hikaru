@@ -4,16 +4,15 @@
  * @module hikaru
  */
 
-const fse = require('fs-extra')
 const path = require('path')
 const {URL} = require('url')
-const cheerio = require('cheerio')
 
+const fse = require('fs-extra')
+const cheerio = require('cheerio')
 const YAML = require('yaml')
 const nunjucks = require('nunjucks')
 const marked = require('marked')
 const stylus = require('stylus')
-const nib = require('nib')
 
 const Logger = require('./logger')
 const Renderer = require('./renderer')
@@ -477,7 +476,7 @@ class Hikaru {
     const stylConfig = this.site['siteConfig']['stylus'] || {}
     this.renderer.register('.styl', '.css', (file) => {
       return new Promise((resolve, reject) => {
-        stylus(file['text']).use(nib()).use((style) => {
+        stylus(file['text']).use((style) => {
           style.define('getSiteConfig', (data) => {
             const keys = data['val'].toString().trim().split('.')
             let res = this.site['siteConfig']

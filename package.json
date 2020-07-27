@@ -10,21 +10,21 @@
     "build:doc": "jsdoc -c jsdoc.json -R README.md -u tutorials/ && echo 'hikaru.alynx.one' > docs/CNAME",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlynxZhou/hikaru.git"
+  },
   "keywords": [
     "Hikaru",
     "Node.js",
     "Static Site Generator"
   ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/AlynxZhou/hikaru.git"
-  },
+  "author": "Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.one/)",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/AlynxZhou/hikaru/issues"
   },
   "homepage": "https://hikaru.alynx.one/",
-  "author": "Alynx Zhou <alynx.zhou@gmail.com> (https://alynx.one/)",
-  "license": "Apache-2.0",
   "dependencies": {
     "cheerio": "~0.22.0",
     "chokidar": "^3.4.1",
@@ -34,7 +34,6 @@
     "highlight.js": "^10.1.1",
     "marked": "^1.1.1",
     "moment-timezone": "^0.5.31",
-    "nib": "^1.1.2",
     "nunjucks": "^3.2.1",
     "stylus": "^0.54.8",
     "yaml": "^1.10.0"

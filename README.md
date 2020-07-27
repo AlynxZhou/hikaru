@@ -1,13 +1,13 @@
 Hikaru
 ======
 
+A static site generator that generates routes based on directories naturally.
+-----------------------------------------------------------------------------
+
 [![npm-version](https://img.shields.io/npm/v/hikarujs?style=for-the-badge)](https://www.npmjs.com/package/hikarujs)
 [![npm-downloads](https://img.shields.io/npm/dt/hikarujs?style=for-the-badge)](https://www.npmjs.com/package/hikarujs)
 [![node-version](https://img.shields.io/node/v/hikarujs?style=for-the-badge)](https://www.npmjs.com/package/hikarujs)
 [![github-license](https://img.shields.io/github/license/AlynxZhou/hikaru?style=for-the-badge)](https://github.com/AlynxZhou/hikaru/blob/master/LICENSE)
-
-A static site generator that generates routes based on directories naturally.
------------------------------------------------------------------------------
 
 # Install
 
@@ -112,3 +112,11 @@ My blog built with Hikaru and ARIA: [喵's StackHarbor](https://sh.alynx.one/)
 # License
 
 [Apache-2.0](LICENSE)
+
+# For Stylus and nib
+
+Since Hikaru v1.2.11, nib was dropped because [its the only dependency has NodeJS 14 warnings](https://github.com/stylus/nib/issues/347), and many nib features can be done in newer CSS. So it was splitted into a single plugin.
+
+If you need nib for your theme, please install [hikaru-renderer-stylus-nib](https://github.com/AlynxZhou/hikaru-renderer-stylus-nib/) to your site.
+
+I may re-add nib into Hikaru if they solve the issue.
