@@ -452,7 +452,7 @@ class Hikaru {
    * @private
    */
   registerInternalRenderers() {
-    this.renderer.register('.html', '.html', (file) => {
+    this.renderer.register('.html', (file) => {
       file['content'] = file['text']
       return file
     })

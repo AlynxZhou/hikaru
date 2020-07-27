@@ -36,15 +36,19 @@ class Renderer {
    */
   register(srcExt, docExt, fn) {
     if (isFunction(docExt) && fn == null) {
+      // This renderer does not change extname.
       fn = docExt
-      docExt = null
+      docExt = srcExt
     } else if (!isFunction(fn)) {
       throw new TypeError('fn must be a Function')
     }
     if (this._[srcExt] == null) {
-      this._[srcExt] = []
+      this._[srcExt] = {}
     }
-    this._[srcExt].push({srcExt, docExt, fn})
+    // Use another object for docExt,
+    // so renderer for the same src and doc in plugin
+    // can replace internal renderer.
+    this._[srcExt][docExt] = {srcExt, docExt, fn}
   }
 
   /**
@@ -58,10 +62,10 @@ class Renderer {
     if (
       this._[srcExt] != null && !this.skipRenderList.includes(input['srcPath'])
     ) {
-      for (const handler of this._[srcExt]) {
+      for (const handler of Object.values(this._[srcExt])) {
         const output = new File(input)
         const docExt = handler['docExt']
-        if (docExt != null) {
+        if (docExt !== srcExt) {
           const dirname = path.dirname(output['srcPath'])
           const basename = path.basename(output['srcPath'], srcExt)
           output['docPath'] = path.join(dirname, `${basename}${docExt}`)
