@@ -82,6 +82,15 @@ class Hikaru {
       this.logger.error(error)
     })
     process.on('SIGINT', () => {
+      if (this.router != null) {
+        this.router.close()
+      }
+      process.exit(0)
+    })
+    process.on('SIGTERM', () => {
+      if (this.router != null) {
+        this.router.close()
+      }
       process.exit(0)
     })
     process.on('exit', () => {

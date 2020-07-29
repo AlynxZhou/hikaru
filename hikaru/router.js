@@ -54,6 +54,10 @@ class Router {
     this.translator = translator
     this.site = site
     this._ = {}
+    this.server = null
+    this.ip = null
+    this.port = null
+    this.listening = false
     this.watchers = []
     this.watchedEvents = []
     this.sourcePages = []
@@ -299,7 +303,9 @@ class Router {
    * @param {Number} port
    */
   listen(ip, port) {
-    const server = http.createServer(async (request, response) => {
+    this.ip = ip
+    this.port = port
+    this.server = http.createServer(async (request, response) => {
       // Remove query string.
       const url = request['url'].split(/[?#]/)[0]
       let file
@@ -324,24 +330,38 @@ class Router {
       )
       response.end()
     })
-    process.prependListener('exit', () => {
-      server.close()
+    this.logger.log(
+      `Hikaru is starting to listen on http://${this.ip}:${this.port}${
+        this.getPath()
+      }...`
+    )
+    if (!this.listening) {
+      if (this.ip !== 'localhost') {
+        this.server.listen(this.port, this.ip)
+      } else {
+        this.server.listen(this.port)
+      }
+      this.listening = true
+      this.watchAll()
+    }
+  }
+
+  /**
+   * @private
+   * @description Close the listening server.
+   */
+  close() {
+    if (this.listening) {
+      this.server.close()
+      this.listening = false
+      this.unwatchAll()
       this.logger.log(
-        `Hikaru is stopping to listen on http://${ip}:${port}${
+        `Hikaru is stopping to listen on http://${this.ip}:${this.port}${
           this.getPath()
         }...`
       )
-      this.unwatchAll()
-    })
-    this.logger.log(
-      `Hikaru is starting to listen on http://${ip}:${port}${this.getPath()}...`
-    )
-    if (ip !== 'localhost') {
-      server.listen(port, ip)
-    } else {
-      server.listen(port)
+      this.server = null
     }
-    this.watchAll()
   }
 
   /**
