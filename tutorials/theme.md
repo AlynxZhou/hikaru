@@ -72,7 +72,7 @@ You can use following helpers in template:
 
 Assets may be CSS or JavaScript files, Hikaru internally supports stylus, so you can write it instead pure CSS. You can also add other preprocessors via registing renderers.
 
-You can use `getThemeConfig(key)` or `getSiteConfig(key)` in CSS preprocessors to get config.
+You can use `getThemeConfig(key)` or `getSiteConfig(key)` in CSS preprocessors to get config. Use `getPath(docPath)` or `getURL(docPath)` if you want to get generated path or URL.
 
 # Language Files
 
