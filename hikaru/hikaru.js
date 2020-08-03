@@ -478,6 +478,11 @@ class Hikaru {
     })
 
     const stylConfig = this.site['siteConfig']['stylus'] || {}
+    const getPath = getPathFn(this.site['siteConfig']['rootDir'])
+    const getURL = getURLFn(
+      this.site['siteConfig']['baseURL'],
+      this.site['siteConfig']['rootDir']
+    )
     this.renderer.register('.styl', '.css', (file) => {
       return new Promise((resolve, reject) => {
         stylus(file['text']).use((style) => {
@@ -503,6 +508,18 @@ class Hikaru {
               res = res[k]
             }
             return res
+          })
+        }).use((style) => {
+          style.define('siteConfig', this.site['siteConfig'])
+        }).use((style) => {
+          style.define('themeConfig', this.site['themeConfig'])
+        }).use((style) => {
+          style.define('getPath', (data) => {
+            return getPath(data['val'].toString().trim())
+          })
+        }).use((style) => {
+          style.define('getURL', (data) => {
+            return getURL(data['val'].toString().trim())
           })
         }).set('filename', path.join(
           this.site['siteConfig']['themeSrcDir'], file['srcPath']
