@@ -530,10 +530,12 @@ const serializeNode = (node, options) => {
  * @param {traversalCallback} callback
  */
 const nodesEach = (node, callback) => {
-  callback(node)
-  if (node['childNodes'] != null) {
-    for (const childNode of node['childNodes']) {
-      nodesEach(childNode, callback)
+  if (isFunction(callback)) {
+    callback(node)
+    if (node['childNodes'] != null) {
+      for (const childNode of node['childNodes']) {
+        nodesEach(childNode, callback)
+      }
     }
   }
 }
@@ -548,7 +550,7 @@ const nodesEach = (node, callback) => {
 const getNodeText = (node) => {
   if (node['childNodes'] != null) {
     for (const childNode of node['childNodes']) {
-      if (childNode['nodeName'] == '#text') {
+      if (childNode['nodeName'] === '#text') {
         return childNode['value']
       }
     }
