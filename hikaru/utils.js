@@ -505,11 +505,6 @@ const delSite = (site, key, file) => {
  * @return {Object}
  */
 const parseNode = (node, html, options) => {
-  if (isString(Object)) {
-    options = html
-    html = node
-    return parse5.parseFragment(html, options)
-  }
   return parse5.parseFragment(node, html, options)
 }
 
@@ -521,7 +516,7 @@ const parseNode = (node, html, options) => {
  * @return {String}
  */
 const serializeNode = (node, options) => {
-  return parse5.serialize(node)
+  return parse5.serialize(node, options)
 }
 
 /**
