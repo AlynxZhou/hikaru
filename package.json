@@ -26,7 +26,6 @@
   },
   "homepage": "https://hikaru.alynx.one/",
   "dependencies": {
-    "cheerio": "~0.22.0",
     "chokidar": "^3.4.1",
     "commander": "^5.1.0",
     "fs-extra": "^9.0.1",
@@ -35,6 +34,7 @@
     "marked": "^1.1.1",
     "moment-timezone": "^0.5.31",
     "nunjucks": "^3.2.1",
+    "parse5": "^6.0.1",
     "stylus": "^0.54.8",
     "yaml": "^1.10.0"
   },

@@ -9,6 +9,7 @@ const path = require('path')
 const glob = require('glob')
 const YAML = require('yaml')
 const {URL} = require('url')
+const parse5 = require('parse5')
 const moment = require('moment-timezone')
 const {File, Category, Tag, TOC} = require('./types')
 const pkg = require('../package.json')
@@ -495,60 +496,189 @@ const delSite = (site, key, file) => {
 }
 
 /**
- * @description Update headers' ID for bootstrap scrollspy.
- * @param {Object} $ Cheerio context.
+ * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/index.md#parsefragment
+ * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/document-fragment.md
+ * @description Parse HTML string into parse5 Node.
+ * @param {Object} [node] If specified, given string will be parsed as if it was set to the element's `innerHTML` property.
+ * @param {String} html HTML string to parse.
+ * @param {Object} [options] parse5 options.\
+ * @return {Object}
  */
-const resolveHeaderIDs = ($) => {
+const parseNode = (node, html, options) => {
+  if (isString(Object)) {
+    options = html
+    html = node
+    return parse5.parseFragment(html, options)
+  }
+  return parse5.parseFragment(node, html, options)
+}
+
+/**
+ * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/index.md#serialize
+ * @description Serialize parse5 Node into HTML string.
+ * @param {Object} node parse5 Node to serialize.
+ * @param {Object} [options] parse5 options.
+ * @return {String}
+ */
+const serializeNode = (node, options) => {
+  return parse5.serialize(node)
+}
+
+/**
+ * @callback traversalCallback
+ * @param {Object} node parse5 Node.
+ */
+/**
+ * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/element.md
+ * @description Recursively Pre-Order Traversal of parse5 Node.
+ * @param {Object} node Root parse5 Node of a tree.
+ * @param {traversalCallback} callback
+ */
+const nodesEach = (node, callback) => {
+  callback(node)
+  if (node['childNodes'] != null) {
+    for (const childNode of node['childNodes']) {
+      nodesEach(childNode, callback)
+    }
+  }
+}
+
+/**
+ * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/element.md
+ * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/text-node.md
+ * @description Get text content of a parse5 Node.
+ * @param {Object} node parse5 Node.
+ * @return {String}
+ */
+const getNodeText = (node) => {
+  if (node['childNodes'] != null) {
+    for (const childNode of node['childNodes']) {
+      if (childNode['nodeName'] == '#text') {
+        return childNode['value']
+      }
+    }
+  }
+  return null
+}
+
+/**
+ * @description Set text content (or innerHTML) of a parse5 Node.
+ * @param {Object} node parse5 Node.
+ * @param {String} html
+ * @return {Object[]} Generated childNodes.
+ */
+const setNodeText = (node, html) => {
+  // Add HTML to childNodes via parsing and replacing
+  // to keep tree reference, and skip the parse5-generated
+  // `#document-fragment` node.
+  return node['childNodes'] = parseNode(node, html)['childNodes']
+}
+
+/**
+ * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/element.md
+ * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/attribute.md
+ * @description Get an attribute value from parse5 Node.
+ * @param {Object} node parse5 Node.
+ * @param {String} attrName
+ * @return {String} Value of the attribute.
+ */
+const getNodeAttr = (node, attrName) => {
+  if (node['attrs'] != null) {
+    for (const attr of node['attrs']) {
+      if (attr['name'] === attrName) {
+        return attr['value']
+      }
+    }
+  }
+  return null
+}
+
+/**
+ * @description Set an attribute value to parse5 Node.
+ * @param {Object} node parse5 Node.
+ * @param {String} attrName
+ * @param {String} attrValue
+ * @return {String} Value of the attribute.
+ */
+const setNodeAttr = (node, attrName, attrValue) => {
+  if (node['attrs'] != null) {
+    for (const attr of node['attrs']) {
+      // Already have this attr, then replace.
+      if (attr['name'] === attrName) {
+        return attr['value'] = attrValue
+      }
+    }
+    // Have other attrs but not this, so append.
+    return node['attrs'].push({'name': attrName, 'value': attrValue})
+  }
+  // No attr at all, just create.
+  return node['attrs'] = [{'name': attrName, 'value': attrValue}]
+}
+
+/**
+ * @description Update headers' ID for bootstrap scrollspy.
+ * @param {Object} node parse5 Node.
+ */
+const resolveHeaderIDs = (node) => {
   const hNames = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']
   const headerIDs = {}
-  $(hNames.join(', ')).each((i, h) => {
-    const text = $(h).text()
-    // Remove some chars in escaped ID because
-    // bootstrap scrollspy cannot support it.
-    const escaped = escapeHTML(text).trim().replace(
-      /[\s\(\)\[\]{}<>\.,\!\@#\$%\^&\*=\|`''\/\?~]+/g,
-      ''
-    )
-    let id
-    if (headerIDs[escaped] == null) {
-      id = escaped
-      headerIDs[escaped] = 1
-    } else {
-      id = `${escaped}-${headerIDs[escaped]++}`
-      // If we have `abc`, `abc` and `abc-1`,\
-      // we must save the `abc-1` generated by the second `abc`,
-      // to prevent 2 `abc-1` for the last `abc-1`.
-      headerIDs[id] = 1
+  nodesEach(node, (node) => {
+    if (hNames.includes(node['tagName'])) {
+      const text = getNodeText(node)
+      if (text != null) {
+        // Remove some chars in escaped ID because
+        // bootstrap scrollspy cannot support it.
+        const escaped = escapeHTML(text).trim().replace(
+          /[\s\(\)\[\]{}<>\.,\!\@#\$%\^&\*=\|`''\/\?~]+/g,
+          ''
+        )
+        let id
+        if (headerIDs[escaped] == null) {
+          id = escaped
+          headerIDs[escaped] = 1
+        } else {
+          id = `${escaped}-${headerIDs[escaped]++}`
+          // If we have `abc`, `abc` and `abc-1`,\
+          // we must save the `abc-1` generated by the second `abc`,
+          // to prevent 2 `abc-1` for the last `abc-1`.
+          headerIDs[id] = 1
+        }
+        setNodeAttr(node, 'id', id)
+        setNodeText(
+          node,
+          `<a class="header-link" href="#${id}" title="${escaped}"></a>${text}`
+        )
+      }
     }
-    $(h).attr('id', id)
-    // Unlike TOC, anchor here will be resolved to absolute link,
-    // because this might be copied to other pages as excerpt.
-    $(h).html(
-      `<a class="header-link" href="#${id}" title="${escaped}"></a>${text}`
-    )
   })
 }
 
 /**
  * @description Generate TOC from HTML headers.
- * @param {Object} $ Cheerio context.
+ * @param {Object} node parse5 Node.
  */
-const genTOC = ($) => {
+const genTOC = (node) => {
   const hNames = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']
   const toc = []
-  $(hNames.join(', ')).each((i, h) => {
-    let level = toc
-    while (
-      level.length > 0 &&
-      hNames.indexOf(
-        level[level.length - 1]['name']
-      ) < hNames.indexOf(h['name'])
-    ) {
-      level = level[level.length - 1]['subs']
+  nodesEach(node, (node) => {
+    if (hNames.includes(node['tagName'])) {
+      let level = toc
+      while (
+        level.length > 0 &&
+        hNames.indexOf(
+          level[level.length - 1]['name']
+        ) < hNames.indexOf(node['tagName'])
+      ) {
+        level = level[level.length - 1]['subs']
+      }
+      const id = getNodeAttr(node, 'id')
+      const text = getNodeText(node)
+      if (id != null && text != null) {
+        // Don't set anchor to absolute path,
+        // because it's hard to write selector for scrollspy.
+        level.push(new TOC(node['tagName'], `#${id}`, text.trim()))
+      }
     }
-    // Don't set anchor to absolute path,
-    // because it's hard to write selector for scrollspy.
-    level.push(new TOC(h['name'], `#${$(h).attr('id')}`, $(h).text().trim()))
   })
   return toc
 }
@@ -570,50 +700,56 @@ const getURLProtocol = (url) => {
 /**
  * @description Update site's internal link to absolute path,
  * and add attributes for external link.
- * @param {Object} $ Cheerio context.
+ * @param {Object} node parse5 Node.
  * @param {String} [baseURL] Site baseURL.
  * @param {String} [rootDir] Site rootDir.
  * @param {String} [docPath]
  */
-const resolveLink = ($, baseURL, rootDir, docPath) => {
+const resolveLink = (node, baseURL, rootDir, docPath) => {
   const getURL = getURLFn(baseURL, rootDir)
   const getPath = getPathFn(rootDir)
   // Replace relative path to absolute path.
-  $('a').each((i, a) => {
-    const href = $(a).attr('href')
-    if (href == null) {
-      return
-    }
-    // If `href` is a valid URL, `baseURL` will be ignored.
-    // So we can compare host for all links here.
-    if (new URL(href, baseURL).origin !== getURL(docPath).origin) {
-      $(a).attr('target', '_blank')
-      $(a).attr('rel', 'noreferrer noopener')
-    }
-    // `path.posix.isAbsolute()` detects `/` or `//`.
-    if (!(path.posix.isAbsolute(href) || getURLProtocol(href) != null)) {
-      $(a).attr('href', getPath(path.join(path.dirname(docPath), href)))
+  nodesEach(node, (node) => {
+    if (node['tagName'] === 'a') {
+      const href = getNodeAttr(node, 'href')
+      if (href != null) {
+        // If `href` is a valid URL, `baseURL` will be ignored.
+        // So we can compare host for all links here.
+        if (new URL(href, baseURL).origin !== getURL(docPath).origin) {
+          setNodeAttr(node, 'target', '_blank')
+          setNodeAttr(node, 'rel', 'noreferrer noopener')
+        }
+        // `path.posix.isAbsolute()` detects `/` or `//`.
+        if (!(path.posix.isAbsolute(href) || getURLProtocol(href) != null)) {
+          setNodeAttr(
+            node, 'href', getPath(path.join(path.dirname(docPath), href))
+          )
+        }
+      }
     }
   })
 }
 
 /**
  * @description Update site's internal image src to absolute path.
- * @param {Object} $ Cheerio context.
+ * @param {Object} node parse5 Node.
  * @param {String} [rootDir] Site rootDir.
  * @param {String} [docPath]
  */
-const resolveImage = ($, rootDir, docPath) => {
+const resolveImage = (node, rootDir, docPath) => {
   const getPath = getPathFn(rootDir)
   // Replace relative path to absolute path.
-  $('img').each((i, e) => {
-    const src = $(e).attr('src')
-    if (src == null) {
-      return
-    }
-    // `path.posix.isAbsolute()` detects `/` or `//`.
-    if (!(path.posix.isAbsolute(src) || getURLProtocol(src) != null)) {
-      $(e).attr('src', getPath(path.join(path.dirname(docPath), src)))
+  nodesEach(node, (node) => {
+    if (node['tagName'] === 'img') {
+      const src = getNodeAttr(node, 'src')
+      if (src != null) {
+        // `path.posix.isAbsolute()` detects `/` or `//`.
+        if (!(path.posix.isAbsolute(src) || getURLProtocol(src) != null)) {
+          setNodeAttr(
+            node, 'src', getPath(path.join(path.dirname(docPath), src))
+          )
+        }
+      }
     }
   })
 }
@@ -667,16 +803,23 @@ module.exports = {
   paginateCategories,
   getPathFn,
   getURLFn,
+  isCurrentPathFn,
   genCategories,
   genTags,
   putSite,
   delSite,
-  isCurrentPathFn,
+  parseNode,
+  serializeNode,
+  nodesEach,
+  getNodeText,
+  setNodeText,
+  getNodeAttr,
+  setNodeAttr,
   resolveHeaderIDs,
+  genTOC,
   getURLProtocol,
   resolveLink,
   resolveImage,
-  genTOC,
   getVersion,
   default404
 }

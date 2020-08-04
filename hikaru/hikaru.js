@@ -8,7 +8,6 @@ const path = require('path')
 const {URL} = require('url')
 
 const fse = require('fs-extra')
-const cheerio = require('cheerio')
 const YAML = require('yaml')
 const nunjucks = require('nunjucks')
 const marked = require('marked')
@@ -41,6 +40,8 @@ const {
   getURLFn,
   genCategories,
   genTags,
+  parseNode,
+  serializeNode,
   resolveHeaderIDs,
   resolveLink,
   resolveImage,
@@ -596,23 +597,19 @@ class Hikaru {
     })
 
     this.processor.register('toc and link resolving', (site) => {
-      // Preventing cheerio decode `&lt;`.
-      // Only work with cheerio version less than or equal to `0.22.0`,
-      // which uses `htmlparser2` as its parser.
       const all = site['posts'].concat(site['pages'])
       for (const p of all) {
-        p['$'] = cheerio.load(p['content'], {'decodeEntities': false})
-        resolveHeaderIDs(p['$'])
-        p['toc'] = genTOC(p['$'])
+        const node = parseNode(p['content'])
+        resolveHeaderIDs(node)
+        p['toc'] = genTOC(node)
         resolveLink(
-          p['$'],
+          node,
           site['siteConfig']['baseURL'],
           site['siteConfig']['rootDir'],
           p['docPath']
         )
-        resolveImage(p['$'], site['siteConfig']['rootDir'], p['docPath'])
-        // May change after cheerio switching to `parse5`.
-        p['content'] = p['$'].html()
+        resolveImage(node, site['siteConfig']['rootDir'], p['docPath'])
+        p['content'] = serializeNode(node)
         if (p['content'].indexOf('<!--more-->') !== -1) {
           const split = p['content'].split('<!--more-->')
           p['excerpt'] = split[0]

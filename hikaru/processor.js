@@ -22,7 +22,7 @@ class Processor {
   /**
    * @callback processCallback
    * @param {Site} site
-   * @return {site}
+   * @return {Site}
    */
   /**
    * @description Register a processor function.
