@@ -23,7 +23,7 @@ Making the site is done by a special module called `Router`, it is special becau
 
 And then `Router` will call first module `Renderer`, it contains registered functions, and will render file content by different extend names of file's srcPath, after rendering it replaces file extend name, and save it in file's docPath.
 
-Then `Router` call `Processor` to edit some page with cheerio or other libs.
+Then `Router` call `Processor` to edit some page with other libs.
 
 After processing `Router` will call `Generator`. Though Hikaru builds routes with directory structures, some output files don't have source files like sitemap files. So we create `File` objects manually in generator functions before saving.
 

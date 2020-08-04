@@ -26,8 +26,8 @@ As the subtitle, it's a static site generator, based on Markdown, CSS preprocess
 - [X] Archives info for templating.
 - [X] Categories info for templating.
 - [X] Tags info for templating.
-- [X] Cheerio-based toc generating.
-- [X] Cheerio-based path converting (relative to absolute).
+- [X] Parser-based toc generating.
+- [X] Parser-based path converting (relative to absolute).
 - [X] Date operations in templates.
 - [X] sprintf-js based multi-languages support.
 - [X] Local search JSON gengrating.

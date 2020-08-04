@@ -87,10 +87,6 @@ Typically content before `<!--more-->` tag in post.
 
 Typically content after `<!--more-->` tag in post.
 
-## `$`
-
-Cheerio context for page content.
-
 ## `toc`
 
 Toc for page content.

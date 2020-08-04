@@ -112,7 +112,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line629">line 629</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line769">line 769</a>
     </li></ul></dd>
     
 
@@ -288,7 +288,7 @@ which have the same input path.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line483">line 483</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line484">line 484</a>
     </li></ul></dd>
     
 
@@ -425,7 +425,7 @@ which have the same input path.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line70">line 70</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line71">line 71</a>
     </li></ul></dd>
     
 
@@ -584,7 +584,7 @@ which have the same input path.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line373">line 373</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line374">line 374</a>
     </li></ul></dd>
     
 
@@ -739,7 +739,7 @@ which have the same input path.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line419">line 419</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line420">line 420</a>
     </li></ul></dd>
     
 
@@ -793,7 +793,7 @@ which have the same input path.</p>
     
 
     
-    <h4 class="name" id="~genTOC"><span class="type-signature">(inner) </span>genTOC<span class="signature">($)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="~genTOC"><span class="type-signature">(inner) </span>genTOC<span class="signature">(node)</span><span class="type-signature"></span></h4>
     
 
     
@@ -837,7 +837,7 @@ which have the same input path.</p>
 
         <tr>
             
-                <td class="name"><code>$</code></td>
+                <td class="name"><code>node</code></td>
             
 
             <td class="type">
@@ -853,7 +853,7 @@ which have the same input path.</p>
 
             
 
-            <td class="description last"><p>Cheerio context.</p></td>
+            <td class="description last"><p>parse5 Node.</p></td>
         </tr>
 
     
@@ -894,7 +894,7 @@ which have the same input path.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line532">line 532</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line660">line 660</a>
     </li></ul></dd>
     
 
@@ -1031,7 +1031,7 @@ which have the same input path.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line178">line 178</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line179">line 179</a>
     </li></ul></dd>
     
 
@@ -1194,7 +1194,7 @@ then also ends with such a line.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line119">line 119</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line120">line 120</a>
     </li></ul></dd>
     
 
@@ -1231,6 +1231,361 @@ then also ends with such a line.</p>
     <dd>
         
 <span class="param-type">FrontMatter</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="~getNodeAttr"><span class="type-signature">(inner) </span>getNodeAttr<span class="signature">(node, attrName)</span><span class="type-signature"> &rarr; {String}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Get an attribute value from parse5 Node.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>node</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>parse5 Node.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>attrName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line585">line 585</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/element.md">https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/element.md</a></li>
+        
+            <li><a href="https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/attribute.md">https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/attribute.md</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Value of the attribute.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">String</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="~getNodeText"><span class="type-signature">(inner) </span>getNodeText<span class="signature">(node)</span><span class="type-signature"> &rarr; {String}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Get text content of a parse5 Node.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>node</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>parse5 Node.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line553">line 553</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/element.md">https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/element.md</a></li>
+        
+            <li><a href="https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/text-node.md">https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/text-node.md</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">String</span>
 
 
     </dd>
@@ -1361,7 +1716,7 @@ then also ends with such a line.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line274">line 274</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line275">line 275</a>
     </li></ul></dd>
     
 
@@ -1561,7 +1916,7 @@ then also ends with such a line.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line309">line 309</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line310">line 310</a>
     </li></ul></dd>
     
 
@@ -1716,7 +2071,7 @@ then also ends with such a line.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line557">line 557</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line691">line 691</a>
     </li></ul></dd>
     
 
@@ -1826,7 +2181,7 @@ then also ends with such a line.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line621">line 621</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line761">line 761</a>
     </li></ul></dd>
     
 
@@ -1977,7 +2332,7 @@ then also ends with such a line.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line29">line 29</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line30">line 30</a>
     </li></ul></dd>
     
 
@@ -2128,7 +2483,7 @@ then also ends with such a line.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line61">line 61</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line62">line 62</a>
     </li></ul></dd>
     
 
@@ -2279,7 +2634,7 @@ then also ends with such a line.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line53">line 53</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line54">line 54</a>
     </li></ul></dd>
     
 
@@ -2479,7 +2834,7 @@ then also ends with such a line.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line329">line 329</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line330">line 330</a>
     </li></ul></dd>
     
 
@@ -2630,7 +2985,7 @@ then also ends with such a line.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line37">line 37</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line38">line 38</a>
     </li></ul></dd>
     
 
@@ -2781,7 +3136,7 @@ then also ends with such a line.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line45">line 45</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line46">line 46</a>
     </li></ul></dd>
     
 
@@ -2936,7 +3291,7 @@ then also ends with such a line.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line21">line 21</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line22">line 22</a>
     </li></ul></dd>
     
 
@@ -3134,7 +3489,7 @@ then also ends with such a line.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line84">line 84</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line85">line 85</a>
     </li></ul></dd>
     
 
@@ -3177,6 +3532,173 @@ then also ends with such a line.</p>
 </dl>
 
     
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="~nodesEach"><span class="type-signature">(inner) </span>nodesEach<span class="signature">(node, callback)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Recursively Pre-Order Traversal of parse5 Node.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>node</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>Root parse5 Node of a tree.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>callback</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">traversalCallback</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line537">line 537</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/element.md">https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/element.md</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -3379,7 +3901,7 @@ then also ends with such a line.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line189">line 189</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line190">line 190</a>
     </li></ul></dd>
     
 
@@ -3664,7 +4186,7 @@ into which sub categories need to be put.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line241">line 241</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line242">line 242</a>
     </li></ul></dd>
     
 
@@ -3823,7 +4345,7 @@ into which sub categories need to be put.</p></td>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line144">line 144</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line145">line 145</a>
     </li></ul></dd>
     
 
@@ -3860,6 +4382,246 @@ into which sub categories need to be put.</p></td>
     <dd>
         
 <span class="param-type">File</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="~parseNode"><span class="type-signature">(inner) </span>parseNode<span class="signature">(node<span class="signature-attributes">opt</span>, html, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Object}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Parse HTML string into parse5 Node.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>node</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>If specified, given string will be parsed as if it was set to the element's <code>innerHTML</code> property.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>html</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>HTML string to parse.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>parse5 options.\</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line507">line 507</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/index.md#parsefragment">https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/index.md#parsefragment</a></li>
+        
+            <li><a href="https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/document-fragment.md">https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/document-fragment.md</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Object</span>
 
 
     </dd>
@@ -4025,7 +4787,7 @@ will replace file with the same output path.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line459">line 459</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line460">line 460</a>
     </li></ul></dd>
     
 
@@ -4162,7 +4924,7 @@ will replace file with the same output path.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line100">line 100</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line101">line 101</a>
     </li></ul></dd>
     
 
@@ -4220,7 +4982,7 @@ will replace file with the same output path.</p>
     
 
     
-    <h4 class="name" id="~resolveHeaderIDs"><span class="type-signature">(inner) </span>resolveHeaderIDs<span class="signature">($)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="~resolveHeaderIDs"><span class="type-signature">(inner) </span>resolveHeaderIDs<span class="signature">(node)</span><span class="type-signature"></span></h4>
     
 
     
@@ -4264,7 +5026,7 @@ will replace file with the same output path.</p>
 
         <tr>
             
-                <td class="name"><code>$</code></td>
+                <td class="name"><code>node</code></td>
             
 
             <td class="type">
@@ -4280,7 +5042,7 @@ will replace file with the same output path.</p>
 
             
 
-            <td class="description last"><p>Cheerio context.</p></td>
+            <td class="description last"><p>parse5 Node.</p></td>
         </tr>
 
     
@@ -4321,7 +5083,7 @@ will replace file with the same output path.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line501">line 501</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line622">line 622</a>
     </li></ul></dd>
     
 
@@ -4357,7 +5119,7 @@ will replace file with the same output path.</p>
     
 
     
-    <h4 class="name" id="~resolveImage"><span class="type-signature">(inner) </span>resolveImage<span class="signature">($, rootDir<span class="signature-attributes">opt</span>, docPath<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="~resolveImage"><span class="type-signature">(inner) </span>resolveImage<span class="signature">(node, rootDir<span class="signature-attributes">opt</span>, docPath<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -4403,7 +5165,7 @@ will replace file with the same output path.</p>
 
         <tr>
             
-                <td class="name"><code>$</code></td>
+                <td class="name"><code>node</code></td>
             
 
             <td class="type">
@@ -4427,7 +5189,7 @@ will replace file with the same output path.</p>
 
             
 
-            <td class="description last"><p>Cheerio context.</p></td>
+            <td class="description last"><p>parse5 Node.</p></td>
         </tr>
 
     
@@ -4534,7 +5296,7 @@ will replace file with the same output path.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line602">line 602</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line739">line 739</a>
     </li></ul></dd>
     
 
@@ -4570,7 +5332,7 @@ will replace file with the same output path.</p>
     
 
     
-    <h4 class="name" id="~resolveLink"><span class="type-signature">(inner) </span>resolveLink<span class="signature">($, baseURL<span class="signature-attributes">opt</span>, rootDir<span class="signature-attributes">opt</span>, docPath<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="~resolveLink"><span class="type-signature">(inner) </span>resolveLink<span class="signature">(node, baseURL<span class="signature-attributes">opt</span>, rootDir<span class="signature-attributes">opt</span>, docPath<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -4617,7 +5379,7 @@ and add attributes for external link.</p>
 
         <tr>
             
-                <td class="name"><code>$</code></td>
+                <td class="name"><code>node</code></td>
             
 
             <td class="type">
@@ -4641,7 +5403,7 @@ and add attributes for external link.</p>
 
             
 
-            <td class="description last"><p>Cheerio context.</p></td>
+            <td class="description last"><p>parse5 Node.</p></td>
         </tr>
 
     
@@ -4781,7 +5543,7 @@ and add attributes for external link.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line574">line 574</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line708">line 708</a>
     </li></ul></dd>
     
 
@@ -4806,6 +5568,598 @@ and add attributes for external link.</p>
 
 
 
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="~serializeNode"><span class="type-signature">(inner) </span>serializeNode<span class="signature">(node, options<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {String}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Serialize parse5 Node into HTML string.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>node</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>parse5 Node to serialize.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>parse5 options.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line523">line 523</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/index.md#serialize">https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/index.md#serialize</a></li>
+        </ul>
+    </dd>
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">String</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="~setNodeAttr"><span class="type-signature">(inner) </span>setNodeAttr<span class="signature">(node, attrName, attrValue)</span><span class="type-signature"> &rarr; {String}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Set an attribute value to parse5 Node.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>node</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>parse5 Node.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>attrName</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>attrValue</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line603">line 603</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Value of the attribute.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">String</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="~setNodeText"><span class="type-signature">(inner) </span>setNodeText<span class="signature">(node, html)</span><span class="type-signature"> &rarr; {Array.&lt;Object>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Set text content (or innerHTML) of a parse5 Node.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>node</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>parse5 Node.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>html</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line570">line 570</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    <p>Generated childNodes.</p>
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Array.&lt;Object></span>
+
+
+    </dd>
+</dl>
+
+    
 
 
 
@@ -4918,7 +6272,7 @@ and add attributes for external link.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line220">line 220</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line221">line 221</a>
     </li></ul></dd>
     
 
@@ -5081,7 +6435,7 @@ and add attributes for external link.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line363">line 363</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line364">line 364</a>
     </li></ul></dd>
     
 
@@ -5247,7 +6601,7 @@ and add attributes for external link.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line104">line 104</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line105">line 105</a>
     </li></ul></dd>
     
 
@@ -5378,7 +6732,7 @@ and add attributes for external link.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line264">line 264</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line265">line 265</a>
     </li></ul></dd>
     
 
@@ -5545,7 +6899,7 @@ and add attributes for external link.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line298">line 298</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line299">line 299</a>
     </li></ul></dd>
     
 
@@ -5761,7 +7115,7 @@ and add attributes for external link.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line316">line 316</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line317">line 317</a>
     </li></ul></dd>
     
 
@@ -5936,7 +7290,7 @@ and add attributes for external link.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line409">line 409</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line410">line 410</a>
     </li></ul></dd>
     
 
@@ -5946,6 +7300,139 @@ and add attributes for external link.</p>
 
     
 </dl>
+
+
+
+
+
+
+            
+                
+
+    
+
+    
+    <h4 class="name" id="~traversalCallback"><span class="type-signature"></span>traversalCallback<span class="signature">(node)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>node</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>parse5 Node.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line527">line 527</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -5972,7 +7459,7 @@ and add attributes for external link.</p>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Mon Aug 03 2020 09:43:05 GMT+0800 (China Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.4</a> on Tue Aug 04 2020 11:29:46 GMT+0800 (China Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
