@@ -5,7 +5,6 @@
  */
 
 const path = require('path')
-const {URL} = require('url')
 
 const fse = require('fs-extra')
 const YAML = require('yaml')
@@ -22,17 +21,12 @@ const Decorator = require('./decorator')
 const Translator = require('./translator')
 const Router = require('./router')
 const types = require('./types')
-const {Site, File, Category, Tag} = types
+const {Site, File} = types
 const highlight = require('./highlight')
 const utils = require('./utils')
 const {
-  isArray,
-  isString,
-  isFunction,
   isObject,
-  escapeHTML,
   matchFiles,
-  removeControlChars,
   paginate,
   sortCategories,
   paginateCategories,

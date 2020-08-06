@@ -4,7 +4,6 @@
  * @module utils
  */
 
-const fse = require('fs-extra')
 const path = require('path')
 const glob = require('glob')
 const YAML = require('yaml')
@@ -627,6 +626,7 @@ const resolveHeaderIDs = (node) => {
         // Remove some chars in escaped ID because
         // bootstrap scrollspy cannot support it.
         const escaped = escapeHTML(text).trim().replace(
+          /* eslint-disable-next-line no-useless-escape */
           /[\s\(\)\[\]{}<>\.,\!\@#\$%\^&\*=\|`''\/\?~]+/g,
           ''
         )

@@ -6,13 +6,11 @@
 
 const fse = require('fs-extra')
 const path = require('path')
-const YAML = require('yaml')
 const http = require('http')
 const moment = require('moment-timezone')
 const chokidar = require('chokidar')
 const {File} = require('./types')
 const {
-  inside,
   isArray,
   isString,
   isFunction,
@@ -26,7 +24,6 @@ const {
   getContentType,
   putSite,
   delSite,
-  getFileLayout,
   isCurrentPathFn,
   parseFrontMatter
 } = require('./utils')
