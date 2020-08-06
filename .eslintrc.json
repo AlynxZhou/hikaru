@@ -1,0 +1,16 @@
+{
+  "rules": {
+    "semi": ["error", "always"],
+    "quotes": ["error", "double", {"avoidEscape": false}],
+    "space-before-function-paren": ["error", {
+      "anonymous": "always",
+      "named": "never",
+      "asyncArrow": "always"
+    }],
+    "block-spacing": ["error", "never"],
+    "object-curly-spacing": ["error", "never"],
+    "array-bracket-spacing": ["error", "never"],
+    "quote-props": ["error", "always"],
+    "dot-notation": "off"
+  }
+}

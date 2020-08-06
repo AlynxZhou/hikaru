@@ -8,7 +8,7 @@
   },
   "scripts": {
     "build:doc": "jsdoc -c jsdoc.json -R README.md -u tutorials/ && echo 'hikaru.alynx.one' > docs/CNAME",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "standardx hikaru/*.js bin/*.js"
   },
   "repository": {
     "type": "git",
@@ -39,7 +39,8 @@
     "yaml": "^1.10.0"
   },
   "devDependencies": {
-    "jsdoc": "^3.6.4"
+    "jsdoc": "^3.6.4",
+    "standardx": "^5.0.0"
   },
   "engines": {
     "node": ">=8.9.0"
