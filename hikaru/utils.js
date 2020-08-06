@@ -626,8 +626,7 @@ const resolveHeaderIDs = (node) => {
         // Remove some chars in escaped ID because
         // bootstrap scrollspy cannot support it.
         const escaped = escapeHTML(text).trim().replace(
-          /* eslint-disable-next-line no-useless-escape */
-          /[\s\(\)\[\]{}<>\.,\!\@#\$%\^&\*=\|`''\/\?~]+/g,
+          /[\s()[\]{}<>.,!@#$%^&*=|`'/?~]+/g,
           ""
         );
         let id;
