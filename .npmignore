@@ -1,4 +1,5 @@
 docs/
 tutorials/
-jsdoc.json
+.jsdoc.json
+.eslintrc.json
 package-lock.json
