@@ -7,7 +7,7 @@
     "hikaru": "bin/hikaru"
   },
   "scripts": {
-    "build:doc": "jsdoc -c jsdoc.json -R README.md -u tutorials/ && echo 'hikaru.alynx.one' > docs/CNAME",
+    "build:doc": "jsdoc -c .jsdoc.json -R README.md -u tutorials/ && echo 'hikaru.alynx.one' > docs/CNAME",
     "test": "standardx hikaru/*.js bin/*.js"
   },
   "repository": {
