@@ -1,66 +1,66 @@
-'use strict'
+"use strict";
 
 /**
  * @module utils
  */
 
-const path = require('path')
-const glob = require('glob')
-const YAML = require('yaml')
-const {URL} = require('url')
-const parse5 = require('parse5')
-const moment = require('moment-timezone')
-const {File, Category, Tag, TOC} = require('./types')
-const pkg = require('../package.json')
-const extMIME = require('../dist/ext-mime.json')
+const path = require("path");
+const glob = require("glob");
+const YAML = require("yaml");
+const {URL} = require("url");
+const parse5 = require("parse5");
+const moment = require("moment-timezone");
+const {File, Category, Tag, TOC} = require("./types");
+const pkg = require("../package.json");
+const extMIME = require("../dist/ext-mime.json");
 
 /**
  * @param {*} o
  * @return {Boolean}
  */
 const isString = (o) => {
-  return typeof o === 'string'
-}
+  return typeof o === "string";
+};
 
 /**
  * @param {*} o
  * @return {Boolean}
  */
 const isArray = (o) => {
-  return Array.isArray(o)
-}
+  return Array.isArray(o);
+};
 
 /**
  * @param {*} o
  * @return {Boolean}
  */
 const isFunction = (o) => {
-  return o instanceof Function
-}
+  return o instanceof Function;
+};
 
 /**
  * @param {*} o
  * @return {Boolean} Return `false` when `o == null`.
  */
 const isObject = (o) => {
-  return typeof o === 'object' && o != null
-}
+  return typeof o === "object" && o != null;
+};
 
 /**
  * @param {*} o
  * @return {Boolean}
  */
 const isBuffer = (o) => {
-  return Buffer.isBuffer(o)
-}
+  return Buffer.isBuffer(o);
+};
 
 /**
  * @param {Buffer} b
  * @return {Boolean}
  */
 const isBinary = (b) => {
-  return isBuffer(b) && !b.equals(Buffer.from(b.toString('utf8'), 'utf8'))
-}
+  return isBuffer(b) && !b.equals(Buffer.from(b.toString("utf8"), "utf8"));
+};
 
 /**
  * @description Escape HTML chars.
@@ -68,12 +68,12 @@ const isBinary = (b) => {
  * @return {String} Escaped HTML string.
  */
 const escapeHTML = (str) => {
-  return str.replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;')
-}
+  return str.replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+};
 
 /**
  * @description A Promised glob.
@@ -85,12 +85,12 @@ const matchFiles = (pattern, opts = {}) => {
   return new Promise((resolve, reject) => {
     glob(pattern, opts, (error, result) => {
       if (error != null) {
-        return reject(error)
+        return reject(error);
       }
-      return resolve(result)
-    })
-  })
-}
+      return resolve(result);
+    });
+  });
+};
 
 /**
  * @description Remove XML control chars.
@@ -99,8 +99,8 @@ const matchFiles = (pattern, opts = {}) => {
  */
 const removeControlChars = (str) => {
   /* eslint-disable-next-line no-control-regex */
-  return str.replace(/[\x00-\x1F\x7F]/g, '')
-}
+  return str.replace(/[\x00-\x1F\x7F]/g, "");
+};
 
 /**
  * @typedef {Object} FrontMatter
@@ -119,23 +119,23 @@ const removeControlChars = (str) => {
  */
 const getFrontMatter = (str) => {
   if (!isString(str) || !/^---\r?\n/g.test(str)) {
-    return {'attributes': {}, 'body': str}
+    return {"attributes": {}, "body": str};
   }
   // Use flag `m` for per line test, not `g`.
-  const array = str.split(/^---\r?\n/m, 3)
+  const array = str.split(/^---\r?\n/m, 3);
   // No front-matter at all.
   if (array.length !== 3) {
-    return {'attributes': {}, 'body': str, 'frontMatter': ''}
+    return {"attributes": {}, "body": str, "frontMatter": ""};
   }
   // ['', frontMatter, body]
-  const result = {'attributes': {}, 'body': array[2], 'frontMatter': array[1]}
+  const result = {"attributes": {}, "body": array[2], "frontMatter": array[1]};
   try {
-    result['attributes'] = YAML.parse(result['frontMatter'])
+    result["attributes"] = YAML.parse(result["frontMatter"]);
   } catch (error) {
-    result['attributes'] = {}
+    result["attributes"] = {};
   }
-  return result
-}
+  return result;
+};
 
 /**
  * @description Parse front-matter and set properties to file.
@@ -143,33 +143,33 @@ const getFrontMatter = (str) => {
  * @return {File}
  */
 const parseFrontMatter = (file) => {
-  if (!isString(file['raw'])) {
-    return file
+  if (!isString(file["raw"])) {
+    return file;
   }
-  const parsed = getFrontMatter(file['raw'])
-  file['text'] = parsed['body']
-  file['frontMatter'] = parsed['attributes']
-  file = Object.assign(file, parsed['attributes'])
-  file['updatedDate'] = file['updatedDate'] || file['updatedTime']
-  if (file['updatedDate'] != null) {
+  const parsed = getFrontMatter(file["raw"]);
+  file["text"] = parsed["body"];
+  file["frontMatter"] = parsed["attributes"];
+  file = Object.assign(file, parsed["attributes"]);
+  file["updatedDate"] = file["updatedDate"] || file["updatedTime"];
+  if (file["updatedDate"] != null) {
     // String does not have timezone so we add it.
-    file['updatedMoment'] = moment.tz(
-      file['updatedDate'],
-      file['zone'] || moment.tz.guess()
-    )
-    file['updatedDate'] = file['updatedMoment'].toDate()
+    file["updatedMoment"] = moment.tz(
+      file["updatedDate"],
+      file["zone"] || moment.tz.guess()
+    );
+    file["updatedDate"] = file["updatedMoment"].toDate();
   }
-  file['createdDate'] = file['createdDate'] || file['createdTime']
-  if (file['createdDate'] != null) {
+  file["createdDate"] = file["createdDate"] || file["createdTime"];
+  if (file["createdDate"] != null) {
     // String does not have timezone so we add it.
-    file['createdMoment'] = moment.tz(
-      file['createdDate'],
-      file['zone'] || moment.tz.guess()
-    )
-    file['createdDate'] = file['createdMoment'].toDate()
+    file["createdMoment"] = moment.tz(
+      file["createdDate"],
+      file["zone"] || moment.tz.guess()
+    );
+    file["createdDate"] = file["createdMoment"].toDate();
   }
-  return file
-}
+  return file;
+};
 
 /**
  * @description Detect Content-Type via filename.
@@ -177,8 +177,8 @@ const parseFrontMatter = (file) => {
  * @return {String} Content-Type value.
  */
 const getContentType = (docPath) => {
-  return extMIME[path.extname(docPath)] || 'application/octet-stream'
-}
+  return extMIME[path.extname(docPath)] || "application/octet-stream";
+};
 
 /**
  * @description Paginate page's posts.
@@ -188,47 +188,47 @@ const getContentType = (docPath) => {
  * @return {File[]} Paginated pages, original page's index is 0.
  */
 const paginate = (p, posts, perPage = 10) => {
-  const results = []
-  let perPagePosts = []
+  const results = [];
+  let perPagePosts = [];
   for (const post of posts) {
     if (perPagePosts.length === perPage) {
-      results.push(Object.assign(new File(), p, {'posts': perPagePosts}))
-      perPagePosts = []
+      results.push(Object.assign(new File(), p, {"posts": perPagePosts}));
+      perPagePosts = [];
     }
-    perPagePosts.push(post)
+    perPagePosts.push(post);
   }
-  results.push(Object.assign(new File(), p, {'posts': perPagePosts}))
-  results[0]['pageArray'] = results
-  results[0]['pageIndex'] = 0
-  results[0]['docPath'] = p['docPath']
+  results.push(Object.assign(new File(), p, {"posts": perPagePosts}));
+  results[0]["pageArray"] = results;
+  results[0]["pageIndex"] = 0;
+  results[0]["docPath"] = p["docPath"];
   for (let i = 1; i < results.length; ++i) {
-    results[i]['pageArray'] = results
-    results[i]['pageIndex'] = i
-    results[i]['docPath'] = path.join(
-      path.dirname(p['docPath']),
+    results[i]["pageArray"] = results;
+    results[i]["pageIndex"] = i;
+    results[i]["docPath"] = path.join(
+      path.dirname(p["docPath"]),
       `${path.basename(
-        p['docPath'], path.extname(p['docPath'])
+        p["docPath"], path.extname(p["docPath"])
       )}-${i + 1}.html`
-    )
+    );
   }
-  return results
-}
+  return results;
+};
 
 /**
  * @description Sort categories and their posts recursively.
  * @param {Category} category
  */
 const sortCategories = (category) => {
-  category['posts'].sort((a, b) => {
-    return -(a['date'] - b['date'])
-  })
-  category['subs'].sort((a, b) => {
-    return a['name'].localeCompare(b['name'])
-  })
-  for (const sub of category['subs']) {
-    sortCategories(sub)
+  category["posts"].sort((a, b) => {
+    return -(a["date"] - b["date"]);
+  });
+  category["subs"].sort((a, b) => {
+    return a["name"].localeCompare(b["name"]);
+  });
+  for (const sub of category["subs"]) {
+    sortCategories(sub);
   }
-}
+};
 
 /**
  * @description Generate and paginate pages for category and its subs.
@@ -240,27 +240,27 @@ const sortCategories = (category) => {
  * @return {File[]} All category and it's subs pages.
  */
 const paginateCategories = (category, parentPath, site, perPage = 10) => {
-  let results = []
+  let results = [];
   const sp = new File({
-    'layout': 'category',
-    'docDir': site['siteConfig']['docDir'],
-    'docPath': path.join(parentPath, `${category['name']}`, 'index.html'),
-    'title': 'category',
-    'name': category['name'].toString(),
-    'comment': false,
-    'reward': false
-  })
-  category['docPath'] = sp['docPath']
-  results = results.concat(paginate(sp, category['posts'], perPage))
-  for (const sub of category['subs']) {
+    "layout": "category",
+    "docDir": site["siteConfig"]["docDir"],
+    "docPath": path.join(parentPath, `${category["name"]}`, "index.html"),
+    "title": "category",
+    "name": category["name"].toString(),
+    "comment": false,
+    "reward": false
+  });
+  category["docPath"] = sp["docPath"];
+  results = results.concat(paginate(sp, category["posts"], perPage));
+  for (const sub of category["subs"]) {
     results = results.concat(
       paginateCategories(sub, path.join(
-        parentPath, `${category['name']}`
+        parentPath, `${category["name"]}`
       ), site, perPage)
-    )
+    );
   }
-  return results
-}
+  return results;
+};
 
 /**
  * @callback getPath
@@ -274,27 +274,27 @@ const paginateCategories = (category, parentPath, site, perPage = 10) => {
  */
 const getPathFn = (rootDir = path.posix.sep) => {
   // Anyway, we need to escape backslash literally using RegExp.
-  const winSepRegExp = new RegExp(`\\${path.win32.sep}`, 'g')
-  rootDir = rootDir.replace(winSepRegExp, path.posix.sep)
+  const winSepRegExp = new RegExp(`\\${path.win32.sep}`, "g");
+  rootDir = rootDir.replace(winSepRegExp, path.posix.sep);
   if (!rootDir.endsWith(path.posix.sep)) {
-    rootDir = path.posix.join(rootDir, path.posix.sep)
+    rootDir = path.posix.join(rootDir, path.posix.sep);
   }
   if (!path.posix.isAbsolute(rootDir)) {
-    rootDir = path.posix.join(path.posix.sep, rootDir)
+    rootDir = path.posix.join(path.posix.sep, rootDir);
   }
-  return (docPath = '') => {
+  return (docPath = "") => {
     // Handle link with query string or hash.
     // Use assertion to prevent `?` and `#` to be removed.
-    const array = docPath.split(/(?=[?#])/)
-    array[0] = array[0].replace(winSepRegExp, path.posix.sep)
-    if (array[0].endsWith('index.html')) {
-      array[0] = array[0].substring(0, array[0].length - 'index.html'.length)
-    } else if (array[0].endsWith('index.htm')) {
-      array[0] = array[0].substring(0, array[0].length - 'index.htm'.length)
+    const array = docPath.split(/(?=[?#])/);
+    array[0] = array[0].replace(winSepRegExp, path.posix.sep);
+    if (array[0].endsWith("index.html")) {
+      array[0] = array[0].substring(0, array[0].length - "index.html".length);
+    } else if (array[0].endsWith("index.htm")) {
+      array[0] = array[0].substring(0, array[0].length - "index.htm".length);
     }
-    return encodeURI(path.posix.join(rootDir, ...array))
-  }
-}
+    return encodeURI(path.posix.join(rootDir, ...array));
+  };
+};
 
 /**
  * @callback getURL
@@ -308,11 +308,11 @@ const getPathFn = (rootDir = path.posix.sep) => {
  * @return {getURL}
  */
 const getURLFn = (baseURL, rootDir = path.posix.sep) => {
-  const getPath = getPathFn(rootDir)
-  return (docPath = '') => {
-    return new URL(getPath(docPath), baseURL)
-  }
-}
+  const getPath = getPathFn(rootDir);
+  return (docPath = "") => {
+    return new URL(getPath(docPath), baseURL);
+  };
+};
 
 /**
  * @callback isCurrentPath
@@ -327,39 +327,39 @@ const getURLFn = (baseURL, rootDir = path.posix.sep) => {
  * @param {String} [currentPath] current page's path.
  * @return {isCurrentPath}
  */
-const isCurrentPathFn = (rootDir = path.posix.sep, currentPath = '') => {
+const isCurrentPathFn = (rootDir = path.posix.sep, currentPath = "") => {
   // Must join a '/' before resolve or it will join current site dir.
-  const getPath = getPathFn(rootDir)
+  const getPath = getPathFn(rootDir);
   // Anyway, we need to escape backslash literally using RegExp.
-  const winSepRegExp = new RegExp(`\\${path.win32.sep}`, 'g')
-  currentPath = getPath(currentPath).split(/[?#]/)[0]
+  const winSepRegExp = new RegExp(`\\${path.win32.sep}`, "g");
+  currentPath = getPath(currentPath).split(/[?#]/)[0];
   const currentToken = path.posix.resolve(path.posix.join(
     path.posix.sep, currentPath.replace(winSepRegExp, path.posix.sep)
-  )).split(path.posix.sep)
-  return (testPath = '', strict = false) => {
+  )).split(path.posix.sep);
+  return (testPath = "", strict = false) => {
     if (!isString(testPath)) {
-      strict = testPath
-      testPath = ''
+      strict = testPath;
+      testPath = "";
     }
-    testPath = getPath(testPath).split(/[?#]/)[0]
+    testPath = getPath(testPath).split(/[?#]/)[0];
     if (currentPath === testPath) {
-      return true
+      return true;
     }
     const testToken = path.posix.resolve(path.posix.join(
       path.posix.sep, testPath.replace(winSepRegExp, path.posix.sep)
-    )).split(path.posix.sep)
+    )).split(path.posix.sep);
     if (strict && testToken.length !== currentToken.length) {
-      return false
+      return false;
     }
     // testPath is shorter and usually be a menu link.
     for (let i = 0; i < testToken.length; ++i) {
       if (testToken[i] !== currentToken[i]) {
-        return false
+        return false;
       }
     }
-    return true
-  }
-}
+    return true;
+  };
+};
 
 /**
  * @typedef {Object} CategoriesData
@@ -372,40 +372,40 @@ const isCurrentPathFn = (rootDir = path.posix.sep, currentPath = '') => {
  * @return {CategoriesData}
  */
 const genCategories = (posts) => {
-  const categories = []
-  let categoriesLength = 0
+  const categories = [];
+  let categoriesLength = 0;
   for (const post of posts) {
-    if (post['frontMatter']['categories'] == null) {
-      continue
+    if (post["frontMatter"]["categories"] == null) {
+      continue;
     }
-    const postCategories = []
-    let subCategories = categories
-    for (const cateName of post['frontMatter']['categories']) {
-      let found = false
+    const postCategories = [];
+    let subCategories = categories;
+    for (const cateName of post["frontMatter"]["categories"]) {
+      let found = false;
       for (const category of subCategories) {
-        if (category['name'] === cateName) {
-          found = true
-          postCategories.push(category)
-          category['posts'].push(post)
-          subCategories = category['subs']
-          break
+        if (category["name"] === cateName) {
+          found = true;
+          postCategories.push(category);
+          category["posts"].push(post);
+          subCategories = category["subs"];
+          break;
         }
       }
       if (!found) {
-        const newCate = new Category(cateName, [post], [])
-        ++categoriesLength
-        postCategories.push(newCate)
-        subCategories.push(newCate)
-        subCategories = newCate['subs']
+        const newCate = new Category(cateName, [post], []);
+        ++categoriesLength;
+        postCategories.push(newCate);
+        subCategories.push(newCate);
+        subCategories = newCate["subs"];
       }
     }
-    post['categories'] = postCategories
+    post["categories"] = postCategories;
   }
   categories.sort((a, b) => {
-    return a['name'].localeCompare(b['name'])
-  })
-  return {categories, categoriesLength}
-}
+    return a["name"].localeCompare(b["name"]);
+  });
+  return {categories, categoriesLength};
+};
 
 /**
  * @typedef {Object} TagsData
@@ -418,37 +418,37 @@ const genCategories = (posts) => {
  * @return {TagsData}
  */
 const genTags = (posts) => {
-  const tags = []
-  let tagsLength = 0
+  const tags = [];
+  let tagsLength = 0;
   for (const post of posts) {
-    if (post['frontMatter']['tags'] == null) {
-      continue
+    if (post["frontMatter"]["tags"] == null) {
+      continue;
     }
-    const postTags = []
-    for (const tagName of post['frontMatter']['tags']) {
-      let found = false
+    const postTags = [];
+    for (const tagName of post["frontMatter"]["tags"]) {
+      let found = false;
       for (const tag of tags) {
-        if (tag['name'] === tagName) {
-          found = true
-          postTags.push(tag)
-          tag['posts'].push(post)
-          break
+        if (tag["name"] === tagName) {
+          found = true;
+          postTags.push(tag);
+          tag["posts"].push(post);
+          break;
         }
       }
       if (!found) {
-        const newTag = new Tag(tagName, [post])
-        ++tagsLength
-        postTags.push(newTag)
-        tags.push(newTag)
+        const newTag = new Tag(tagName, [post]);
+        ++tagsLength;
+        postTags.push(newTag);
+        tags.push(newTag);
       }
     }
-    post['tags'] = postTags
+    post["tags"] = postTags;
   }
   tags.sort((a, b) => {
-    return a['name'].localeCompare(b['name'])
-  })
-  return {tags, tagsLength}
-}
+    return a["name"].localeCompare(b["name"]);
+  });
+  return {tags, tagsLength};
+};
 
 /**
  * @description Put file into an array in site,
@@ -459,20 +459,20 @@ const genTags = (posts) => {
  */
 const putSite = (site, key, file) => {
   if (key == null || file == null || !isArray(site[key])) {
-    return
+    return;
   }
   const i = site[key].findIndex((element) => {
     return (
-      element['docPath'] === file['docPath'] &&
-      element['docDir'] === file['docDir']
-    )
-  })
+      element["docPath"] === file["docPath"] &&
+      element["docDir"] === file["docDir"]
+    );
+  });
   if (i !== -1) {
-    site[key][i] = file
+    site[key][i] = file;
   } else {
-    site[key].push(file)
+    site[key].push(file);
   }
-}
+};
 
 /**
  * @description Delete file from an array in site,
@@ -483,17 +483,17 @@ const putSite = (site, key, file) => {
  */
 const delSite = (site, key, file) => {
   if (key == null || file == null || !isArray(site[key])) {
-    return
+    return;
   }
   for (let i = 0; i < site[key].length; ++i) {
     if (
-      site[key][i]['srcPath'] === file['srcPath'] &&
-      site[key][i]['srcDir'] === file['srcDir']
+      site[key][i]["srcPath"] === file["srcPath"] &&
+      site[key][i]["srcDir"] === file["srcDir"]
     ) {
-      site[key].splice(i, 1)
+      site[key].splice(i, 1);
     }
   }
-}
+};
 
 /**
  * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/index.md#parsefragment
@@ -505,8 +505,8 @@ const delSite = (site, key, file) => {
  * @return {Object}
  */
 const parseNode = (node, html, options) => {
-  return parse5.parseFragment(node, html, options)
-}
+  return parse5.parseFragment(node, html, options);
+};
 
 /**
  * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/index.md#serialize
@@ -516,8 +516,8 @@ const parseNode = (node, html, options) => {
  * @return {String}
  */
 const serializeNode = (node, options) => {
-  return parse5.serialize(node, options)
-}
+  return parse5.serialize(node, options);
+};
 
 /**
  * @callback traversalCallback
@@ -531,14 +531,14 @@ const serializeNode = (node, options) => {
  */
 const nodesEach = (node, callback) => {
   if (isFunction(callback)) {
-    callback(node)
-    if (node['childNodes'] != null) {
-      for (const childNode of node['childNodes']) {
-        nodesEach(childNode, callback)
+    callback(node);
+    if (node["childNodes"] != null) {
+      for (const childNode of node["childNodes"]) {
+        nodesEach(childNode, callback);
       }
     }
   }
-}
+};
 
 /**
  * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/element.md
@@ -548,15 +548,15 @@ const nodesEach = (node, callback) => {
  * @return {String}
  */
 const getNodeText = (node) => {
-  if (node['childNodes'] != null) {
-    for (const childNode of node['childNodes']) {
-      if (childNode['nodeName'] === '#text') {
-        return childNode['value']
+  if (node["childNodes"] != null) {
+    for (const childNode of node["childNodes"]) {
+      if (childNode["nodeName"] === "#text") {
+        return childNode["value"];
       }
     }
   }
-  return null
-}
+  return null;
+};
 
 /**
  * @description Set text content (or innerHTML) of a parse5 Node.
@@ -568,8 +568,8 @@ const setNodeText = (node, html) => {
   // Add HTML to childNodes via parsing and replacing
   // to keep tree reference, and skip the parse5-generated
   // `#document-fragment` node.
-  return (node['childNodes'] = parseNode(node, html)['childNodes'])
-}
+  return (node["childNodes"] = parseNode(node, html)["childNodes"]);
+};
 
 /**
  * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/element.md
@@ -580,15 +580,15 @@ const setNodeText = (node, html) => {
  * @return {String} Value of the attribute.
  */
 const getNodeAttr = (node, attrName) => {
-  if (node['attrs'] != null) {
-    for (const attr of node['attrs']) {
-      if (attr['name'] === attrName) {
-        return attr['value']
+  if (node["attrs"] != null) {
+    for (const attr of node["attrs"]) {
+      if (attr["name"] === attrName) {
+        return attr["value"];
       }
     }
   }
-  return null
-}
+  return null;
+};
 
 /**
  * @description Set an attribute value to parse5 Node.
@@ -598,88 +598,88 @@ const getNodeAttr = (node, attrName) => {
  * @return {String} Value of the attribute.
  */
 const setNodeAttr = (node, attrName, attrValue) => {
-  if (node['attrs'] != null) {
-    for (const attr of node['attrs']) {
+  if (node["attrs"] != null) {
+    for (const attr of node["attrs"]) {
       // Already have this attr, then replace.
-      if (attr['name'] === attrName) {
-        return (attr['value'] = attrValue)
+      if (attr["name"] === attrName) {
+        return (attr["value"] = attrValue);
       }
     }
     // Have other attrs but not this, so append.
-    return node['attrs'].push({'name': attrName, 'value': attrValue})
+    return node["attrs"].push({"name": attrName, "value": attrValue});
   }
   // No attr at all, just create.
-  return (node['attrs'] = [{'name': attrName, 'value': attrValue}])
-}
+  return (node["attrs"] = [{"name": attrName, "value": attrValue}]);
+};
 
 /**
  * @description Update headers' ID for bootstrap scrollspy.
  * @param {Object} node parse5 Node.
  */
 const resolveHeaderIDs = (node) => {
-  const hNames = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']
-  const headerIDs = {}
+  const hNames = ["h1", "h2", "h3", "h4", "h5", "h6"];
+  const headerIDs = {};
   nodesEach(node, (node) => {
-    if (hNames.includes(node['tagName'])) {
-      const text = getNodeText(node)
+    if (hNames.includes(node["tagName"])) {
+      const text = getNodeText(node);
       if (text != null) {
         // Remove some chars in escaped ID because
         // bootstrap scrollspy cannot support it.
         const escaped = escapeHTML(text).trim().replace(
           /* eslint-disable-next-line no-useless-escape */
           /[\s\(\)\[\]{}<>\.,\!\@#\$%\^&\*=\|`''\/\?~]+/g,
-          ''
-        )
-        let id
+          ""
+        );
+        let id;
         if (headerIDs[escaped] == null) {
-          id = escaped
-          headerIDs[escaped] = 1
+          id = escaped;
+          headerIDs[escaped] = 1;
         } else {
-          id = `${escaped}-${headerIDs[escaped]++}`
+          id = `${escaped}-${headerIDs[escaped]++}`;
           // If we have `abc`, `abc` and `abc-1`,\
           // we must save the `abc-1` generated by the second `abc`,
           // to prevent 2 `abc-1` for the last `abc-1`.
-          headerIDs[id] = 1
+          headerIDs[id] = 1;
         }
-        setNodeAttr(node, 'id', id)
+        setNodeAttr(node, "id", id);
         setNodeText(
           node,
           `<a class="header-link" href="#${id}" title="${escaped}"></a>${text}`
-        )
+        );
       }
     }
-  })
-}
+  });
+};
 
 /**
  * @description Generate TOC from HTML headers.
  * @param {Object} node parse5 Node.
  */
 const genTOC = (node) => {
-  const hNames = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']
-  const toc = []
+  const hNames = ["h1", "h2", "h3", "h4", "h5", "h6"];
+  const toc = [];
   nodesEach(node, (node) => {
-    if (hNames.includes(node['tagName'])) {
-      let level = toc
+    if (hNames.includes(node["tagName"])) {
+      let level = toc;
       while (
         level.length > 0 &&
         hNames.indexOf(
-          level[level.length - 1]['name']
-        ) < hNames.indexOf(node['tagName'])
+          level[level.length - 1]["name"]
+        ) < hNames.indexOf(node["tagName"])
       ) {
-        level = level[level.length - 1]['subs']
+        level = level[level.length - 1]["subs"];
       }
-      const id = getNodeAttr(node, 'id')
-      const text = getNodeText(node)
+      const id = getNodeAttr(node, "id");
+      const text = getNodeText(node);
       if (id != null && text != null) {
         // Don't set anchor to absolute path,
         // because it's hard to write selector for scrollspy.
-        level.push(new TOC(node['tagName'], `#${id}`, text.trim()))
+        level.push(new TOC(node["tagName"], `#${id}`, text.trim()));
       }
     }
-  })
-  return toc
-}
+  });
+  return toc;
+};
 
 /**
  * @description Get protocol of a URL.
@@ -689,11 +689,11 @@ const genTOC = (node) => {
 const getURLProtocol = (url) => {
   try {
     // If no protocol in url, `URL()` will throw an error.
-    return new URL(url).protocol
+    return new URL(url).protocol;
   } catch (error) {
-    return null
+    return null;
   }
-}
+};
 
 /**
  * @description Update site's internal link to absolute path,
@@ -704,29 +704,29 @@ const getURLProtocol = (url) => {
  * @param {String} [docPath]
  */
 const resolveLink = (node, baseURL, rootDir, docPath) => {
-  const getURL = getURLFn(baseURL, rootDir)
-  const getPath = getPathFn(rootDir)
+  const getURL = getURLFn(baseURL, rootDir);
+  const getPath = getPathFn(rootDir);
   // Replace relative path to absolute path.
   nodesEach(node, (node) => {
-    if (node['tagName'] === 'a') {
-      const href = getNodeAttr(node, 'href')
+    if (node["tagName"] === "a") {
+      const href = getNodeAttr(node, "href");
       if (href != null) {
         // If `href` is a valid URL, `baseURL` will be ignored.
         // So we can compare host for all links here.
         if (new URL(href, baseURL).origin !== getURL(docPath).origin) {
-          setNodeAttr(node, 'target', '_blank')
-          setNodeAttr(node, 'rel', 'noreferrer noopener')
+          setNodeAttr(node, "target", "_blank");
+          setNodeAttr(node, "rel", "noreferrer noopener");
         }
         // `path.posix.isAbsolute()` detects `/` or `//`.
         if (!(path.posix.isAbsolute(href) || getURLProtocol(href) != null)) {
           setNodeAttr(
-            node, 'href', getPath(path.join(path.dirname(docPath), href))
-          )
+            node, "href", getPath(path.join(path.dirname(docPath), href))
+          );
         }
       }
     }
-  })
-}
+  });
+};
 
 /**
  * @description Update site's internal image src to absolute path.
@@ -735,54 +735,54 @@ const resolveLink = (node, baseURL, rootDir, docPath) => {
  * @param {String} [docPath]
  */
 const resolveImage = (node, rootDir, docPath) => {
-  const getPath = getPathFn(rootDir)
+  const getPath = getPathFn(rootDir);
   // Replace relative path to absolute path.
   nodesEach(node, (node) => {
-    if (node['tagName'] === 'img') {
-      const src = getNodeAttr(node, 'src')
+    if (node["tagName"] === "img") {
+      const src = getNodeAttr(node, "src");
       if (src != null) {
         // `path.posix.isAbsolute()` detects `/` or `//`.
         if (!(path.posix.isAbsolute(src) || getURLProtocol(src) != null)) {
           setNodeAttr(
-            node, 'src', getPath(path.join(path.dirname(docPath), src))
-          )
+            node, "src", getPath(path.join(path.dirname(docPath), src))
+          );
         }
       }
     }
-  })
-}
+  });
+};
 
 /**
  * @description Get Hikaru version.
  * @return {String}
  */
 const getVersion = () => {
-  return pkg['version']
-}
+  return pkg["version"];
+};
 
 /**
  * @description Hikaru's default 404 page content for server.
  * @type {String}
  */
 const default404 = [
-  '<!DOCTYPE html>',
-  '<html>',
-  '  <head>',
-  '    <meta charset="utf-8">',
-  '    <meta http-equiv="X-UA-Compatible" content="IE=edge">',
-  '    <meta name="viewport" content="',
-  '      width=device-width,',
-  '      initial-scale=1,',
-  '      maximum-scale=1',
-  '    ">',
-  '    <title>404 Not Found</title>',
-  '  </head>',
-  '  <body>',
-  '    <h1>404 Not Found</h1>',
+  "<!DOCTYPE html>",
+  "<html>",
+  "  <head>",
+  "    <meta charset=\"utf-8\">",
+  "    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">",
+  "    <meta name=\"viewport\" content=\"",
+  "      width=device-width,",
+  "      initial-scale=1,",
+  "      maximum-scale=1",
+  "    \">",
+  "    <title>404 Not Found</title>",
+  "  </head>",
+  "  <body>",
+  "    <h1>404 Not Found</h1>",
   `    <p>Hikaru v${getVersion()}</p>`,
-  '  </body>',
-  '</html>'
-].join('')
+  "  </body>",
+  "</html>"
+].join("");
 
 module.exports = {
   isString,
@@ -820,4 +820,4 @@ module.exports = {
   resolveImage,
   getVersion,
   default404
-}
+};

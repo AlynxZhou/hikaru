@@ -1,10 +1,10 @@
-'use strict'
+"use strict";
 
 /**
  * @module logger
  */
 
-const {isFunction} = require('./utils')
+const {isFunction} = require("./utils");
 
 /**
  * @description A Logger with colored output.
@@ -21,17 +21,17 @@ class Logger extends console.Console {
    */
   constructor(opts = {}) {
     super(
-      opts['stdout'] || process.stdout,
-      opts['stderr'] || process.stderr
-    )
-    this.opts = {}
-    this.opts['stdout'] = opts['stdout'] || process.stdout
-    this.opts['stderr'] = opts['stderr'] || process.stderr
-    this.opts['debug'] = opts['debug'] || false
-    this.opts['color'] = opts['color'] == null ? true : opts['color']
+      opts["stdout"] || process.stdout,
+      opts["stderr"] || process.stderr
+    );
+    this.opts = {};
+    this.opts["stdout"] = opts["stdout"] || process.stdout;
+    this.opts["stderr"] = opts["stderr"] || process.stderr;
+    this.opts["debug"] = opts["debug"] || false;
+    this.opts["color"] = opts["color"] == null ? true : opts["color"];
     // Disable colored output if piped.
-    if (!this.opts['stdout'].isTTY || !this.opts['stderr'].isTTY) {
-      this.opts['color'] = false
+    if (!this.opts["stdout"].isTTY || !this.opts["stderr"].isTTY) {
+      this.opts["color"] = false;
     }
   }
 
@@ -40,10 +40,10 @@ class Logger extends console.Console {
    * @return {String}
    */
   blue(str) {
-    if (this.opts['color']) {
-      return `\x1b[34m${str}\x1b[0m`
+    if (this.opts["color"]) {
+      return `\x1b[34m${str}\x1b[0m`;
     }
-    return str
+    return str;
   }
 
   /**
@@ -51,10 +51,10 @@ class Logger extends console.Console {
    * @return {String}
    */
   green(str) {
-    if (this.opts['color']) {
-      return `\x1b[32m${str}\x1b[0m`
+    if (this.opts["color"]) {
+      return `\x1b[32m${str}\x1b[0m`;
     }
-    return str
+    return str;
   }
 
   /**
@@ -62,10 +62,10 @@ class Logger extends console.Console {
    * @return {String}
    */
   yellow(str) {
-    if (this.opts['color']) {
-      return `\x1b[33m${str}\x1b[0m`
+    if (this.opts["color"]) {
+      return `\x1b[33m${str}\x1b[0m`;
     }
-    return str
+    return str;
   }
 
   /**
@@ -73,10 +73,10 @@ class Logger extends console.Console {
    * @return {String}
    */
   red(str) {
-    if (this.opts['color']) {
-      return `\x1b[31m${str}\x1b[0m`
+    if (this.opts["color"]) {
+      return `\x1b[31m${str}\x1b[0m`;
     }
-    return str
+    return str;
   }
 
   /**
@@ -84,36 +84,36 @@ class Logger extends console.Console {
    * @return {String}
    */
   cyan(str) {
-    if (this.opts['color']) {
-      return `\x1b[36m${str}\x1b[0m`
+    if (this.opts["color"]) {
+      return `\x1b[36m${str}\x1b[0m`;
     }
-    return str
+    return str;
   }
 
   /**
    * @param {...*} strs
    */
   log(...strs) {
-    return super.log('LOG:', ...strs)
+    return super.log("LOG:", ...strs);
   }
 
   /**
    * @param {...*} strs
    */
   info(...strs) {
-    return super.info(`${this.blue('INFO')}:`, ...strs)
+    return super.info(`${this.blue("INFO")}:`, ...strs);
   }
 
   /**
    * @param {...*} strs
    */
   debug(...strs) {
-    if (this.opts['debug']) {
+    if (this.opts["debug"]) {
       // Node.js 8 does not support `console.debug`.
       if (isFunction(super.debug)) {
-        return super.debug(`${this.green('DEBUG')}:`, ...strs)
+        return super.debug(`${this.green("DEBUG")}:`, ...strs);
       }
-      return super.log(`${this.green('DEBUG')}:`, ...strs)
+      return super.log(`${this.green("DEBUG")}:`, ...strs);
     }
   }
 
@@ -121,15 +121,15 @@ class Logger extends console.Console {
    * @param {...*} strs
    */
   warn(...strs) {
-    return super.warn(`${this.yellow('WARN')}:`, ...strs)
+    return super.warn(`${this.yellow("WARN")}:`, ...strs);
   }
 
   /**
    * @param {...*} strs
    */
   error(...strs) {
-    return super.error(`${this.red('ERROR')}:`, ...strs)
+    return super.error(`${this.red("ERROR")}:`, ...strs);
   }
 }
 
-module.exports = Logger
+module.exports = Logger;

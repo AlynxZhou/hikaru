@@ -1,10 +1,10 @@
-'use strict'
+"use strict";
 
 /**
  * @module processor
  */
 
-const {isFunction} = require('./utils')
+const {isFunction} = require("./utils");
 
 /**
  * @description Site processor.
@@ -15,8 +15,8 @@ class Processor {
    * @return {Processor}
    */
   constructor(logger) {
-    this.logger = logger
-    this._ = []
+    this.logger = logger;
+    this._ = [];
   }
 
   /**
@@ -31,9 +31,9 @@ class Processor {
    */
   register(name, fn) {
     if (!isFunction(fn)) {
-      throw new TypeError('fn must be a Function')
+      throw new TypeError("fn must be a Function");
     }
-    this._.push({name, fn})
+    this._.push({name, fn});
   }
 
   /**
@@ -44,10 +44,10 @@ class Processor {
     for (const {name, fn} of this._) {
       this.logger.debug(`Hikaru is processing \`${
         this.logger.blue(name)
-      }\`...`)
-      await fn(site)
+      }\`...`);
+      await fn(site);
     }
   }
 }
 
-module.exports = Processor
+module.exports = Processor;

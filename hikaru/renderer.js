@@ -1,12 +1,12 @@
-'use strict'
+"use strict";
 
 /**
  * @module renderer
  */
 
-const path = require('path')
-const {File} = require('./types')
-const {isFunction} = require('./utils')
+const path = require("path");
+const {File} = require("./types");
+const {isFunction} = require("./utils");
 
 /**
  * @description File renderer.
@@ -18,9 +18,9 @@ class Renderer {
    * @return {Renderer}
    */
   constructor(logger, skipRenderList = []) {
-    this.logger = logger
-    this._ = {}
-    this.skipRenderList = skipRenderList
+    this.logger = logger;
+    this._ = {};
+    this.skipRenderList = skipRenderList;
   }
 
   /**
@@ -37,18 +37,18 @@ class Renderer {
   register(srcExt, docExt, fn) {
     if (isFunction(docExt) && fn == null) {
       // This renderer does not change extname.
-      fn = docExt
-      docExt = srcExt
+      fn = docExt;
+      docExt = srcExt;
     } else if (!isFunction(fn)) {
-      throw new TypeError('fn must be a Function')
+      throw new TypeError("fn must be a Function");
     }
     if (this._[srcExt] == null) {
-      this._[srcExt] = {}
+      this._[srcExt] = {};
     }
     // Use another object for docExt,
     // so renderer for the same src and doc in plugin
     // can replace internal renderer.
-    this._[srcExt][docExt] = {srcExt, docExt, fn}
+    this._[srcExt][docExt] = {srcExt, docExt, fn};
   }
 
   /**
@@ -57,42 +57,42 @@ class Renderer {
    * @return {File} Rendered file.
    */
   async render(input) {
-    const srcExt = path.extname(input['srcPath'])
-    const results = []
+    const srcExt = path.extname(input["srcPath"]);
+    const results = [];
     if (
-      this._[srcExt] != null && !this.skipRenderList.includes(input['srcPath'])
+      this._[srcExt] != null && !this.skipRenderList.includes(input["srcPath"])
     ) {
       for (const handler of Object.values(this._[srcExt])) {
-        const output = new File(input)
-        const docExt = handler['docExt']
+        const output = new File(input);
+        const docExt = handler["docExt"];
         if (docExt !== srcExt) {
-          const dirname = path.dirname(output['srcPath'])
-          const basename = path.basename(output['srcPath'], srcExt)
-          output['docPath'] = path.join(dirname, `${basename}${docExt}`)
+          const dirname = path.dirname(output["srcPath"]);
+          const basename = path.basename(output["srcPath"], srcExt);
+          output["docPath"] = path.join(dirname, `${basename}${docExt}`);
           this.logger.debug(`Hikaru is rendering \`${
-            this.logger.cyan(output['srcPath'])
+            this.logger.cyan(output["srcPath"])
           }\` to \`${
-            this.logger.cyan(output['docPath'])
-          }\`...`)
+            this.logger.cyan(output["docPath"])
+          }\`...`);
         } else {
-          output['docPath'] = output['srcPath']
+          output["docPath"] = output["srcPath"];
           this.logger.debug(`Hikaru is rendering \`${
-            this.logger.cyan(output['srcPath'])
-          }\`...`)
+            this.logger.cyan(output["srcPath"])
+          }\`...`);
         }
-        results.push(await handler['fn'](output))
+        results.push(await handler["fn"](output));
       }
     } else {
-      const output = new File(input)
-      output['docPath'] = output['srcPath']
+      const output = new File(input);
+      output["docPath"] = output["srcPath"];
       // this.logger.debug(`Hikaru is rendering \`${
       //   this.logger.cyan(output['srcPath'])
       // }\`...`)
-      output['content'] = output['raw']
-      results.push(output)
+      output["content"] = output["raw"];
+      results.push(output);
     }
-    return results
+    return results;
   }
 }
 
-module.exports = Renderer
+module.exports = Renderer;

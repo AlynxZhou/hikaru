@@ -1,10 +1,10 @@
-'use strict'
+"use strict";
 
 /**
  * @module generator
  */
 
-const {isArray, isFunction} = require('./utils')
+const {isArray, isFunction} = require("./utils");
 
 /**
  * @description File generator.
@@ -15,8 +15,8 @@ class Generator {
    * @return {Generator}
    */
   constructor(logger) {
-    this.logger = logger
-    this._ = []
+    this.logger = logger;
+    this._ = [];
   }
 
   /**
@@ -31,9 +31,9 @@ class Generator {
    */
   register(name, fn) {
     if (!isFunction(fn)) {
-      throw new TypeError('fn must be a Function')
+      throw new TypeError("fn must be a Function");
     }
-    this._.push({name, fn})
+    this._.push({name, fn});
   }
 
   /**
@@ -42,23 +42,23 @@ class Generator {
    * @return {(File|File[])} Generated files.
    */
   async generate(site) {
-    let results = []
+    let results = [];
     for (const {name, fn} of this._) {
       this.logger.debug(`Hikaru is generating \`${
         this.logger.blue(name)
-      }\`...`)
-      const res = await fn(site)
+      }\`...`);
+      const res = await fn(site);
       if (res == null) {
-        continue
+        continue;
       }
       if (!isArray(res)) {
-        results.push(res)
+        results.push(res);
       } else {
-        results = results.concat(res)
+        results = results.concat(res);
       }
     }
-    return results
+    return results;
   }
 }
 
-module.exports = Generator
+module.exports = Generator;

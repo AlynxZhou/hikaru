@@ -1,12 +1,12 @@
-'use strict'
+"use strict";
 
 /**
  * @module decorator
  */
 
-const path = require('path')
-const {File} = require('./types')
-const {isFunction, isString} = require('./utils')
+const path = require("path");
+const {File} = require("./types");
+const {isFunction, isString} = require("./utils");
 
 /**
  * @description Layout decorator.
@@ -18,9 +18,9 @@ class Decorator {
    * @return {Decorator}
    */
   constructor(logger, compiler) {
-    this.logger = logger
-    this.compiler = compiler
-    this._ = {}
+    this.logger = logger;
+    this.compiler = compiler;
+    this._ = {};
   }
 
   /**
@@ -36,9 +36,9 @@ class Decorator {
    */
   register(layout, fn) {
     if (!(isFunction(fn) || isString(fn))) {
-      throw new TypeError('fn must be a Function or filepath')
+      throw new TypeError("fn must be a Function or filepath");
     }
-    this._[layout] = {layout, fn}
+    this._[layout] = {layout, fn};
   }
 
   /**
@@ -47,24 +47,24 @@ class Decorator {
    * @return {String}
    */
   async decorate(file, ctx) {
-    const layout = this.getFileLayout(file)
+    const layout = this.getFileLayout(file);
     if (layout != null) {
       this.logger.debug(`Hikaru is decorating \`${
-        this.logger.cyan(path.join(file['docDir'], file['docPath']))
+        this.logger.cyan(path.join(file["docDir"], file["docPath"]))
       }\` with layout \`${
         this.logger.blue(layout)
-      }\`...`)
-      const handler = this._[layout]
+      }\`...`);
+      const handler = this._[layout];
       if (handler == null) {
-        throw new Error(`Decorator for \`${layout}\` is not registered!`)
+        throw new Error(`Decorator for \`${layout}\` is not registered!`);
       }
-      if (isString(handler['fn'])) {
-        const fn = await this.compiler.compile(handler['fn'])
-        return await fn(Object.assign(new File(), file, ctx))
+      if (isString(handler["fn"])) {
+        const fn = await this.compiler.compile(handler["fn"]);
+        return await fn(Object.assign(new File(), file, ctx));
       }
-      return await handler['fn'](Object.assign(new File(), file, ctx))
+      return await handler["fn"](Object.assign(new File(), file, ctx));
     }
-    return file['content']
+    return file["content"];
   }
 
   /**
@@ -72,7 +72,7 @@ class Decorator {
    * @return {String[]}
    */
   list() {
-    return Object.keys(this._)
+    return Object.keys(this._);
   }
 
   /**
@@ -83,14 +83,14 @@ class Decorator {
    * @return {String}
    */
   getFileLayout(file) {
-    if (file['layout'] == null) {
-      return null
+    if (file["layout"] == null) {
+      return null;
     }
-    if (!this.list().includes(file['layout'])) {
-      return 'page'
+    if (!this.list().includes(file["layout"])) {
+      return "page";
     }
-    return file['layout']
+    return file["layout"];
   }
 }
 
-module.exports = Decorator
+module.exports = Decorator;
