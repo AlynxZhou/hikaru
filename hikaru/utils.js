@@ -20,7 +20,7 @@ const extMIME = require('../dist/ext-mime.json')
  * @return {Boolean}
  */
 const isString = (o) => {
-  return typeof(o) === 'string'
+  return typeof o === 'string'
 }
 
 /**
@@ -44,7 +44,7 @@ const isFunction = (o) => {
  * @return {Boolean} Return `false` when `o == null`.
  */
 const isObject = (o) => {
-  return typeof(o) === 'object' && o != null
+  return typeof o === 'object' && o != null
 }
 
 /**
@@ -70,10 +70,10 @@ const isBinary = (b) => {
  */
 const escapeHTML = (str) => {
   return str.replace(/&/g, '&amp;')
-  .replace(/</g, '&lt;')
-  .replace(/>/g, '&gt;')
-  .replace(/"/g, '&quot;')
-  .replace(/'/g, '&#039;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
 }
 
 /**
@@ -99,6 +99,7 @@ const matchFiles = (pattern, opts = {}) => {
  * @return {String} XML string.
  */
 const removeControlChars = (str) => {
+  /* eslint-disable-next-line no-control-regex */
   return str.replace(/[\x00-\x1F\x7F]/g, '')
 }
 
@@ -568,7 +569,7 @@ const setNodeText = (node, html) => {
   // Add HTML to childNodes via parsing and replacing
   // to keep tree reference, and skip the parse5-generated
   // `#document-fragment` node.
-  return node['childNodes'] = parseNode(node, html)['childNodes']
+  return (node['childNodes'] = parseNode(node, html)['childNodes'])
 }
 
 /**
@@ -602,14 +603,14 @@ const setNodeAttr = (node, attrName, attrValue) => {
     for (const attr of node['attrs']) {
       // Already have this attr, then replace.
       if (attr['name'] === attrName) {
-        return attr['value'] = attrValue
+        return (attr['value'] = attrValue)
       }
     }
     // Have other attrs but not this, so append.
     return node['attrs'].push({'name': attrName, 'value': attrValue})
   }
   // No attr at all, just create.
-  return node['attrs'] = [{'name': attrName, 'value': attrValue}]
+  return (node['attrs'] = [{'name': attrName, 'value': attrValue}])
 }
 
 /**

@@ -525,14 +525,14 @@ class Hikaru {
         }).set('filename', path.join(
           this.site['siteConfig']['themeSrcDir'], file['srcPath']
         )).set('sourcemap', stylConfig['sourcemap'])
-        .set('compress', stylConfig['compress'])
-        .set('include css', true).render((error, result) => {
-          if (error != null) {
-            return reject(error)
-          }
-          file['content'] = result
-          return resolve(file)
-        })
+          .set('compress', stylConfig['compress'])
+          .set('include css', true).render((error, result) => {
+            if (error != null) {
+              return reject(error)
+            }
+            file['content'] = result
+            return resolve(file)
+          })
       })
     })
   }

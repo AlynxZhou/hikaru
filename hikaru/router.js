@@ -289,9 +289,9 @@ class Router {
     await this.handle()
     this.buildServerRoutes(
       this.site['assets']
-      .concat(this.site['posts'])
-      .concat(this.site['pages'])
-      .concat(this.site['files'])
+        .concat(this.site['posts'])
+        .concat(this.site['pages'])
+        .concat(this.site['files'])
     )
     this.handling = false
   }
@@ -380,10 +380,10 @@ class Router {
     await Promise.all((await this.matchAll()).map(this.loadFile.bind(this)))
     await this.handle()
     this.site['assets']
-    .concat(this.site['posts'])
-    .concat(this.site['pages'])
-    .concat(this.site['files'])
-    .map(this.saveFile.bind(this))
+      .concat(this.site['posts'])
+      .concat(this.site['pages'])
+      .concat(this.site['files'])
+      .map(this.saveFile.bind(this))
   }
 
   /**
@@ -394,9 +394,9 @@ class Router {
     await this.handle()
     this.buildServerRoutes(
       this.site['assets']
-      .concat(this.site['posts'])
-      .concat(this.site['pages'])
-      .concat(this.site['files'])
+        .concat(this.site['posts'])
+        .concat(this.site['pages'])
+        .concat(this.site['files'])
     )
     this.listen(ip, port)
   }

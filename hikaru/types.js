@@ -103,7 +103,7 @@ class File {
     this.next = null
     this.prev = null
     // Don't use utils here, or it will cause circular dependencies.
-    if (typeof(docDir) === 'object' && docDir != null) {
+    if (typeof docDir === 'object' && docDir != null) {
       Object.assign(this, docDir)
     }
   }

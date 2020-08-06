@@ -8,9 +8,9 @@ const fse = require('fs-extra')
 const path = require('path')
 const {isFunction} = require('./utils')
 
- /**
-  * @description Template compiler.
-  */
+/**
+ * @description Template compiler.
+ */
 class Compiler {
   /**
    * @param {Logger} logger
