@@ -43,9 +43,9 @@ File's title from its front matter. Only available for posts and pages.
 
 File's layout from its front matter. Only available for posts and pages.
 
-## `comment`
+## `draft`
 
-Option of whether a page can be commented from its front matter. Only available for posts and pages.
+Whether post is a draft, draft will be skipped while building, but not skipped while serving.
 
 ## `categories`
 

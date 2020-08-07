@@ -10,7 +10,7 @@ A page usually is a Markdown file which has a YAML front matter and a Markdown c
 ```markdown
 ---
 title: Your page title
-createdDate: 2018-08-08 09:27:00	# key `createdTime` also works but `createdDate` is recommended now.
+createdDate: 2018-08-08 09:27:00
 #updatedDate: 2019-01-01 19:07:00	# If you updated your content, you can use this key.
 layout: post
 #zone: Asia/Tokyo   # If `createdDate`'s timezone is not the same as your local zone, set here.
@@ -32,9 +32,17 @@ Front matter is written in YAML, which is in the head of file and between `---\n
 
 Your page's title, **NOT** URL, your page's URL depends on your page's filename.
 
-### `date`
+### `createdDate`
 
 Your page's writing date, you can set it as `YYYY-MM-DD HH:mm:ss` format.
+
+### `updatedDate`
+
+Your page's modifying date, you can set it as `YYYY-MM-DD HH:mm:ss` format.
+
+### `draft`
+
+If you've not finished your post, you can set `draft: true`, so it will only visible when using `hikaru serve` but not `hikaru build`.
 
 ### `layout`
 

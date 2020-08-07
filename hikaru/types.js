@@ -85,8 +85,7 @@ class File {
     this.zone = null;
     this.title = null;
     this.layout = null;
-    this.comment = null;
-    this.reward = null;
+    this.draft = null;
     this.raw = null;
     this.text = null;
     this.content = null;

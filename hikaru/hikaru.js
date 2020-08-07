@@ -48,11 +48,12 @@ const {
 class Hikaru {
   /**
    * @param {Object} [opts]
-   * @param {Boolean} [debug=false] Enable debug output for logger.
-   * @param {Boolean} [color=true] Enable colored output for logger.
-   * @param {String} [config] Alternative site config path.
-   * @param {String} [ip=localhost] Alternative listening IP address for router.
-   * @param {Number} [port=2333] Alternative listening port for router.
+   * @param {Boolean} [opts.debug=false] Enable debug output for logger.
+   * @param {Boolean} [opts.color=true] Enable colored output for logger.
+   * @param {Boolean} [opts.draft] Build drafts.
+   * @param {String} [opts.config] Alternative site config path.
+   * @param {String} [opts.ip=localhost] Alternative listening IP address for router.
+   * @param {Number} [opts.port=2333] Alternative listening port for router.
    * @property {Logger} logger
    * @property {Renderer} renderer
    * @property {Processor} processor
@@ -564,6 +565,14 @@ class Hikaru {
    * @private
    */
   registerInternalProcessors() {
+    if (!this.opts["draft"]) {
+      this.processor.register("draft filter", (site) => {
+        site["posts"] = site["posts"].filter((p) => {
+          return !p["draft"];
+        });
+      });
+    }
+
     this.processor.register("post sequence", (site) => {
       site["posts"].sort((a, b) => {
         return -(a["createdDate"] - b["createdDate"]);

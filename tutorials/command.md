@@ -18,7 +18,7 @@ $ hikaru init|i [options] [dir]
 | Options                | Description                   |
 | :--------------------- | :---------------------------- |
 | `-d`, `--debug`        | Enable debug output.          |
-| `-n`, `--no-color`     | Disable colored output.       |
+| `--no-color`           | Disable colored output.       |
 | `-c`, `--config <yml>` | Alternative site config path. |
 | `-h`, `--help`         | Print help infomation.        |
 
@@ -37,7 +37,7 @@ $ hikaru clean|c [options] [dir]
 | Options                | Description                   |
 | :--------------------- | :---------------------------- |
 | `-d`, `--debug`        | Enable debug output.          |
-| `-n`, `--no-color`     | Disable colored output.       |
+| `--no-color`           | Disable colored output.       |
 | `-c`, `--config <yml>` | Alternative site config path. |
 | `-h`, `--help`         | Print help infomation.        |
 
@@ -56,7 +56,8 @@ $ hikaru build|b [options] [dir]
 | Options                | Description                   |
 | :--------------------- | :---------------------------- |
 | `-d`, `--debug`        | Enable debug output.          |
-| `-n`, `--no-color`     | Disable colored output.       |
+| `--no-color`           | Disable colored output.       |
+| `--draft`              | Build draft.                  |
 | `-c`, `--config <yml>` | Alternative site config path. |
 | `-h`, `--help`         | Print help infomation.        |
 
@@ -75,7 +76,8 @@ $ hikaru serve|s [options] [dir]
 | Options                | Description                            |
 | :--------------------- | :------------------------------------- |
 | `-d`, `--debug`        | Enable debug output.                   |
-| `-n`, `--no-color`     | Disable colored output.                |
+| `--no-color`           | Disable colored output.                |
+| `--no-draft`           | Skip draft.                            |
 | `-c`, `--config <yml>` | Alternative site config path.          |
 | `-i`, `--ip <ip>`      | Alternative listening IP address.      |
 | `-p`, `--port <port>`  | Alternative listening port.            |

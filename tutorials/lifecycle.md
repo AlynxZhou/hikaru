@@ -17,7 +17,7 @@ So those are complex functions and Hikaru does them by different modules. You sh
 
 At first you see a class called `Hikaru`, but it just a collection of instances of modules and variables. When you enter a command, you will get an instance of Hikaru and run different methods, if you use `build` or `serve`, it first load config files and prepare variables, then create different instances of modules, and it register some internal methods to those modules to provide basic functions for creating a site. To allow you to modify it, Hikaru will then load plugins and script, it will pass itself to plugins and allow them register methods to different modules. Then it is prepared for making the site.
 
-Your theme's language files will be loaded by `Translator` here, and theme's layout templates will be loaded by `Decorator` here too.
+Your theme's language files will be loaded by `Translator` here, and theme's layout templates will be compiled by `Compiler` and loaded by `Decorator` here too.
 
 Making the site is done by a special module called `Router`, it is special because it call other modules to create a site. Hikaru call `Router::build` or `Router::serve` to start this process. First router will read files in srcs directory and theme srcs directory, and detect whether a file is binary or text (to make it easier only support UTF-8 encoding), and then classify them to `asset`, `template`, `post` or `page` by file type or layout property in front matter.
 
