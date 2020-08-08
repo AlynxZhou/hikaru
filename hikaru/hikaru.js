@@ -617,7 +617,7 @@ class Hikaru {
           const split = p["content"].split("<!--more-->");
           p["excerpt"] = split[0];
           p["more"] = split[1];
-          p["content"] = split.join("<a id='more'></a>");
+          p["content"] = split.join("<a id=\"more\"></a>");
         }
       }
     });
