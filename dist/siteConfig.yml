@@ -44,11 +44,8 @@ stylus:
     sourceRoot: ''
     basePath: .
 
-coffeescript:
-  header: false
-  bare: false
-
 highlight:
+  enable: true
   gutter: true
   hljs: true
 
