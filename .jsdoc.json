@@ -6,7 +6,7 @@
   "opts": {
     "template": "templates/default",
     "encoding": "utf8",
-    "destination": "./docs/",
+    "destination": "docs/",
     "recurse": true,
     "verbose": true
   }
