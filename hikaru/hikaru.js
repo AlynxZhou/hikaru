@@ -22,7 +22,6 @@ const Translator = require("./translator");
 const Router = require("./router");
 const types = require("./types");
 const {Site, File} = types;
-const highlight = require("./highlight");
 const utils = require("./utils");
 const {
   isObject,
@@ -39,6 +38,7 @@ const {
   resolveHeaderIDs,
   resolveLink,
   resolveImage,
+  resolveCodeBlocks,
   genTOC
 } = utils;
 
@@ -458,14 +458,7 @@ class Hikaru {
 
     const markedConfig = Object.assign({
       "gfm": true,
-      "langPrefix": "",
-      "highlight": (code, lang) => {
-        return highlight(code, Object.assign({
-          "lang": lang != null ? lang.toLowerCase() : null,
-          "hljs": true,
-          "gutter": true
-        }, this.site["siteConfig"]["highlight"]));
-      }
+      "langPrefix": ""
     }, this.site["siteConfig"]["marked"]);
     marked.setOptions(markedConfig);
     this.renderer.register(".md", ".html", (file) => {
@@ -599,7 +592,7 @@ class Hikaru {
       site["tagsLength"] = result["tagsLength"];
     });
 
-    this.processor.register("toc and link resolving", (site) => {
+    this.processor.register("content resolving", (site) => {
       const all = site["posts"].concat(site["pages"]);
       for (const p of all) {
         const node = parseNode(p["content"]);
@@ -612,6 +605,7 @@ class Hikaru {
           p["docPath"]
         );
         resolveImage(node, site["siteConfig"]["rootDir"], p["docPath"]);
+        resolveCodeBlocks(node, site["siteConfig"]["highlight"]);
         p["content"] = serializeNode(node);
         if (p["content"].indexOf("<!--more-->") !== -1) {
           const split = p["content"].split("<!--more-->");

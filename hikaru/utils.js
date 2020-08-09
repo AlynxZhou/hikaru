@@ -6,6 +6,7 @@
 
 const path = require("path");
 const glob = require("glob");
+const hljs = require("highlight.js");
 const YAML = require("yaml");
 const {URL} = require("url");
 const parse5 = require("parse5");
@@ -13,6 +14,123 @@ const moment = require("moment-timezone");
 const {File, Category, Tag, TOC} = require("./types");
 const pkg = require("../package.json");
 const extMIME = require("../dist/ext-mime.json");
+
+/**
+ * @private
+ * @description Cache table for hljs's aliases.
+ */
+let hljsAliases = null;
+
+/**
+ * @private
+ * @return {Object} Key is alias, value is hljs lang name.
+ */
+const loadLangAliases = () => {
+  const hljsAliases = {};
+  const languages = hljs.listLanguages();
+  for (const lang of languages) {
+    hljsAliases[lang] = lang;
+    const lAliases = require(
+      `highlight.js/lib/languages/${lang}`
+    )(hljs)["aliases"];
+    if (lAliases != null) {
+      for (const alias of lAliases) {
+        hljsAliases[alias] = lang;
+      }
+    }
+  }
+  return hljsAliases;
+};
+
+/**
+ * @private
+ * @typedef {Object} Data
+ * @property {Number} [relevance]
+ * @property {String} [language] Detected language.
+ * @property {String} value Highlighted HTML string.
+ */
+/**
+ * @private
+ * @description Try to automatic highlight code with detection.
+ * @param {String} code str
+ * @return {Data}
+ */
+const highlightAuto = (code) => {
+  for (const lang of Object.values(hljsAliases)) {
+    if (hljs.getLanguage(lang) == null) {
+      hljs.registerLanguage(
+        lang, require(`highlight.js/lib/languages/${lang}`)
+      );
+    }
+  }
+  const data = hljs.highlightAuto(code);
+  if (data["relevance"] > 0 && data["language"] != null) {
+    return data;
+  }
+  return {"value": escapeHTML(code)};
+};
+
+/**
+ * @private
+ * @description Highlight code.
+ * @param {String} code
+ * @param {Object} [opts] Optional hljs parameters.
+ * @param {Boolean} [opts.hljs] Add `hljs-` prefix to class name.
+ * @param {Boolean} [opts.gutter] Generate line numbers.
+ * @return {String} Highlighted HTML.
+ */
+const highlight = (code, opts = {}) => {
+  if (opts == null) {
+    opts = {}
+  }
+  if (hljsAliases == null) {
+    hljsAliases = loadLangAliases();
+  }
+  if (opts["hljs"]) {
+    hljs.configure({"classPrefix": "hljs-"});
+  }
+
+  let data;
+  if (opts["lang"] == null) {
+    // Guess when no lang was given.
+    data = highlightAuto(code);
+  } else if (opts["lang"] === "plain") {
+    // Skip auto guess when user sets lang to plain,
+    // plain is not in the alias list, so judge it first.
+    data = {"value": escapeHTML(code)};
+  } else if (hljsAliases[opts["lang"]] == null) {
+    // Guess when lang is given but not in highlightjs' alias list, too.
+    data = highlightAuto(code);
+  } else {
+    // We have correct lang alias, tell highlightjs to handle it.
+    // If given language does not match string content,
+    // highlightjs will set language to undefined.
+    data = hljs.highlight(hljsAliases[opts["lang"]], code);
+  }
+
+  const results = [];
+
+  if (opts["gutter"]) {
+    results.push("<pre class=\"gutter\">");
+    const lines = data["value"].split(/\r?\n/g).length;
+    for (let i = 0; i < lines; ++i) {
+      results.push(`<span class="line">${i + 1}</span>`);
+      if (i !== lines - 1) {
+        results.push("\n");
+      }
+    }
+    results.push("</pre>");
+  }
+
+  results.push("<pre class=\"code");
+  if (data["language"] != null) {
+    results.push(` ${data["language"].toLowerCase()}`);
+  }
+  results.push("\">");
+  results.push(data["value"]);
+  results.push("</pre>");
+  return results.join("");
+};
 
 /**
  * @param {*} o
@@ -499,7 +617,7 @@ const delSite = (site, key, file) => {
  * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/index.md#parsefragment
  * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/document-fragment.md
  * @description Parse HTML string into parse5 Node.
- * @param {Object} [node] If specified, given string will be parsed as if it was set to the element's `innerHTML` property.
+ * @param {Object} [node] If given, parsed Node's parentNode will be set to this.
  * @param {String} html HTML string to parse.
  * @param {Object} [options] parse5 options.\
  * @return {Object}
@@ -601,7 +719,7 @@ const setNodeText = (node, html) => {
  * @description Get an attribute value from parse5 Node.
  * @param {Object} node parse5 Node.
  * @param {String} attrName
- * @return {String} Value of the attribute.
+ * @return {String} Value of the attribute, null if not available.
  */
 const getNodeAttr = (node, attrName) => {
   if (node["attrs"] != null) {
@@ -779,6 +897,47 @@ const resolveImage = (node, rootDir, docPath) => {
   }
 };
 
+const resolveCodeBlocks = (node, hlOpts) => {
+  const codeBlockNodes = nodesFilter(node, (node) => {
+    return node["tagName"] === "pre" &&
+           node["childNodes"].length === 1 &&
+           node["childNodes"][0]["tagName"] === "code";
+  });
+  for (const node of codeBlockNodes) {
+    const code = getNodeText(node["childNodes"][0]);
+    const lang = getNodeAttr(node["childNodes"][0], "class");
+    const escapedCode = escapeHTML(code)
+    let results = [`<figure data-raw="${escapedCode}"`];
+    if (lang != null) {
+      results.push(` data-lang="${lang.toLowerCase()}"`);
+    }
+    // Because we want to use hljs' css, so `hljs` is used to set background.
+    results.push(" class=\"code-block hljs");
+    if (hlOpts["enable"]) {
+      results.push(" highlight\">");
+      results.push(highlight(code, Object.assign({
+        "lang": lang != null ? lang.toLowerCase() : null,
+        "hljs": true,
+        "gutter": true
+      }, hlOpts)));
+    } else {
+      results.push("\">");
+      results.push(`<pre class="code">${escapedCode}</pre>`)
+    }
+    results.push("</figure>");
+    // Seems no better way to replace a node.
+    for (let i = 0; i < node["parentNode"]["childNodes"].length; ++i) {
+      if (node === node["parentNode"]["childNodes"][i]) {
+        node["parentNode"]["childNodes"][i] = parseNode(
+          node["parentNode"],
+          results.join("")
+        )["childNodes"][0];
+        break;
+      }
+    }
+  }
+};
+
 /**
  * @description Get Hikaru version.
  * @return {String}
@@ -836,6 +995,7 @@ module.exports = {
   parseNode,
   serializeNode,
   nodesEach,
+  nodesFilter,
   getNodeText,
   setNodeText,
   getNodeAttr,
@@ -845,6 +1005,7 @@ module.exports = {
   getURLProtocol,
   resolveLink,
   resolveImage,
+  resolveCodeBlocks,
   getVersion,
   default404
 };
