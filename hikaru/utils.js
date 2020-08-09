@@ -617,7 +617,8 @@ const delSite = (site, key, file) => {
  * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/index.md#parsefragment
  * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/document-fragment.md
  * @description Parse HTML string into parse5 Node.
- * @param {Object} [node] If given, parsed Node's parentNode will be set to this.
+ * @param {Object} [node] If specified, given fragment will be parsed as if
+ * it was set to the context element's `innerHTML` property.
  * @param {String} html HTML string to parse.
  * @param {Object} [options] parse5 options.\
  * @return {Object}
@@ -635,6 +636,22 @@ const parseNode = (node, html, options) => {
  */
 const serializeNode = (node, options) => {
   return parse5.serialize(node, options);
+};
+
+/**
+ * @description Quick and not so dirty way to replace a Node with given HTML string,
+ * if more then one node parsed from string, only use the first one.
+ * @param {Object} node parse5 Node to replace.
+ * @param {String} html
+ */
+const replaceNode = (node, html) => {
+  if (node["parentNode"] != null && html != null) {
+    const newNode = parseNode(node["parentNode"], html);
+    if (newNode["childNodes"].length > 0) {
+      newNode["childNodes"][0]["parentNode"] = node["parentNode"];
+      Object.assign(node, newNode["childNodes"][0]);
+    }
+  }
 };
 
 /**
@@ -704,13 +721,19 @@ const getNodeText = (node) => {
  * @description Set text content (or innerHTML) of a parse5 Node.
  * @param {Object} node parse5 Node.
  * @param {String} html
- * @return {Object[]} Generated childNodes.
  */
 const setNodeText = (node, html) => {
   // Add HTML to childNodes via parsing and replacing
   // to keep tree reference, and skip the parse5-generated
   // `#document-fragment` node.
-  return (node["childNodes"] = parseNode(node, html)["childNodes"]);
+  // Only append to nodes that already have childNodes.
+  if (node["childNodes"] != null) {
+    // Don't forget to replace childNode's parentNode.
+    node["childNodes"] = parseNode(node, html)["childNodes"].map((c) => {
+      c["parentNode"] = node;
+      return c;
+    });
+  }
 };
 
 /**
@@ -737,21 +760,22 @@ const getNodeAttr = (node, attrName) => {
  * @param {Object} node parse5 Node.
  * @param {String} attrName
  * @param {String} attrValue
- * @return {String} Value of the attribute.
  */
 const setNodeAttr = (node, attrName, attrValue) => {
   if (node["attrs"] != null) {
     for (const attr of node["attrs"]) {
       // Already have this attr, then replace.
       if (attr["name"] === attrName) {
-        return (attr["value"] = attrValue);
+        attr["value"] = attrValue;
+        return;
       }
     }
     // Have other attrs but not this, so append.
-    return node["attrs"].push({"name": attrName, "value": attrValue});
+    node["attrs"].push({"name": attrName, "value": attrValue});
+    return;
   }
   // No attr at all, just create.
-  return (node["attrs"] = [{"name": attrName, "value": attrValue}]);
+  node["attrs"] = [{"name": attrName, "value": attrValue}];
 };
 
 /**
@@ -897,7 +921,12 @@ const resolveImage = (node, rootDir, docPath) => {
   }
 };
 
-const resolveCodeBlocks = (node, hlOpts) => {
+/**
+ * @description Format and highlight code block.
+ * @param {Object} node parse5 Node.
+ * @param {Object} [hlOpts] Highlight options.
+ */
+const resolveCodeBlocks = (node, hlOpts = {}) => {
   const codeBlockNodes = nodesFilter(node, (node) => {
     return node["tagName"] === "pre" &&
            node["childNodes"].length === 1 &&
@@ -925,13 +954,7 @@ const resolveCodeBlocks = (node, hlOpts) => {
       results.push(`<pre class="code">${escapedCode}</pre>`)
     }
     results.push("</figure>");
-    // It's a little bit faster to use indexOf.
-    node["parentNode"]["childNodes"][
-      node["parentNode"]["childNodes"].indexOf(node)
-    ] = parseNode(
-      node["parentNode"],
-      results.join("")
-    )["childNodes"][0];
+    replaceNode(node, results.join(""));
   }
 };
 
@@ -991,6 +1014,7 @@ module.exports = {
   delSite,
   parseNode,
   serializeNode,
+  replaceNode,
   nodesEach,
   nodesFilter,
   getNodeText,
