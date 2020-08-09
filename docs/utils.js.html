@@ -34,6 +34,7 @@
 
 const path = require("path");
 const glob = require("glob");
+const hljs = require("highlight.js");
 const YAML = require("yaml");
 const {URL} = require("url");
 const parse5 = require("parse5");
@@ -41,6 +42,123 @@ const moment = require("moment-timezone");
 const {File, Category, Tag, TOC} = require("./types");
 const pkg = require("../package.json");
 const extMIME = require("../dist/ext-mime.json");
+
+/**
+ * @private
+ * @description Cache table for hljs's aliases.
+ */
+let hljsAliases = null;
+
+/**
+ * @private
+ * @return {Object} Key is alias, value is hljs lang name.
+ */
+const loadLangAliases = () => {
+  const hljsAliases = {};
+  const languages = hljs.listLanguages();
+  for (const lang of languages) {
+    hljsAliases[lang] = lang;
+    const lAliases = require(
+      `highlight.js/lib/languages/${lang}`
+    )(hljs)["aliases"];
+    if (lAliases != null) {
+      for (const alias of lAliases) {
+        hljsAliases[alias] = lang;
+      }
+    }
+  }
+  return hljsAliases;
+};
+
+/**
+ * @private
+ * @typedef {Object} Data
+ * @property {Number} [relevance]
+ * @property {String} [language] Detected language.
+ * @property {String} value Highlighted HTML string.
+ */
+/**
+ * @private
+ * @description Try to automatic highlight code with detection.
+ * @param {String} code str
+ * @return {Data}
+ */
+const highlightAuto = (code) => {
+  for (const lang of Object.values(hljsAliases)) {
+    if (hljs.getLanguage(lang) == null) {
+      hljs.registerLanguage(
+        lang, require(`highlight.js/lib/languages/${lang}`)
+      );
+    }
+  }
+  const data = hljs.highlightAuto(code);
+  if (data["relevance"] > 0 &amp;&amp; data["language"] != null) {
+    return data;
+  }
+  return {"value": escapeHTML(code)};
+};
+
+/**
+ * @private
+ * @description Highlight code.
+ * @param {String} code
+ * @param {Object} [opts] Optional hljs parameters.
+ * @param {Boolean} [opts.hljs] Add `hljs-` prefix to class name.
+ * @param {Boolean} [opts.gutter] Generate line numbers.
+ * @return {String} Highlighted HTML.
+ */
+const highlight = (code, opts = {}) => {
+  if (opts == null) {
+    opts = {};
+  }
+  if (hljsAliases == null) {
+    hljsAliases = loadLangAliases();
+  }
+  if (opts["hljs"]) {
+    hljs.configure({"classPrefix": "hljs-"});
+  }
+
+  let data;
+  if (opts["lang"] == null) {
+    // Guess when no lang was given.
+    data = highlightAuto(code);
+  } else if (opts["lang"] === "plain") {
+    // Skip auto guess when user sets lang to plain,
+    // plain is not in the alias list, so judge it first.
+    data = {"value": escapeHTML(code)};
+  } else if (hljsAliases[opts["lang"]] == null) {
+    // Guess when lang is given but not in highlightjs' alias list, too.
+    data = highlightAuto(code);
+  } else {
+    // We have correct lang alias, tell highlightjs to handle it.
+    // If given language does not match string content,
+    // highlightjs will set language to undefined.
+    data = hljs.highlight(hljsAliases[opts["lang"]], code);
+  }
+
+  const results = [];
+
+  if (opts["gutter"]) {
+    results.push("&lt;pre class=\"gutter\">");
+    const lines = data["value"].split(/\r?\n/g).length;
+    for (let i = 0; i &lt; lines; ++i) {
+      results.push(`&lt;span class="line">${i + 1}&lt;/span>`);
+      if (i !== lines - 1) {
+        results.push("\n");
+      }
+    }
+    results.push("&lt;/pre>");
+  }
+
+  results.push("&lt;pre class=\"code");
+  if (data["language"] != null) {
+    results.push(` ${data["language"].toLowerCase()}`);
+  }
+  results.push("\">");
+  results.push(data["value"]);
+  results.push("&lt;/pre>");
+  return results.join("");
+};
 
 /**
  * @param {*} o
@@ -527,7 +645,8 @@ const delSite = (site, key, file) => {
  * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/index.md#parsefragment
  * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/document-fragment.md
  * @description Parse HTML string into parse5 Node.
- * @param {Object} [node] If specified, given string will be parsed as if it was set to the element's `innerHTML` property.
+ * @param {Object} [node] If specified, given fragment will be parsed as if
+ * it was set to the context element's `innerHTML` property.
  * @param {String} html HTML string to parse.
  * @param {Object} [options] parse5 options.\
  * @return {Object}
@@ -545,6 +664,22 @@ const parseNode = (node, html, options) => {
  */
 const serializeNode = (node, options) => {
   return parse5.serialize(node, options);
+};
+
+/**
+ * @description Quick and not so dirty way to replace a Node with given HTML string,
+ * if more then one node parsed from string, only use the first one.
+ * @param {Object} node parse5 Node to replace.
+ * @param {String} html
+ */
+const replaceNode = (node, html) => {
+  if (node["parentNode"] != null &amp;&amp; html != null) {
+    const newNode = parseNode(node["parentNode"], html);
+    if (newNode["childNodes"].length > 0) {
+      newNode["childNodes"][0]["parentNode"] = node["parentNode"];
+      Object.assign(node, newNode["childNodes"][0]);
+    }
+  }
 };
 
 /**
@@ -569,6 +704,30 @@ const nodesEach = (node, callback) => {
 };
 
 /**
+ * @callback filterCallback
+ * @param {Object} node parse5 Node.
+ * @return {Boolean} True to collect a node into an Array.
+ */
+/**
+ * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/element.md
+ * @description Recursively Pre-Order Traversal of parse5 Node.
+ * @param {Object} node Root parse5 Node of a tree.
+ * @param {filterCallback} callback
+ * @return {Object[]} An Array of filtered parse5 Nodes.
+ */
+const nodesFilter = (node, callback) => {
+  const results = [];
+  if (isFunction(callback)) {
+    nodesEach(node, (node) => {
+      if (callback(node)) {
+        results.push(node);
+      }
+    });
+  }
+  return results;
+};
+
+/**
  * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/element.md
  * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/text-node.md
  * @description Get text content of a parse5 Node.
@@ -590,13 +749,19 @@ const getNodeText = (node) => {
  * @description Set text content (or innerHTML) of a parse5 Node.
  * @param {Object} node parse5 Node.
  * @param {String} html
- * @return {Object[]} Generated childNodes.
  */
 const setNodeText = (node, html) => {
   // Add HTML to childNodes via parsing and replacing
   // to keep tree reference, and skip the parse5-generated
   // `#document-fragment` node.
-  return (node["childNodes"] = parseNode(node, html)["childNodes"]);
+  // Only append to nodes that already have childNodes.
+  if (node["childNodes"] != null) {
+    // Don't forget to replace childNode's parentNode.
+    node["childNodes"] = parseNode(node, html)["childNodes"].map((c) => {
+      c["parentNode"] = node;
+      return c;
+    });
+  }
 };
 
 /**
@@ -605,7 +770,7 @@ const setNodeText = (node, html) => {
  * @description Get an attribute value from parse5 Node.
  * @param {Object} node parse5 Node.
  * @param {String} attrName
- * @return {String} Value of the attribute.
+ * @return {String} Value of the attribute, null if not available.
  */
 const getNodeAttr = (node, attrName) => {
   if (node["attrs"] != null) {
@@ -623,21 +788,22 @@ const getNodeAttr = (node, attrName) => {
  * @param {Object} node parse5 Node.
  * @param {String} attrName
  * @param {String} attrValue
- * @return {String} Value of the attribute.
  */
 const setNodeAttr = (node, attrName, attrValue) => {
   if (node["attrs"] != null) {
     for (const attr of node["attrs"]) {
       // Already have this attr, then replace.
       if (attr["name"] === attrName) {
-        return (attr["value"] = attrValue);
+        attr["value"] = attrValue;
+        return;
       }
     }
     // Have other attrs but not this, so append.
-    return node["attrs"].push({"name": attrName, "value": attrValue});
+    node["attrs"].push({"name": attrName, "value": attrValue});
+    return;
   }
   // No attr at all, just create.
-  return (node["attrs"] = [{"name": attrName, "value": attrValue}]);
+  node["attrs"] = [{"name": attrName, "value": attrValue}];
 };
 
 /**
@@ -645,37 +811,38 @@ const setNodeAttr = (node, attrName, attrValue) => {
  * @param {Object} node parse5 Node.
  */
 const resolveHeaderIDs = (node) => {
-  const hNames = ["h1", "h2", "h3", "h4", "h5", "h6"];
+  const headerNames = ["h1", "h2", "h3", "h4", "h5", "h6"];
   const headerIDs = {};
-  nodesEach(node, (node) => {
-    if (hNames.includes(node["tagName"])) {
-      const text = getNodeText(node);
-      if (text != null) {
-        // Remove some chars in escaped ID because
-        // bootstrap scrollspy cannot support it.
-        const escaped = escapeHTML(text).trim().replace(
-          /[\s()[\]{}&lt;>.,!@#$%^&amp;*=|`'/?~]+/g,
-          ""
-        );
-        let id;
-        if (headerIDs[escaped] == null) {
-          id = escaped;
-          headerIDs[escaped] = 1;
-        } else {
-          id = `${escaped}-${headerIDs[escaped]++}`;
-          // If we have `abc`, `abc` and `abc-1`,\
-          // we must save the `abc-1` generated by the second `abc`,
-          // to prevent 2 `abc-1` for the last `abc-1`.
-          headerIDs[id] = 1;
-        }
-        setNodeAttr(node, "id", id);
-        setNodeText(
-          node,
-          `&lt;a class="header-link" href="#${id}" title="${escaped}">&lt;/a>${text}`
-        );
-      }
-    }
+  const headerNodes = nodesFilter(node, (node) => {
+    return headerNames.includes(node["tagName"]);
   });
+  for (const node of headerNodes) {
+    const text = getNodeText(node);
+    if (text != null) {
+      // Remove some chars in escaped ID because
+      // bootstrap scrollspy cannot support it.
+      const escaped = escapeHTML(text).trim().replace(
+        /[\s()[\]{}&lt;>.,!@#$%^&amp;*=|`'/?~]+/g,
+        ""
+      );
+      let id;
+      if (headerIDs[escaped] == null) {
+        id = escaped;
+        headerIDs[escaped] = 1;
+      } else {
+        id = `${escaped}-${headerIDs[escaped]++}`;
+        // If we have `abc`, `abc` and `abc-1`,\
+        // we must save the `abc-1` generated by the second `abc`,
+        // to prevent 2 `abc-1` for the last `abc-1`.
+        headerIDs[id] = 1;
+      }
+      setNodeAttr(node, "id", id);
+      setNodeText(
+        node,
+        `&lt;a class="header-link" href="#${id}" title="${escaped}">&lt;/a>${text}`
+      );
+    }
+  }
 };
 
 /**
@@ -683,28 +850,29 @@ const resolveHeaderIDs = (node) => {
  * @param {Object} node parse5 Node.
  */
 const genTOC = (node) => {
-  const hNames = ["h1", "h2", "h3", "h4", "h5", "h6"];
+  const headerNames = ["h1", "h2", "h3", "h4", "h5", "h6"];
   const toc = [];
-  nodesEach(node, (node) => {
-    if (hNames.includes(node["tagName"])) {
-      let level = toc;
-      while (
-        level.length > 0 &amp;&amp;
-        hNames.indexOf(
-          level[level.length - 1]["name"]
-        ) &lt; hNames.indexOf(node["tagName"])
-      ) {
-        level = level[level.length - 1]["subs"];
-      }
-      const id = getNodeAttr(node, "id");
-      const text = getNodeText(node);
-      if (id != null &amp;&amp; text != null) {
-        // Don't set anchor to absolute path,
-        // because it's hard to write selector for scrollspy.
-        level.push(new TOC(node["tagName"], `#${id}`, text.trim()));
-      }
-    }
+  const headerNodes = nodesFilter(node, (node) => {
+    return headerNames.includes(node["tagName"]);
   });
+  for (const node of headerNodes) {
+    let level = toc;
+    while (
+      level.length > 0 &amp;&amp;
+      headerNames.indexOf(
+        level[level.length - 1]["name"]
+      ) &lt; headerNames.indexOf(node["tagName"])
+    ) {
+      level = level[level.length - 1]["subs"];
+    }
+    const id = getNodeAttr(node, "id");
+    const text = getNodeText(node);
+    if (id != null &amp;&amp; text != null) {
+      // Don't set anchor to absolute path,
+      // because it's hard to write selector for scrollspy.
+      level.push(new TOC(node["tagName"], `#${id}`, text.trim()));
+    }
+  }
   return toc;
 };
 
@@ -734,25 +902,26 @@ const resolveLink = (node, baseURL, rootDir, docPath) => {
   const getURL = getURLFn(baseURL, rootDir);
   const getPath = getPathFn(rootDir);
   // Replace relative path to absolute path.
-  nodesEach(node, (node) => {
-    if (node["tagName"] === "a") {
-      const href = getNodeAttr(node, "href");
-      if (href != null) {
-        // If `href` is a valid URL, `baseURL` will be ignored.
-        // So we can compare host for all links here.
-        if (new URL(href, baseURL).origin !== getURL(docPath).origin) {
-          setNodeAttr(node, "target", "_blank");
-          setNodeAttr(node, "rel", "noreferrer noopener");
-        }
-        // `path.posix.isAbsolute()` detects `/` or `//`.
-        if (!(path.posix.isAbsolute(href) || getURLProtocol(href) != null)) {
-          setNodeAttr(
-            node, "href", getPath(path.join(path.dirname(docPath), href))
-          );
-        }
+  const linkNodes = nodesFilter(node, (node) => {
+    return node["tagName"] === "a";
+  });
+  for (const node of linkNodes) {
+    const href = getNodeAttr(node, "href");
+    if (href != null) {
+      // If `href` is a valid URL, `baseURL` will be ignored.
+      // So we can compare host for all links here.
+      if (new URL(href, baseURL).origin !== getURL(docPath).origin) {
+        setNodeAttr(node, "target", "_blank");
+        setNodeAttr(node, "rel", "noreferrer noopener");
+      }
+      // `path.posix.isAbsolute()` detects `/` or `//`.
+      if (!(path.posix.isAbsolute(href) || getURLProtocol(href) != null)) {
+        setNodeAttr(
+          node, "href", getPath(path.join(path.dirname(docPath), href))
+        );
       }
     }
-  });
+  }
 };
 
 /**
@@ -764,19 +933,57 @@ const resolveLink = (node, baseURL, rootDir, docPath) => {
 const resolveImage = (node, rootDir, docPath) => {
   const getPath = getPathFn(rootDir);
   // Replace relative path to absolute path.
-  nodesEach(node, (node) => {
-    if (node["tagName"] === "img") {
-      const src = getNodeAttr(node, "src");
-      if (src != null) {
-        // `path.posix.isAbsolute()` detects `/` or `//`.
-        if (!(path.posix.isAbsolute(src) || getURLProtocol(src) != null)) {
-          setNodeAttr(
-            node, "src", getPath(path.join(path.dirname(docPath), src))
-          );
-        }
+  const imageNodes = nodesFilter(node, (node) => {
+    return node["tagName"] === "img";
+  });
+  for (const node of imageNodes) {
+    const src = getNodeAttr(node, "src");
+    if (src != null) {
+      // `path.posix.isAbsolute()` detects `/` or `//`.
+      if (!(path.posix.isAbsolute(src) || getURLProtocol(src) != null)) {
+        setNodeAttr(
+          node, "src", getPath(path.join(path.dirname(docPath), src))
+        );
       }
     }
+  }
+};
+
+/**
+ * @description Format and highlight code block.
+ * @param {Object} node parse5 Node.
+ * @param {Object} [hlOpts] Highlight options.
+ */
+const resolveCodeBlocks = (node, hlOpts = {}) => {
+  const codeBlockNodes = nodesFilter(node, (node) => {
+    return node["tagName"] === "pre" &amp;&amp;
+           node["childNodes"].length === 1 &amp;&amp;
+           node["childNodes"][0]["tagName"] === "code";
   });
+  for (const node of codeBlockNodes) {
+    const code = getNodeText(node["childNodes"][0]);
+    const lang = getNodeAttr(node["childNodes"][0], "class");
+    const escapedCode = escapeHTML(code);
+    const results = [`&lt;figure data-raw="${escapedCode}"`];
+    if (lang != null) {
+      results.push(` data-lang="${lang.toLowerCase()}"`);
+    }
+    // Because we want to use hljs' css, so `hljs` is used to set background.
+    results.push(" class=\"code-block hljs");
+    if (hlOpts["enable"]) {
+      results.push(" highlight\">");
+      results.push(highlight(code, Object.assign({
+        "lang": lang != null ? lang.toLowerCase() : null,
+        "hljs": true,
+        "gutter": true
+      }, hlOpts)));
+    } else {
+      results.push("\">");
+      results.push(`&lt;pre class="code">${escapedCode}&lt;/pre>`);
+    }
+    results.push("&lt;/figure>");
+    replaceNode(node, results.join(""));
+  }
 };
 
 /**
@@ -835,7 +1042,9 @@ module.exports = {
   delSite,
   parseNode,
   serializeNode,
+  replaceNode,
   nodesEach,
+  nodesFilter,
   getNodeText,
   setNodeText,
   getNodeAttr,
@@ -845,6 +1054,7 @@ module.exports = {
   getURLProtocol,
   resolveLink,
   resolveImage,
+  resolveCodeBlocks,
   getVersion,
   default404
 };
@@ -858,13 +1068,13 @@ module.exports = {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-compiler.html">compiler</a></li><li><a href="module-decorator.html">decorator</a></li><li><a href="module-generator.html">generator</a></li><li><a href="module-highlight.html">highlight</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li></ul><h3>Classes</h3><ul><li><a href="module-compiler-Compiler.html">Compiler</a></li><li><a href="module-decorator-Decorator.html">Decorator</a></li><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-types-TOC.html">TOC</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-compiler.html">compiler</a></li><li><a href="module-decorator.html">decorator</a></li><li><a href="module-generator.html">generator</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li></ul><h3>Classes</h3><ul><li><a href="module-compiler-Compiler.html">Compiler</a></li><li><a href="module-decorator-Decorator.html">Decorator</a></li><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-types-TOC.html">TOC</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Sat Aug 08 2020 08:55:06 GMT+0800 (China Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Sun Aug 09 2020 21:12:41 GMT+0800 (China Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
