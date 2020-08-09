@@ -925,16 +925,13 @@ const resolveCodeBlocks = (node, hlOpts) => {
       results.push(`<pre class="code">${escapedCode}</pre>`)
     }
     results.push("</figure>");
-    // Seems no better way to replace a node.
-    for (let i = 0; i < node["parentNode"]["childNodes"].length; ++i) {
-      if (node === node["parentNode"]["childNodes"][i]) {
-        node["parentNode"]["childNodes"][i] = parseNode(
-          node["parentNode"],
-          results.join("")
-        )["childNodes"][0];
-        break;
-      }
-    }
+    // It's a little bit faster to use indexOf.
+    node["parentNode"]["childNodes"][
+      node["parentNode"]["childNodes"].indexOf(node)
+    ] = parseNode(
+      node["parentNode"],
+      results.join("")
+    )["childNodes"][0];
   }
 };
 
