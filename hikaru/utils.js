@@ -81,7 +81,7 @@ const highlightAuto = (code) => {
  */
 const highlight = (code, opts = {}) => {
   if (opts == null) {
-    opts = {}
+    opts = {};
   }
   if (hljsAliases == null) {
     hljsAliases = loadLangAliases();
@@ -935,8 +935,8 @@ const resolveCodeBlocks = (node, hlOpts = {}) => {
   for (const node of codeBlockNodes) {
     const code = getNodeText(node["childNodes"][0]);
     const lang = getNodeAttr(node["childNodes"][0], "class");
-    const escapedCode = escapeHTML(code)
-    let results = [`<figure data-raw="${escapedCode}"`];
+    const escapedCode = escapeHTML(code);
+    const results = [`<figure data-raw="${escapedCode}"`];
     if (lang != null) {
       results.push(` data-lang="${lang.toLowerCase()}"`);
     }
@@ -951,7 +951,7 @@ const resolveCodeBlocks = (node, hlOpts = {}) => {
       }, hlOpts)));
     } else {
       results.push("\">");
-      results.push(`<pre class="code">${escapedCode}</pre>`)
+      results.push(`<pre class="code">${escapedCode}</pre>`);
     }
     results.push("</figure>");
     replaceNode(node, results.join(""));
