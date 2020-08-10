@@ -486,7 +486,6 @@ class Hikaru {
             }
             return res;
           });
-        }).use((style) => {
           style.define("getThemeConfig", (data) => {
             const keys = data["val"].toString().trim().split(".");
             let res = this.site["themeConfig"];
@@ -498,20 +497,20 @@ class Hikaru {
             }
             return res;
           });
-        }).use((style) => {
-          style.define("siteConfig", this.site["siteConfig"]);
-        }).use((style) => {
-          style.define("themeConfig", this.site["themeConfig"]);
-        }).use((style) => {
           style.define("getPath", (data) => {
             return getPath(data["val"].toString().trim());
           });
-        }).use((style) => {
           style.define("getURL", (data) => {
             return getURL(data["val"].toString().trim());
           });
+          style.define("siteConfig", this.site["siteConfig"]);
+          style.define("themeConfig", this.site["themeConfig"]);
+          style.define("srcDir", file["srcDir"]);
+          style.define("srcPath", file["srcPath"]);
+          style.define("docDir", file["docDir"]);
+          style.define("docPath", file["docPath"]);
         }).set("filename", path.join(
-          this.site["siteConfig"]["themeSrcDir"], file["srcPath"]
+          file["srcDir"], file["srcPath"]
         )).set("sourcemap", stylConfig["sourcemap"])
           .set("compress", stylConfig["compress"])
           .set("include css", true).render((error, result) => {
