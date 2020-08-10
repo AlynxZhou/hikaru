@@ -906,7 +906,7 @@ const resolveCodeBlocks = (node, hlOpts = {}) => {
         // But may replace `\n` with `<br>`, so use original code here.
         const linesLength = code.split(/\r?\n/g).length;
         for (let i = 0; i < linesLength; ++i) {
-          results.push(`<span class="line">${i + 1}</span>`);
+          results.push(`<span class="line-number">${i + 1}</span>`);
           if (i !== linesLength - 1) {
             results.push("\n");
           }
