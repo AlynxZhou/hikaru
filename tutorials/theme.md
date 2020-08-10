@@ -72,7 +72,32 @@ You can use following helpers in template:
 
 Assets may be CSS or JavaScript files, Hikaru internally supports stylus, so you can write it instead pure CSS. You can also add other preprocessors via registing renderers.
 
-You can use `getThemeConfig(key)` or `getSiteConfig(key)` in CSS preprocessors to get config. Use `getPath(docPath)` or `getURL(docPath)` if you want to get generated path or URL.
+You can use `getThemeConfig(key)` or `getSiteConfig(key)` in CSS preprocessors to get config. Use `getPath(docPath)` or `getURL(docPath)` if you want to get generated path or URL. You can also get file's `docPath`, `docDir`, `srcPath` and `srcDir`.
+
+If you want to use Hikaru's builtin highlight processor, you need to add highlight.js theme CSS to your theme assets. But you can also tell user to disable builtin highlight processor and use a browser-side highlight library. Hikaru will generate elements like
+
+```html
+<figure data-raw="Raw code content" data-info="language-xxxx" data-lang="xxxx">
+  <pre class="gutter">
+    <span class="line-number">1</span>
+  </pre>
+  <pre class="code">
+    <code class="language-xxxx">
+      Raw code content
+    </code>
+  </pre>
+</figure>
+```
+
+from Markdown code blocks like
+
+~~~markdown
+```xxxx
+Raw code content
+```
+~~~
+
+so you can easily theme them and also works with libraries like PrismJS.
 
 # Language Files
 
@@ -88,7 +113,7 @@ postcount:
 and set `config.yml` to `language: en`, you can use `__()` in template like this:
 
 ```html
-<p>{{ __("postcount.more", 233)}}</p>
+<p>{{ __("postcount.more", 233) }}</p>
 ```
 
 **Each page can have their own language property**, `Translator` will load language automatically.

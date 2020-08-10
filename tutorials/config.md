@@ -98,4 +98,20 @@ skipRender:
   - TOC.md
 ```
 
+## `highlight`
+
+Options for builtin highlight processor powered by [highlight.js](https://highlightjs.org/).
+
+```yaml
+highlight:
+  # Whether use builtin processor. You can set to false if you want to do highlight in browser.
+  enable: true
+  # Whether to generate gutter (a column for line numbers). Set `enable: false` won't disable gutter if you set `true` here.
+  gutter: true
+  # Add `hljs-` perfix to generate highlight class name. By default it's `true` because CSS files need this.
+  hljs: true
+```
+
+You can attach other highlight.js options in this section of configure file.
+
 For different npm modules, you can set their options as their docs, and it will be passed when rendering.
