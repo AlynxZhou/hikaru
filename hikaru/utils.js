@@ -16,123 +16,6 @@ const pkg = require("../package.json");
 const extMIME = require("../dist/ext-mime.json");
 
 /**
- * @private
- * @description Cache table for hljs's aliases.
- */
-let hljsAliases = null;
-
-/**
- * @private
- * @return {Object} Key is alias, value is hljs lang name.
- */
-const loadLangAliases = () => {
-  const hljsAliases = {};
-  const languages = hljs.listLanguages();
-  for (const lang of languages) {
-    hljsAliases[lang] = lang;
-    const lAliases = require(
-      `highlight.js/lib/languages/${lang}`
-    )(hljs)["aliases"];
-    if (lAliases != null) {
-      for (const alias of lAliases) {
-        hljsAliases[alias] = lang;
-      }
-    }
-  }
-  return hljsAliases;
-};
-
-/**
- * @private
- * @typedef {Object} Data
- * @property {Number} [relevance]
- * @property {String} [language] Detected language.
- * @property {String} value Highlighted HTML string.
- */
-/**
- * @private
- * @description Try to automatic highlight code with detection.
- * @param {String} code str
- * @return {Data}
- */
-const highlightAuto = (code) => {
-  for (const lang of Object.values(hljsAliases)) {
-    if (hljs.getLanguage(lang) == null) {
-      hljs.registerLanguage(
-        lang, require(`highlight.js/lib/languages/${lang}`)
-      );
-    }
-  }
-  const data = hljs.highlightAuto(code);
-  if (data["relevance"] > 0 && data["language"] != null) {
-    return data;
-  }
-  return {"value": escapeHTML(code)};
-};
-
-/**
- * @private
- * @description Highlight code.
- * @param {String} code
- * @param {Object} [opts] Optional hljs parameters.
- * @param {Boolean} [opts.hljs] Add `hljs-` prefix to class name.
- * @param {Boolean} [opts.gutter] Generate line numbers.
- * @return {String} Highlighted HTML.
- */
-const highlight = (code, opts = {}) => {
-  if (opts == null) {
-    opts = {};
-  }
-  if (hljsAliases == null) {
-    hljsAliases = loadLangAliases();
-  }
-  if (opts["hljs"]) {
-    hljs.configure({"classPrefix": "hljs-"});
-  }
-
-  let data;
-  if (opts["lang"] == null) {
-    // Guess when no lang was given.
-    data = highlightAuto(code);
-  } else if (opts["lang"] === "plain") {
-    // Skip auto guess when user sets lang to plain,
-    // plain is not in the alias list, so judge it first.
-    data = {"value": escapeHTML(code)};
-  } else if (hljsAliases[opts["lang"]] == null) {
-    // Guess when lang is given but not in highlightjs' alias list, too.
-    data = highlightAuto(code);
-  } else {
-    // We have correct lang alias, tell highlightjs to handle it.
-    // If given language does not match string content,
-    // highlightjs will set language to undefined.
-    data = hljs.highlight(hljsAliases[opts["lang"]], code);
-  }
-
-  const results = [];
-
-  if (opts["gutter"]) {
-    results.push("<pre class=\"gutter\">");
-    const lines = data["value"].split(/\r?\n/g).length;
-    for (let i = 0; i < lines; ++i) {
-      results.push(`<span class="line">${i + 1}</span>`);
-      if (i !== lines - 1) {
-        results.push("\n");
-      }
-    }
-    results.push("</pre>");
-  }
-
-  results.push("<pre class=\"code");
-  if (data["language"] != null) {
-    results.push(` ${data["language"].toLowerCase()}`);
-  }
-  results.push("\">");
-  results.push(data["value"]);
-  results.push("</pre>");
-  return results.join("");
-};
-
-/**
  * @param {*} o
  * @return {Boolean}
  */
@@ -870,7 +753,7 @@ const getURLProtocol = (url) => {
  * @param {String} [rootDir] Site rootDir.
  * @param {String} [docPath]
  */
-const resolveLink = (node, baseURL, rootDir, docPath) => {
+const resolveLinks = (node, baseURL, rootDir, docPath) => {
   const getURL = getURLFn(baseURL, rootDir);
   const getPath = getPathFn(rootDir);
   // Replace relative path to absolute path.
@@ -902,7 +785,7 @@ const resolveLink = (node, baseURL, rootDir, docPath) => {
  * @param {String} [rootDir] Site rootDir.
  * @param {String} [docPath]
  */
-const resolveImage = (node, rootDir, docPath) => {
+const resolveImages = (node, rootDir, docPath) => {
   const getPath = getPathFn(rootDir);
   // Replace relative path to absolute path.
   const imageNodes = nodesFilter(node, (node) => {
@@ -927,34 +810,85 @@ const resolveImage = (node, rootDir, docPath) => {
  * @param {Object} [hlOpts] Highlight options.
  */
 const resolveCodeBlocks = (node, hlOpts = {}) => {
+  // Enable hljs prefix by default.
+  hlOpts = Object.assign({"hljs": true}, hlOpts);
+  if (hlOpts["hljs"]) {
+    hlOpts["classPrefix"] = "hljs-";
+  }
+  hljs.configure(hlOpts);
+
   const codeBlockNodes = nodesFilter(node, (node) => {
     return node["tagName"] === "pre" &&
+           // Prevent re-resolving code blocks when re-process.
+           node["parentNode"]["tagName"] !== "figure" &&
            node["childNodes"].length === 1 &&
            node["childNodes"][0]["tagName"] === "code";
   });
   for (const node of codeBlockNodes) {
     const code = getNodeText(node["childNodes"][0]);
-    const lang = getNodeAttr(node["childNodes"][0], "class");
-    const escapedCode = escapeHTML(code);
-    const results = [`<figure data-raw="${escapedCode}"`];
-    if (lang != null) {
-      results.push(` data-lang="${lang.toLowerCase()}"`);
-    }
-    // Because we want to use hljs' css, so `hljs` is used to set background.
-    results.push(" class=\"code-block hljs");
-    if (hlOpts["enable"]) {
-      results.push(" highlight\">");
-      results.push(highlight(code, Object.assign({
-        "lang": lang != null ? lang.toLowerCase() : null,
-        "hljs": true,
-        "gutter": true
-      }, hlOpts)));
-    } else {
+    if (code != null) {
+      const info = getNodeAttr(node["childNodes"][0], "class");
+      const escapedCode = escapeHTML(code);
+
+      const results = [`<figure data-raw="${escapedCode}"`];
+      if (info != null) {
+        results.push(` data-info="${info}"`);
+      }
+      results.push(" class=\"code-block");
+      if (hlOpts["enable"]) {
+        // Because we want to use hljs' css,
+        // so `hljs` is added here to set background.
+        results.push(" highlight hljs");
+      }
       results.push("\">");
-      results.push(`<pre class="code">${escapedCode}</pre>`);
+
+      // Highlight first for making gutter.
+      // Some info means skipping highlight.
+      let data;
+      if (!hlOpts["enable"] ||
+          info === "language-none" ||
+          info === "language-plain" ||
+          info === "language-plaintext" ||
+          info === "language-nohighlight") {
+        data = {"value": escapedCode};
+      } else {
+        data = hljs.highlightAuto(code);
+      }
+
+      if (hlOpts["gutter"]) {
+        results.push("<pre class=\"gutter\">");
+        const lines = data["value"].split(/\r?\n/g).length;
+        for (let i = 0; i < lines; ++i) {
+          results.push(`<span class="line">${i + 1}</span>`);
+          if (i !== lines - 1) {
+            results.push("\n");
+          }
+        }
+        results.push("</pre>");
+      }
+
+      results.push("<pre class=\"code\">");
+      if (!hlOpts["enable"]) {
+        // Set to original info if highlight is disabled,
+        // so user can do highlight in browser.
+        if (info != null) {
+          results.push(`<code class="${info}">`);
+        } else {
+          results.push("<code>");
+        }
+      } else {
+        if (data["language"] != null) {
+          results.push(`<code class="language-${data["language"]}">`);
+        } else {
+          results.push("<code>");
+        }
+      }
+      results.push(data["value"]);
+      results.push("</code></pre>");
+
+      results.push("</figure>");
+      replaceNode(node, results.join(""));
     }
-    results.push("</figure>");
-    replaceNode(node, results.join(""));
   }
 };
 
@@ -1024,8 +958,8 @@ module.exports = {
   resolveHeaderIDs,
   genTOC,
   getURLProtocol,
-  resolveLink,
-  resolveImage,
+  resolveLinks,
+  resolveImages,
   resolveCodeBlocks,
   getVersion,
   default404

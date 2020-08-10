@@ -36,8 +36,8 @@ const {
   parseNode,
   serializeNode,
   resolveHeaderIDs,
-  resolveLink,
-  resolveImage,
+  resolveLinks,
+  resolveImages,
   resolveCodeBlocks,
   genTOC
 } = utils;
@@ -456,10 +456,10 @@ class Hikaru {
       return file;
     });
 
-    const markedConfig = Object.assign({
-      "gfm": true,
-      "langPrefix": ""
-    }, this.site["siteConfig"]["marked"]);
+    const markedConfig = Object.assign(
+      {"gfm": true},
+      this.site["siteConfig"]["marked"]
+    );
     marked.setOptions(markedConfig);
     this.renderer.register(".md", ".html", (file) => {
       file["content"] = marked(file["text"]);
@@ -598,13 +598,13 @@ class Hikaru {
         const node = parseNode(p["content"]);
         resolveHeaderIDs(node);
         p["toc"] = genTOC(node);
-        resolveLink(
+        resolveLinks(
           node,
           site["siteConfig"]["baseURL"],
           site["siteConfig"]["rootDir"],
           p["docPath"]
         );
-        resolveImage(node, site["siteConfig"]["rootDir"], p["docPath"]);
+        resolveImages(node, site["siteConfig"]["rootDir"], p["docPath"]);
         resolveCodeBlocks(node, site["siteConfig"]["highlight"]);
         p["content"] = serializeNode(node);
         if (p["content"].indexOf("<!--more-->") !== -1) {
