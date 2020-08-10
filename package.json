@@ -1,6 +1,6 @@
 {
   "name": "hikarujs",
-  "version": "1.5.5",
+  "version": "1.5.6",
   "description": "A static site generator that generates routes based on directories naturally.",
   "main": "hikaru/index.js",
   "bin": {
