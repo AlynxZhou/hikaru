@@ -868,20 +868,15 @@ const resolveCodeBlocks = (node, hlOpts = {}) => {
       }
 
       results.push("<pre class=\"code\">");
-      if (!hlOpts["enable"]) {
-        // Set to original info if highlight is disabled,
-        // so user can do highlight in browser.
-        if (info != null) {
-          results.push(`<code class="${info}">`);
-        } else {
-          results.push("<code>");
-        }
+      // If highlight is disabled or skipped, data["language"] will be null.
+      // Then we set class to original info,
+      // so user can do highlight in browser.
+      if (hlOpts["enable"] && data["language"] != null) {
+        results.push(`<code class="language-${data["language"]}">`);
+      } else if (info != null) {
+        results.push(`<code class="${info}">`);
       } else {
-        if (data["language"] != null) {
-          results.push(`<code class="language-${data["language"]}">`);
-        } else {
-          results.push("<code>");
-        }
+        results.push("<code>");
       }
       results.push(data["value"]);
       results.push("</code></pre>");
