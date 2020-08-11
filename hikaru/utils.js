@@ -767,7 +767,7 @@ const resolveLinks = (node, baseURL, rootDir, docPath) => {
       // So we can compare host for all links here.
       if (new URL(href, baseURL).origin !== getURL(docPath).origin) {
         setNodeAttr(node, "target", "_blank");
-        setNodeAttr(node, "rel", "noreferrer noopener");
+        setNodeAttr(node, "rel", "external nofollow noreferrer noopener");
       }
       // `path.posix.isAbsolute()` detects `/` or `//`.
       if (!(path.posix.isAbsolute(href) || getURLProtocol(href) != null)) {
