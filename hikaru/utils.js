@@ -840,14 +840,17 @@ const hljsLoadAliases = () => {
  * @param {Object} [hlOpts] Highlight options.
  */
 const resolveCodeBlocks = (node, hlOpts = {}) => {
-  // Enable hljs prefix by default.
-  hlOpts = Object.assign({"hljs": true}, hlOpts);
-  if (hlOpts["hljs"]) {
-    hlOpts["classPrefix"] = "hljs-";
-  }
-  hljs.configure(hlOpts);
-  if (hljsAliases == null) {
-    hljsAliases = hljsLoadAliases();
+  // Enable hljs prefix and gutter by default.
+  hlOpts = Object.assign({"hljs": true, "gutter": true}, hlOpts);
+  // Only load hljs if enabled.
+  if (hlOpts["enable"]) {
+    if (hlOpts["hljs"]) {
+      hlOpts["classPrefix"] = "hljs-";
+    }
+    hljs.configure(hlOpts);
+    if (hljsAliases == null) {
+      hljsAliases = hljsLoadAliases();
+    }
   }
 
   const codeBlockNodes = nodesFilter(node, (node) => {
