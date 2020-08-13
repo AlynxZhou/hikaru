@@ -144,10 +144,10 @@ const getFrontMatter = (str) => {
  * @return {File}
  */
 const parseFrontMatter = (file) => {
-  if (!isString(file["raw"])) {
+  if (!isString(file["text"])) {
     return file;
   }
-  const parsed = getFrontMatter(file["raw"]);
+  const parsed = getFrontMatter(file["text"]);
   file["text"] = parsed["body"];
   file["frontMatter"] = parsed["attributes"];
   file = Object.assign(file, parsed["attributes"]);
