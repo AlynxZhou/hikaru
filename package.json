@@ -31,6 +31,7 @@
     "fs-extra": "^9.0.1",
     "glob": "^7.1.6",
     "highlight.js": "^10.1.2",
+    "isbinaryfile": "^4.0.6",
     "marked": "^1.1.1",
     "moment-timezone": "^0.5.31",
     "nunjucks": "^3.2.2",

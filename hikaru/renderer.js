@@ -52,14 +52,6 @@ class Renderer {
   }
 
   /**
-   * @description List registered srcExts.
-   * @return {String[]}
-   */
-  list() {
-    return Object.keys(this._);
-  }
-
-  /**
    * @description Render file with renderer function.
    * @param {File} input
    * @return {File} Rendered file.
@@ -67,9 +59,11 @@ class Renderer {
   async render(input) {
     const srcExt = path.extname(input["srcPath"]);
     const results = [];
+    // It might be OK to allow renderer for binary file, but why?
+    // It has no `raw`, `text` and why you want to handle binary with a SSG?
+    // So better to just skip binary here.
     if (
-      this._[srcExt] != null &&
-      !input["isBinary"] &&
+      this._[srcExt] != null && !input["binary"] &&
       !this.skipRenderList.includes(input["srcPath"])
     ) {
       for (const handler of Object.values(this._[srcExt])) {
@@ -98,6 +92,9 @@ class Renderer {
       // this.logger.debug(`Hikaru is rendering \`${
       //   this.logger.cyan(output['srcPath'])
       // }\`...`)
+      // For binary files, this is useless,
+      // but we have to keep this line for other text files without renderer.
+      output["content"] = output["text"];
       results.push(output);
     }
     return results;

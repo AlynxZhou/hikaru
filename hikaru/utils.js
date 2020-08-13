@@ -5,12 +5,16 @@
  */
 
 const path = require("path");
-const glob = require("glob");
-const hljs = require("highlight.js");
-const YAML = require("yaml");
 const {URL} = require("url");
+const glob = require("glob");
+const YAML = require("yaml");
 const parse5 = require("parse5");
+const hljs = require("highlight.js");
 const moment = require("moment-timezone");
+// OMG you are adding new dependency! Why not implement it yourself?
+// Calm down, it has no dependency so just give it a chance.
+// And its code is a little bit long.
+const {isBinaryFile, isBinaryFileSync} = require("isbinaryfile");
 const {File, Category, Tag, TOC} = require("./types");
 const pkg = require("../package.json");
 const extMIME = require("../dist/ext-mime.json");
@@ -56,6 +60,9 @@ const isBuffer = (o) => {
 };
 
 /**
+ * @description You should use `isBinaryFile(filepath)` because it does not
+ * read full file into memory so you can get a better performance.
+ * @see https://github.com/gjtorikian/isBinaryFile#isbinaryfilefilepath
  * @param {Buffer} b
  * @return {Boolean}
  */
@@ -976,6 +983,8 @@ module.exports = {
   isObject,
   isBuffer,
   isBinary,
+  isBinaryFile,
+  isBinaryFileSync,
   escapeHTML,
   matchFiles,
   removeControlChars,

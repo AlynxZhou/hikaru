@@ -15,7 +15,7 @@ const {
   isString,
   isFunction,
   isObject,
-  isBinary,
+  isBinaryFile,
   default404,
   matchFiles,
   getVersion,
@@ -63,8 +63,6 @@ class Router {
       this.site["siteConfig"]["baseURL"], this.site["siteConfig"]["rootDir"]
     );
     this.getPath = getPathFn(this.site["siteConfig"]["rootDir"]);
-    // We will use this for many times, better to cache it.
-    this.renderExtList = this.renderer.list();
   }
 
   /**
@@ -85,7 +83,7 @@ class Router {
    */
   write(file, content) {
     content = content || file["content"];
-    if (!file["isBinary"]) {
+    if (!file["binary"]) {
       return fse.outputFile(
         path.join(file["docDir"], file["docPath"]), content
       );
@@ -105,11 +103,12 @@ class Router {
     this.logger.debug(`Hikaru is reading \`${
       this.logger.cyan(path.join(file["srcDir"], file["srcPath"]))
     }\`...`);
-    const srcExt = path.extname(file["srcPath"]);
-    // If a file is not handled, we call it binary,
-    // which means we will copy it instead of read it.
-    file["isBinary"] = !this.renderExtList.includes(srcExt);
-    if (!file["isBinary"]) {
+    // Binary files are not supposed to handle by SSGs.
+    // We can copy or pipe it to save memory.
+    file["binary"] = await isBinaryFile(
+      path.join(file["srcDir"], file["srcPath"])
+    );
+    if (!file["binary"]) {
       file["raw"] = await this.read(path.join(file["srcDir"], file["srcPath"]));
       file["text"] = file["raw"].toString("utf8");
       file = parseFrontMatter(file);
@@ -135,8 +134,8 @@ class Router {
    * @param {File} file
    */
   async saveFile(file) {
-    let content = null
-    if (!file["isBinary"]) {
+    let content = null;
+    if (!file["binary"]) {
       content = await this.decorator.decorate(file, this.loadContext(file));
     }
     this.logger.debug(`Hikaru is writing \`${
@@ -329,7 +328,7 @@ class Router {
           "Content-Type": getContentType(file["docPath"])
         });
       }
-      if (!file["isBinary"]) {
+      if (!file["binary"]) {
         response.write(
           await this.decorator.decorate(file, this.loadContext(file))
         );
