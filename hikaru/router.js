@@ -63,6 +63,8 @@ class Router {
       this.site["siteConfig"]["baseURL"], this.site["siteConfig"]["rootDir"]
     );
     this.getPath = getPathFn(this.site["siteConfig"]["rootDir"]);
+    // We will use this for many times, better to cache it.
+    this.renderExtList = this.renderer.list();
   }
 
   /**
@@ -82,9 +84,7 @@ class Router {
    * @param {(Buffer|String)} content
    */
   write(file, content) {
-    if (content == null) {
-      content = file["content"];
-    }
+    content = content || file["content"];
     if (!file["isBinary"]) {
       return fse.outputFile(
         path.join(file["docDir"], file["docPath"]), content
@@ -105,11 +105,15 @@ class Router {
     this.logger.debug(`Hikaru is reading \`${
       this.logger.cyan(path.join(file["srcDir"], file["srcPath"]))
     }\`...`);
-    const raw = await this.read(path.join(file["srcDir"], file["srcPath"]));
-    file["isBinary"] = isBinary(raw);
-    file["raw"] = file["isBinary"] ? raw : raw.toString("utf8");
-    file["text"] = file["raw"];
-    file = parseFrontMatter(file);
+    const srcExt = path.extname(file["srcPath"]);
+    // If a file is not handled, we call it binary,
+    // which means we will copy it instead of read it.
+    file["isBinary"] = !this.renderExtList.includes(srcExt);
+    if (!file["isBinary"]) {
+      file["raw"] = await this.read(path.join(file["srcDir"], file["srcPath"]));
+      file["text"] = file["raw"].toString("utf8");
+      file = parseFrontMatter(file);
+    }
     const results = await this.renderer.render(file);
     for (const result of results) {
       if (result["layout"] === "post") {
@@ -131,7 +135,10 @@ class Router {
    * @param {File} file
    */
   async saveFile(file) {
-    const content = await this.decorator.decorate(file, this.loadContext(file));
+    let content = null
+    if (!file["isBinary"]) {
+      content = await this.decorator.decorate(file, this.loadContext(file));
+    }
     this.logger.debug(`Hikaru is writing \`${
       this.logger.cyan(path.join(file["docDir"], file["docPath"]))
     }\`...`);
@@ -322,10 +329,17 @@ class Router {
           "Content-Type": getContentType(file["docPath"])
         });
       }
-      response.write(
-        await this.decorator.decorate(file, this.loadContext(file))
-      );
-      response.end();
+      if (!file["isBinary"]) {
+        response.write(
+          await this.decorator.decorate(file, this.loadContext(file))
+        );
+        response.end();
+      } else {
+        // Pipe a binary instead of read.
+        fse.createReadStream(
+          path.join(file["srcDir"], file["srcPath"])
+        ).pipe(response);
+      }
     });
     this.logger.log(
       `Hikaru is starting to listen on http://${this.ip}:${this.port}${

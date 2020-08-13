@@ -52,6 +52,14 @@ class Renderer {
   }
 
   /**
+   * @description List registered srcExts.
+   * @return {String[]}
+   */
+  list() {
+    return Object.keys(this._);
+  }
+
+  /**
    * @description Render file with renderer function.
    * @param {File} input
    * @return {File} Rendered file.
@@ -60,7 +68,9 @@ class Renderer {
     const srcExt = path.extname(input["srcPath"]);
     const results = [];
     if (
-      this._[srcExt] != null && !this.skipRenderList.includes(input["srcPath"])
+      this._[srcExt] != null &&
+      !input["isBinary"] &&
+      !this.skipRenderList.includes(input["srcPath"])
     ) {
       for (const handler of Object.values(this._[srcExt])) {
         const output = new File(input);
@@ -88,7 +98,6 @@ class Renderer {
       // this.logger.debug(`Hikaru is rendering \`${
       //   this.logger.cyan(output['srcPath'])
       // }\`...`)
-      output["content"] = output["raw"];
       results.push(output);
     }
     return results;
