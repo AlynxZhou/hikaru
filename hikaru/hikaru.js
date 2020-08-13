@@ -131,7 +131,7 @@ class Hikaru {
         const json = JSON.parse(text);
         // Set package name to site dir name.
         json["name"] = path.relative("..", ".");
-        return fse.writeFile(
+        return fse.outputFile(
           path.join(siteDir, "package.json"),
           JSON.stringify(json, null, "  ")
         );
@@ -165,29 +165,14 @@ class Hikaru {
     if (siteConfig == null || siteConfig["docDir"] == null) {
       return;
     }
-    matchFiles("*", {
-      "cwd": path.join(siteDir, siteConfig["docDir"]),
-      "dot": true
-    }).then((res) => {
-      return res.map((r) => {
-        fse.stat(path.join(siteDir, siteConfig["docDir"], r)).then((stats) => {
-          if (stats.isDirectory()) {
-            this.logger.debug(`Hikaru is removing \`${
-              this.logger.cyan(
-                path.join(siteDir, siteConfig["docDir"], r, path.sep)
-              )
-            }\`...`);
-          } else {
-            this.logger.debug(`Hikaru is removing \`${
-              this.logger.cyan(
-                path.join(siteDir, siteConfig["docDir"], r)
-              )
-            }\`...`);
-          }
-          return fse.remove(path.join(siteDir, siteConfig["docDir"], r));
-        });
-      });
-    }).catch((error) => {
+    this.logger.debug(`Hikaru is cleaning \`${
+      this.logger.cyan(
+        path.join(siteDir, siteConfig["docDir"], path.sep)
+      )
+    }\`...`);
+    return fse.emptyDir(
+      path.join(siteDir, siteConfig["docDir"])
+    ).catch((error) => {
       this.logger.warn("Hikaru catched some error during cleaning!");
       this.logger.error(error);
     });
