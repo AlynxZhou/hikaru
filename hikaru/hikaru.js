@@ -190,6 +190,15 @@ class Hikaru {
       await this.loadScripts();
       await this.loadLanguages();
       await this.loadLayouts();
+      this.router = new Router(
+        this.logger,
+        this.renderer,
+        this.processor,
+        this.generator,
+        this.decorator,
+        this.translator,
+        this.site
+      );
       await this.router.build();
     } catch (error) {
       this.logger.warn("Hikaru catched some error during building!");
@@ -212,6 +221,15 @@ class Hikaru {
       await this.loadScripts();
       await this.loadLanguages();
       await this.loadLayouts();
+      this.router = new Router(
+        this.logger,
+        this.renderer,
+        this.processor,
+        this.generator,
+        this.decorator,
+        this.translator,
+        this.site
+      );
       await this.router.serve(ip, port);
     } catch (error) {
       this.logger.warn("Hikaru catched some error during serving!");
@@ -286,15 +304,6 @@ class Hikaru {
     this.generator = new Generator(this.logger);
     this.decorator = new Decorator(this.logger, this.compiler);
     this.translator = new Translator(this.logger);
-    this.router = new Router(
-      this.logger,
-      this.renderer,
-      this.processor,
-      this.generator,
-      this.decorator,
-      this.translator,
-      this.site
-    );
     this.registerInternalRenderers();
     this.registerInternalCompilers();
     this.registerInternalProcessors();
