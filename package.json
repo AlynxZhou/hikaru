@@ -7,10 +7,10 @@
     "hikaru": "bin/hikaru"
   },
   "scripts": {
-    "build:doc": "jsdoc -c .jsdoc.json -R README.md -u tutorials/ && echo \"hikaru.alynx.one\" > docs/CNAME && touch docs/.nojekyll",
+    "build:doc": "jsdoc -c .jsdoc.json -R README.md -u tutorials/ && echo \"hikaru.alynx.one\" > docs/CNAME && touch docs/.nojekyll && git add -A docs/ && git commit -m \"Updated docs.\"",
     "test": "standardx hikaru/*.js bin/*.js",
     "preversion": "npm test",
-    "version": "npm run build:doc && git add -A docs/ && git commit -m \"Updated docs.\""
+    "version": "npm run build:doc"
   },
   "repository": {
     "type": "git",
