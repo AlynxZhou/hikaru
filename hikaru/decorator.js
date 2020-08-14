@@ -50,7 +50,7 @@ class Decorator {
     const layout = this.getFileLayout(file);
     if (layout != null) {
       this.logger.debug(`Hikaru is decorating \`${
-        this.logger.cyan(path.join(file["docDir"], file["docPath"]))
+        this.logger.cyan(file.getFullDocPath())
       }\` with layout \`${
         this.logger.blue(layout)
       }\`...`);
@@ -86,7 +86,7 @@ class Decorator {
     if (file["layout"] == null) {
       return null;
     }
-    if (!this.list().includes(file["layout"])) {
+    if (this._[file["layout"]] == null) {
       return "page";
     }
     return file["layout"];

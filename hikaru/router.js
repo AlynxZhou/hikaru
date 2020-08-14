@@ -42,7 +42,9 @@ class Router {
    * @param {Site} site
    * @return {Router}
    */
-  constructor(logger, renderer, processor, generator, decorator, translator, site) {
+  constructor(
+    logger, renderer, processor, generator, decorator, translator, site
+  ) {
     this.logger = logger;
     this.renderer = renderer;
     this.processor = processor;
@@ -84,14 +86,9 @@ class Router {
   write(file, content) {
     content = content || file["content"];
     if (!file["binary"]) {
-      return fse.outputFile(
-        path.join(file["docDir"], file["docPath"]), content
-      );
+      return fse.outputFile(file.getFullDocPath(), content);
     }
-    return fse.copy(
-      path.join(file["srcDir"], file["srcPath"]),
-      path.join(file["docDir"], file["docPath"])
-    );
+    return fse.copy(file.getFullSrcPath(), file.getFullDocPath());
   }
 
   /**
@@ -101,15 +98,13 @@ class Router {
    */
   async loadFile(file) {
     this.logger.debug(`Hikaru is reading \`${
-      this.logger.cyan(path.join(file["srcDir"], file["srcPath"]))
+      this.logger.cyan(file.getFullSrcPath())
     }\`...`);
     // Binary files are not supposed to handle by SSGs.
     // We can copy or pipe it to save memory.
-    file["binary"] = await isBinaryFile(
-      path.join(file["srcDir"], file["srcPath"])
-    );
+    file["binary"] = await isBinaryFile(file.getFullSrcPath());
     if (!file["binary"]) {
-      file["raw"] = await this.read(path.join(file["srcDir"], file["srcPath"]));
+      file["raw"] = await this.read(file.getFullSrcPath());
       file["text"] = file["raw"].toString("utf8");
       file = parseFrontMatter(file);
     }
@@ -139,7 +134,7 @@ class Router {
       content = await this.decorator.decorate(file, this.loadContext(file));
     }
     this.logger.debug(`Hikaru is writing \`${
-      this.logger.cyan(path.join(file["docDir"], file["docPath"]))
+      this.logger.cyan(file.getFullDocPath())
     }\`...`);
     this.write(file, content);
   }
@@ -210,9 +205,7 @@ class Router {
     this._ = {};
     for (const f of allFiles) {
       const key = this.getPath(f["docPath"]);
-      this.logger.debug(`Hikaru is serving \`${
-        this.logger.cyan(key)
-      }\`...`);
+      this.logger.debug(`Hikaru is serving \`${this.logger.cyan(key)}\`...`);
       this._[key] = f;
     }
   }
@@ -335,9 +328,7 @@ class Router {
         response.end();
       } else {
         // Pipe a binary instead of read.
-        fse.createReadStream(
-          path.join(file["srcDir"], file["srcPath"])
-        ).pipe(response);
+        fse.createReadStream(file.getFullSrcPath()).pipe(response);
       }
     });
     this.logger.log(

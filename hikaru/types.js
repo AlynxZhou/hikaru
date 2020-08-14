@@ -4,6 +4,8 @@
  * @module types
  */
 
+const path = require("path");
+
 /**
  * @description Site's data.
  */
@@ -38,7 +40,9 @@ class Site {
 }
 
 /**
- * @description File's data.
+ * @description File's data. If you are adding files in generator,
+ * you need to provide an Object which contains at least docDir and docPath
+ * as its parameter.
  */
 class File {
   /**
@@ -105,6 +109,22 @@ class File {
     if (typeof docDir === "object" && docDir != null) {
       Object.assign(this, docDir);
     }
+  }
+
+  /**
+   * @description Get File's full src path.
+   * @return {String}
+   */
+  getFullSrcPath() {
+    return path.join(this.srcDir, this.srcPath);
+  }
+
+  /**
+   * @description Get File's full document path.
+   * @return {String}
+   */
+  getFullDocPath() {
+    return path.join(this.docDir, this.docPath);
   }
 }
 
