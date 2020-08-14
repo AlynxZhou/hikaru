@@ -4,7 +4,6 @@
  * @module decorator
  */
 
-const path = require("path");
 const {File} = require("./types");
 const {isFunction, isString, getFullDocPath} = require("./utils");
 

@@ -9,7 +9,7 @@ const path = require("path");
 const http = require("http");
 const moment = require("moment-timezone");
 const chokidar = require("chokidar");
-const {File} = require("./types");
+const {Site, File} = require("./types");
 const {
   isArray,
   isString,
