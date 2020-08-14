@@ -2,9 +2,10 @@
 
 /**
  * @module types
+ * @description Types here are only data containers and prototypes,
+ * helper functions should be added into utils to
+ * prevent circular require dependencies when using other utils functions.
  */
-
-const path = require("path");
 
 /**
  * @description Site's data.
@@ -38,6 +39,12 @@ class Site {
     this.tagsLength = 0;
   }
 }
+
+/**
+ * @description Available keys for site file arrays.
+ * @static
+ */
+Site.arrayKeys = ["posts", "pages", "assets", "files"];
 
 /**
  * @description File's data. If you are adding files in generator,
@@ -109,22 +116,6 @@ class File {
     if (typeof docDir === "object" && docDir != null) {
       Object.assign(this, docDir);
     }
-  }
-
-  /**
-   * @description Get File's full src path.
-   * @return {String}
-   */
-  getFullSrcPath() {
-    return path.join(this.srcDir, this.srcPath);
-  }
-
-  /**
-   * @description Get File's full document path.
-   * @return {String}
-   */
-  getFullDocPath() {
-    return path.join(this.docDir, this.docPath);
   }
 }
 

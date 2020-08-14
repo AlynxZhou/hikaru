@@ -6,7 +6,7 @@
 
 const path = require("path");
 const {File} = require("./types");
-const {isFunction, isString} = require("./utils");
+const {isFunction, isString, getFullDocPath} = require("./utils");
 
 /**
  * @description Layout decorator.
@@ -50,7 +50,7 @@ class Decorator {
     const layout = this.getFileLayout(file);
     if (layout != null) {
       this.logger.debug(`Hikaru is decorating \`${
-        this.logger.cyan(file.getFullDocPath())
+        this.logger.cyan(getFullDocPath(file))
       }\` with layout \`${
         this.logger.blue(layout)
       }\`...`);

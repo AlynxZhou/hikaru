@@ -24,6 +24,8 @@ const {
   getContentType,
   putSite,
   delSite,
+  getFullSrcPath,
+  getFullDocPath,
   isCurrentPathFn,
   parseFrontMatter
 } = require("./utils");
@@ -86,9 +88,9 @@ class Router {
   write(file, content) {
     content = content || file["content"];
     if (!file["binary"]) {
-      return fse.outputFile(file.getFullDocPath(), content);
+      return fse.outputFile(getFullDocPath(file), content);
     }
-    return fse.copy(file.getFullSrcPath(), file.getFullDocPath());
+    return fse.copy(getFullSrcPath(file), getFullDocPath(file));
   }
 
   /**
@@ -98,13 +100,13 @@ class Router {
    */
   async loadFile(file) {
     this.logger.debug(`Hikaru is reading \`${
-      this.logger.cyan(file.getFullSrcPath())
+      this.logger.cyan(getFullSrcPath(file))
     }\`...`);
     // Binary files are not supposed to handle by SSGs.
     // We can copy or pipe it to save memory.
-    file["binary"] = await isBinaryFile(file.getFullSrcPath());
+    file["binary"] = await isBinaryFile(getFullSrcPath(file));
     if (!file["binary"]) {
-      file["raw"] = await this.read(file.getFullSrcPath());
+      file["raw"] = await this.read(getFullSrcPath(file));
       file["text"] = file["raw"].toString("utf8");
       file = parseFrontMatter(file);
     }
@@ -134,7 +136,7 @@ class Router {
       content = await this.decorator.decorate(file, this.loadContext(file));
     }
     this.logger.debug(`Hikaru is writing \`${
-      this.logger.cyan(file.getFullDocPath())
+      this.logger.cyan(getFullDocPath(file))
     }\`...`);
     this.write(file, content);
   }
@@ -275,7 +277,7 @@ class Router {
         this.site["siteConfig"]["docDir"], e["srcDir"], e["srcPath"]
       );
       if (e["event"] === "unlink") {
-        for (const key of ["assets", "pages", "posts"]) {
+        for (const key of Site.arrayKeys) {
           delSite(this.site, key, file);
         }
       } else {
@@ -328,7 +330,7 @@ class Router {
         response.end();
       } else {
         // Pipe a binary instead of read.
-        fse.createReadStream(file.getFullSrcPath()).pipe(response);
+        fse.createReadStream(getFullSrcPath(file)).pipe(response);
       }
     });
     this.logger.log(

@@ -15,7 +15,7 @@ const moment = require("moment-timezone");
 // Calm down, it has no dependency so just give it a chance.
 // And its code is a little bit long.
 const {isBinaryFile, isBinaryFileSync} = require("isbinaryfile");
-const {File, Category, Tag, TOC} = require("./types");
+const {Site, File, Category, Tag, TOC} = require("./types");
 const pkg = require("../package.json");
 const extMIME = require("../dist/ext-mime.json");
 
@@ -126,7 +126,7 @@ const removeControlChars = (str) => {
  * @return {FrontMatter}
  */
 const getFrontMatter = (str) => {
-  if (!isString(str) || !/^---\r?\n/g.test(str)) {
+  if (!/^---\r?\n/g.test(str)) {
     return {"attributes": {}, "body": str};
   }
   // Use flag `m` for per line test, not `g`.
@@ -151,7 +151,7 @@ const getFrontMatter = (str) => {
  * @return {File}
  */
 const parseFrontMatter = (file) => {
-  if (!isString(file["text"])) {
+  if (file["text"] == null) {
     return file;
   }
   const parsed = getFrontMatter(file["text"]);
@@ -460,13 +460,13 @@ const genTags = (posts) => {
 
 /**
  * @description Put file into an array in site,
- * will replace file with the same output path.
+ * will replace file with the same doc path.
  * @param {Site} site
  * @param {String} key
  * @param {File} file
  */
 const putSite = (site, key, file) => {
-  if (key == null || file == null || !isArray(site[key])) {
+  if (file == null || !Site.arrayKeys.includes(key)) {
     return;
   }
   const i = site[key].findIndex((element) => {
@@ -484,23 +484,49 @@ const putSite = (site, key, file) => {
 
 /**
  * @description Delete file from an array in site,
- * which have the same input path.
+ * which have the same src path.
  * @param {Site} site
  * @param {String} key
  * @param {File} file
  */
 const delSite = (site, key, file) => {
-  if (key == null || file == null || !isArray(site[key])) {
+  if (file == null || !Site.arrayKeys.includes(key)) {
     return;
   }
-  for (let i = 0; i < site[key].length; ++i) {
+  for (let i = 0; i < this[key].length; ++i) {
     if (
       site[key][i]["srcPath"] === file["srcPath"] &&
       site[key][i]["srcDir"] === file["srcDir"]
     ) {
+      // Don't use break here because we may have mutiply files
+      // created with the same source.
       site[key].splice(i, 1);
     }
   }
+};
+
+/**
+ * @description Get File's full src path.
+ * @param {File} file
+ * @return {String}
+ */
+const getFullSrcPath = (file) => {
+  if (file == null || file["srcDir"] == null || file["srcPath"] == null) {
+    return null;
+  }
+  return path.join(file["srcDir"], file["srcPath"]);
+};
+
+/**
+ * @description Get File's full document path.
+ * @param {File} file
+ * @return {String}
+ */
+const getFullDocPath = (file) => {
+  if (file == null || file["docDir"] == null || file["docPath"] == null) {
+    return null;
+  }
+  return path.join(file["docDir"], file["docPath"]);
 };
 
 /**
@@ -1000,6 +1026,8 @@ module.exports = {
   genTags,
   putSite,
   delSite,
+  getFullSrcPath,
+  getFullDocPath,
   parseNode,
   serializeNode,
   replaceNode,
