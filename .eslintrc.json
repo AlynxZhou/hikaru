@@ -1,4 +1,11 @@
 {
+  "env": {
+    "node": true,
+    "es2017": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 8
+  },
   "rules": {
     "semi": ["error", "always"],
     "quotes": ["error", "double", {"avoidEscape": false}],
