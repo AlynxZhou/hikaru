@@ -493,7 +493,7 @@ const delSite = (site, key, file) => {
   if (file == null || !Site.arrayKeys.includes(key)) {
     return;
   }
-  for (let i = 0; i < this[key].length; ++i) {
+  for (let i = 0; i < site[key].length; ++i) {
     if (
       site[key][i]["srcPath"] === file["srcPath"] &&
       site[key][i]["srcDir"] === file["srcDir"]
