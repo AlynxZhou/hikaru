@@ -17,7 +17,7 @@ const moment = require("moment-timezone");
 const {isBinaryFile, isBinaryFileSync} = require("isbinaryfile");
 const {Site, File, Category, Tag, TOC} = require("./types");
 const pkg = require("../package.json");
-const extMIME = require("../dist/ext-mime.json");
+const extMIME = require("../dists/ext-mime.json");
 
 /**
  * @param {*} o

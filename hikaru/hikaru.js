@@ -122,11 +122,11 @@ class Hikaru {
         this.logger.cyan(path.join(siteDir, "scripts", path.sep))
       }\`...`);
       fse.copy(
-        path.join(__dirname, "..", "dist", "siteConfig.yml"),
+        path.join(__dirname, "..", "dists", "siteConfig.yml"),
         configPath || path.join(siteDir, "siteConfig.yml")
       );
       fse.readFile(
-        path.join(__dirname, "..", "dist", "package.json")
+        path.join(__dirname, "..", "dists", "package.json")
       ).then((text) => {
         const json = JSON.parse(text);
         // Set package name to site dir name.
