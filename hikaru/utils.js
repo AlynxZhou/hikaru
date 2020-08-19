@@ -126,6 +126,7 @@ const removeControlChars = (str) => {
  * @return {FrontMatter}
  */
 const getFrontMatter = (str) => {
+  // Return if not start with /^---\r?\n/.
   if (!/^---\r?\n/g.test(str)) {
     return {"attributes": {}, "body": str};
   }
@@ -133,10 +134,10 @@ const getFrontMatter = (str) => {
   const array = str.split(/^---\r?\n/m, 3);
   // No front-matter at all.
   if (array.length !== 3) {
-    return {"attributes": {}, "body": str, "frontMatter": ""};
+    return {"attributes": {}, "body": str};
   }
   // ['', frontMatter, body]
-  const result = {"attributes": {}, "body": array[2], "frontMatter": array[1]};
+  const result = {"body": array[2], "frontMatter": array[1]};
   try {
     result["attributes"] = YAML.parse(result["frontMatter"]);
   } catch (error) {
@@ -195,7 +196,7 @@ const getContentType = (docPath) => {
  * @param {Number} [perPage=10] How many posts per page.
  * @return {File[]} Paginated pages, original page's index is 0.
  */
-const paginate = (p, posts, perPage = 10) => {
+const paginate = (p, posts = [], perPage = 10) => {
   const results = [];
   let perPagePosts = [];
   for (const post of posts) {
@@ -324,9 +325,12 @@ const getURLFn = (baseURL, rootDir = path.posix.sep) => {
 
 /**
  * @callback isCurrentPath
- * @description This function does not care query string and hash.
+ * @description Test if given path is current path.
+ * This function does not care query string and hash.
  * @param {String} [testPath] Path needed to test.
- * @param {Boolean} [strict=false] If false, sub dir will return true.
+ * @param {Boolean} [strict=false] If not strict, true is also returned
+ * if current path is under give path. This is useful to highlight
+ * menu items if current path is under it.
  * @return {Boolean}
  */
 /**
@@ -501,6 +505,8 @@ const delSite = (site, key, file) => {
       // Don't use break here because we may have mutiply files
       // created with the same source.
       site[key].splice(i, 1);
+      // Don't forget this because we removed one element from array!
+      --i;
     }
   }
 };
@@ -642,6 +648,7 @@ const setNodeText = (node, html) => {
   // Add HTML to childNodes via parsing and replacing
   // to keep tree reference, and skip the parse5-generated
   // `#document-fragment` node.
+  // Text nodes have no childNode.
   // Only append to nodes that already have childNodes.
   if (node["childNodes"] != null) {
     // Don't forget to replace childNode's parentNode.
@@ -678,6 +685,8 @@ const getNodeAttr = (node, attrName) => {
  * @param {String} attrValue
  */
 const setNodeAttr = (node, attrName, attrValue) => {
+  // Do not add attr to nodes without attrs array,
+  // for example text node.
   if (node["attrs"] != null) {
     for (const attr of node["attrs"]) {
       // Already have this attr, then replace.
@@ -690,8 +699,6 @@ const setNodeAttr = (node, attrName, attrValue) => {
     node["attrs"].push({"name": attrName, "value": attrValue});
     return;
   }
-  // No attr at all, just create.
-  node["attrs"] = [{"name": attrName, "value": attrValue}];
 };
 
 /**
@@ -1014,6 +1021,7 @@ module.exports = {
   escapeHTML,
   matchFiles,
   removeControlChars,
+  getFrontMatter,
   parseFrontMatter,
   getContentType,
   paginate,
