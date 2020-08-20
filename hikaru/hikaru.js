@@ -531,7 +531,7 @@ class Hikaru {
       {"autoescape": false},
       this.site["siteConfig"]["nunjucks"]
     );
-    const njkRenderer = (filepath, content) => {
+    const njkCompiler = (filepath, content) => {
       const njkEnv = nunjucks.configure(
         path.dirname(filepath), njkConfig
       );
@@ -548,8 +548,8 @@ class Hikaru {
         });
       };
     };
-    this.compiler.register(".njk", njkRenderer);
-    this.compiler.register(".j2", njkRenderer);
+    this.compiler.register(".njk", njkCompiler);
+    this.compiler.register(".j2", njkCompiler);
   }
 
   /**
