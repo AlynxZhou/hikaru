@@ -33,7 +33,7 @@ class Translator {
       );
     }
     if (isArray(lang)) {
-      for (const l in lang) {
+      for (const l of lang) {
         this._[l] = obj;
       }
     } else {
