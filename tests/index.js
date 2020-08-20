@@ -1,6 +1,7 @@
 "use strict";
 
 describe("Hikaru", () => {
+  require("./types");
   require("./utils");
   require("./logger");
   require("./compiler");
