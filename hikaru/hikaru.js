@@ -52,7 +52,8 @@ class Hikaru {
    * @param {Boolean} [opts.color=true] Enable colored output for logger.
    * @param {Boolean} [opts.draft] Build drafts.
    * @param {String} [opts.config] Alternative site config path.
-   * @param {String} [opts.ip=localhost] Alternative listening IP address for router.
+   * @param {String} [opts.ip=localhost] Alternative listening IP address
+   * for router.
    * @param {Number} [opts.port=2333] Alternative listening port for router.
    * @property {Logger} logger
    * @property {Renderer} renderer
@@ -250,7 +251,9 @@ class Hikaru {
       "siteConfig.yml"
     );
     try {
-      this.site["siteConfig"] = YAML.parse(fse.readFileSync(configPath, "utf8"));
+      this.site["siteConfig"] = YAML.parse(
+        fse.readFileSync(configPath, "utf8")
+      );
     } catch (error) {
       this.logger.warn("Hikaru cannot find site config!");
       this.logger.error(error);
@@ -365,7 +368,9 @@ class Hikaru {
       "nodir": true,
       "cwd": path.join(this.site["siteConfig"]["themeDir"], "scripts")
     })).map((filename) => {
-      return path.join(this.site["siteConfig"]["themeDir"], "scripts", filename);
+      return path.join(
+        this.site["siteConfig"]["themeDir"], "scripts", filename
+      );
     }));
     return scripts.map(async (filepath) => {
       this.logger.debug(`Hikaru is loading script \`${
