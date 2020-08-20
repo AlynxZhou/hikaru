@@ -356,7 +356,7 @@ describe("utils", () => {
 
     it("should return value if attr name found", () => {
       const node = parseNode("<div id=\"div-1\"></div>");
-      return expect(
+      expect(
         getNodeAttr(node["childNodes"][0], "id")
       ).to.equal("div-1");
     });
@@ -366,7 +366,7 @@ describe("utils", () => {
     it("should not set if no attr", () => {
       const node = parseNode("<span>old</span>");
       setNodeAttr(node["childNodes"][0]["childNodes"][0], "id", "span-1");
-      return expect(
+      expect(
         node["childNodes"][0]["childNodes"][0]
       ).not.to.have.property("attrs");
     });
@@ -508,11 +508,11 @@ describe("utils", () => {
     });
 
     it("should return `https:` if HTTPS URL", () => {
-      return expect(getURLProtocol("https://example.com")).to.equal("https:");
+      expect(getURLProtocol("https://example.com")).to.equal("https:");
     });
 
     it("should return `data:` if data URL", () => {
-      return expect(getURLProtocol("data:image/png;xxx")).to.equal("data:");
+      expect(getURLProtocol("data:image/png;xxx")).to.equal("data:");
     });
   });
 
