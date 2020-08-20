@@ -6,4 +6,5 @@ describe("Hikaru", () => {
   require("./compiler");
   require("./decorator");
   require("./generator");
+  require("./processor");
 });
