@@ -14,7 +14,7 @@ describe("generator", () => {
       generator.register("generator1", () => {
         return new File();
       });
-      expect(generator._).has.lengthOf(1);
+      expect(generator._).to.have.lengthOf(1);
     });
   });
 
@@ -28,7 +28,7 @@ describe("generator", () => {
         });
       });
       const results = await generator.generate(new Site());
-      expect(results).has.lengthOf(3);
+      expect(results).to.have.lengthOf(3);
     });
   });
 });

@@ -92,12 +92,12 @@ describe("utils", () => {
     });
 
     it("should return only one page if no posts", () => {
-      expect(paginate(basePage)).has.lengthOf(1);
+      expect(paginate(basePage)).to.have.lengthOf(1);
     });
 
     it("should return two page if has twice of `perPage` posts", () => {
       const posts = [new File(), new File()];
-      expect(paginate(basePage, posts, 1)).has.lengthOf(2);
+      expect(paginate(basePage, posts, 1)).to.have.lengthOf(2);
     });
   });
 
@@ -176,7 +176,7 @@ describe("utils", () => {
         "docDir": "docs/",
         "docPath": "index.html"
       }));
-      expect(site["files"]).has.lengthOf(0);
+      expect(site["files"]).to.have.lengthOf(0);
     });
 
     it("should add file to site if no matched file", () => {
@@ -189,7 +189,7 @@ describe("utils", () => {
         "docDir": "docs/",
         "docPath": "about/index.html"
       }));
-      expect(site["files"]).has.lengthOf(2);
+      expect(site["files"]).to.have.lengthOf(2);
     });
 
     it("should replace file to site if have matched file", () => {
@@ -202,7 +202,7 @@ describe("utils", () => {
         "docDir": "docs/",
         "docPath": "index.html"
       }));
-      expect(site["files"]).has.lengthOf(1);
+      expect(site["files"]).to.have.lengthOf(1);
     });
   });
 
@@ -217,7 +217,7 @@ describe("utils", () => {
         "srcDir": "srcs/",
         "srcPath": "index.md"
       }));
-      expect(site["files"]).has.lengthOf(1);
+      expect(site["files"]).to.have.lengthOf(1);
     });
 
     it("should delete all files from site if have matched files", () => {
@@ -238,7 +238,7 @@ describe("utils", () => {
         "srcDir": "srcs/",
         "srcPath": "index.md"
       }));
-      expect(site["files"]).has.lengthOf(0);
+      expect(site["files"]).to.have.lengthOf(0);
     });
   });
 
@@ -305,7 +305,7 @@ describe("utils", () => {
       const results = nodesFilter(node, (node) => {
         return node["tagName"] === "a";
       });
-      expect(results).has.lengthOf(3);
+      expect(results).to.have.lengthOf(3);
     });
   });
 
@@ -367,20 +367,20 @@ describe("utils", () => {
       const node = parseNode("<span>old</span>");
       setNodeAttr(node["childNodes"][0]["childNodes"][0], "id", "span-1");
       return expect(
-        node["childNodes"][0]["childNodes"][0]["attrs"]
-      ).to.be.undefined;
+        node["childNodes"][0]["childNodes"][0]
+      ).not.to.have.property("attrs");
     });
 
     it("should add attr if attr name not found", () => {
       const node = parseNode("<a>old</a>");
       setNodeAttr(node["childNodes"][0], "id", "a-1");
-      expect(node["childNodes"][0]["attrs"]).has.lengthOf(1);
+      expect(node["childNodes"][0]["attrs"]).to.have.lengthOf(1);
     });
 
     it("should replace attr if attr name found", () => {
       const node = parseNode("<a id=\"a-1\">old</a>");
       setNodeAttr(node["childNodes"][0], "id", "a-2");
-      expect(node["childNodes"][0]["attrs"]).has.lengthOf(1);
+      expect(node["childNodes"][0]["attrs"]).to.have.lengthOf(1);
     });
   });
 
@@ -427,7 +427,7 @@ describe("utils", () => {
   describe("genTOC", () => {
     it("should not generate TOC if no id or text.", () => {
       const node = parseNode("<h1></h1>");
-      expect(genTOC(node)).has.lengthOf(0);
+      expect(genTOC(node)).to.have.lengthOf(0);
     });
 
     it("should generate TOC if available", () => {

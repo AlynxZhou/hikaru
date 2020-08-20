@@ -30,7 +30,7 @@ describe("compiler", () => {
         };
       };
       compiler.register(".njk", njkCompiler);
-      return expect(compiler._[".njk"]).not.to.be.undefined;
+      return expect(compiler._).to.have.property(".njk");
     });
 
     it("should compile njk", async () => {

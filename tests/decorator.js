@@ -47,7 +47,7 @@ describe("decorator", () => {
         "page.njk", "<div>{{ content }}</div>"
       );
       decorator.register("page", result);
-      expect(decorator.list()).has.lengthOf(2);
+      expect(decorator.list()).to.have.lengthOf(2);
     });
   });
 
