@@ -36,7 +36,7 @@ const {
   parseNode,
   serializeNode,
   resolveHeaderIDs,
-  resolveLinks,
+  resolveAnchors,
   resolveImages,
   resolveCodeBlocks,
   genTOC
@@ -596,7 +596,7 @@ class Hikaru {
         const node = parseNode(p["content"]);
         resolveHeaderIDs(node);
         p["toc"] = genTOC(node);
-        resolveLinks(
+        resolveAnchors(
           node,
           site["siteConfig"]["baseURL"],
           site["siteConfig"]["rootDir"],

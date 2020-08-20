@@ -791,7 +791,7 @@ const getURLProtocol = (url) => {
  * @param {String} [rootDir] Site rootDir.
  * @param {String} [docPath]
  */
-const resolveLinks = (node, baseURL, rootDir, docPath) => {
+const resolveAnchors = (node, baseURL, rootDir, docPath) => {
   const getURL = getURLFn(baseURL, rootDir);
   const getPath = getPathFn(rootDir);
   // Replace relative path to absolute path.
@@ -1048,7 +1048,7 @@ module.exports = {
   resolveHeaderIDs,
   genTOC,
   getURLProtocol,
-  resolveLinks,
+  resolveAnchors,
   resolveImages,
   resolveCodeBlocks,
   getVersion,
