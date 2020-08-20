@@ -33,7 +33,6 @@
  */
 
 const path = require("path");
-const {URL} = require("url");
 const glob = require("glob");
 const YAML = require("yaml");
 const parse5 = require("parse5");
@@ -45,7 +44,7 @@ const moment = require("moment-timezone");
 const {isBinaryFile, isBinaryFileSync} = require("isbinaryfile");
 const {Site, File, Category, Tag, TOC} = require("./types");
 const pkg = require("../package.json");
-const extMIME = require("../dist/ext-mime.json");
+const extMIME = require("../dists/ext-mime.json");
 
 /**
  * @param {*} o
@@ -154,6 +153,7 @@ const removeControlChars = (str) => {
  * @return {FrontMatter}
  */
 const getFrontMatter = (str) => {
+  // Return if not start with /^---\r?\n/.
   if (!/^---\r?\n/g.test(str)) {
     return {"attributes": {}, "body": str};
   }
@@ -161,10 +161,10 @@ const getFrontMatter = (str) => {
   const array = str.split(/^---\r?\n/m, 3);
   // No front-matter at all.
   if (array.length !== 3) {
-    return {"attributes": {}, "body": str, "frontMatter": ""};
+    return {"attributes": {}, "body": str};
   }
   // ['', frontMatter, body]
-  const result = {"attributes": {}, "body": array[2], "frontMatter": array[1]};
+  const result = {"body": array[2], "frontMatter": array[1]};
   try {
     result["attributes"] = YAML.parse(result["frontMatter"]);
   } catch (error) {
@@ -223,7 +223,7 @@ const getContentType = (docPath) => {
  * @param {Number} [perPage=10] How many posts per page.
  * @return {File[]} Paginated pages, original page's index is 0.
  */
-const paginate = (p, posts, perPage = 10) => {
+const paginate = (p, posts = [], perPage = 10) => {
   const results = [];
   let perPagePosts = [];
   for (const post of posts) {
@@ -352,9 +352,12 @@ const getURLFn = (baseURL, rootDir = path.posix.sep) => {
 
 /**
  * @callback isCurrentPath
- * @description This function does not care query string and hash.
+ * @description Test if given path is current path.
+ * This function does not care query string and hash.
  * @param {String} [testPath] Path needed to test.
- * @param {Boolean} [strict=false] If false, sub dir will return true.
+ * @param {Boolean} [strict=false] If not strict, true is also returned
+ * if current path is under give path. This is useful to highlight
+ * menu items if current path is under it.
  * @return {Boolean}
  */
 /**
@@ -529,6 +532,8 @@ const delSite = (site, key, file) => {
       // Don't use break here because we may have mutiply files
       // created with the same source.
       site[key].splice(i, 1);
+      // Don't forget this because we removed one element from array!
+      --i;
     }
   }
 };
@@ -670,6 +675,7 @@ const setNodeText = (node, html) => {
   // Add HTML to childNodes via parsing and replacing
   // to keep tree reference, and skip the parse5-generated
   // `#document-fragment` node.
+  // Text nodes have no childNode.
   // Only append to nodes that already have childNodes.
   if (node["childNodes"] != null) {
     // Don't forget to replace childNode's parentNode.
@@ -706,6 +712,8 @@ const getNodeAttr = (node, attrName) => {
  * @param {String} attrValue
  */
 const setNodeAttr = (node, attrName, attrValue) => {
+  // Do not add attr to nodes without attrs array,
+  // for example text node.
   if (node["attrs"] != null) {
     for (const attr of node["attrs"]) {
       // Already have this attr, then replace.
@@ -716,10 +724,7 @@ const setNodeAttr = (node, attrName, attrValue) => {
     }
     // Have other attrs but not this, so append.
     node["attrs"].push({"name": attrName, "value": attrValue});
-    return;
   }
-  // No attr at all, just create.
-  node["attrs"] = [{"name": attrName, "value": attrValue}];
 };
 
 /**
@@ -799,7 +804,7 @@ const genTOC = (node) => {
  */
 const getURLProtocol = (url) => {
   try {
-    // If no protocol in url, `URL()` will throw an error.
+    // If no protocol in url, it will throw an error.
     return new URL(url).protocol;
   } catch (error) {
     return null;
@@ -814,7 +819,7 @@ const getURLProtocol = (url) => {
  * @param {String} [rootDir] Site rootDir.
  * @param {String} [docPath]
  */
-const resolveLinks = (node, baseURL, rootDir, docPath) => {
+const resolveAnchors = (node, baseURL, rootDir, docPath) => {
   const getURL = getURLFn(baseURL, rootDir);
   const getPath = getPathFn(rootDir);
   // Replace relative path to absolute path.
@@ -826,7 +831,9 @@ const resolveLinks = (node, baseURL, rootDir, docPath) => {
     if (href != null) {
       // If `href` is a valid URL, `baseURL` will be ignored.
       // So we can compare host for all links here.
-      if (new URL(href, baseURL).origin !== getURL(docPath).origin) {
+      const url = new URL(href, baseURL);
+      // It returns `"null"` for data URL!
+      if (url.origin !== "null" &amp;&amp; url.origin !== getURL().origin) {
         setNodeAttr(node, "target", "_blank");
         setNodeAttr(node, "rel", "external nofollow noreferrer noopener");
       }
@@ -1042,6 +1049,7 @@ module.exports = {
   escapeHTML,
   matchFiles,
   removeControlChars,
+  getFrontMatter,
   parseFrontMatter,
   getContentType,
   paginate,
@@ -1068,7 +1076,7 @@ module.exports = {
   resolveHeaderIDs,
   genTOC,
   getURLProtocol,
-  resolveLinks,
+  resolveAnchors,
   resolveImages,
   resolveCodeBlocks,
   getVersion,
@@ -1090,7 +1098,7 @@ module.exports = {
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Sun Aug 16 2020 09:06:16 GMT+0800 (China Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Thu Aug 20 2020 20:30:12 GMT+0800 (China Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
