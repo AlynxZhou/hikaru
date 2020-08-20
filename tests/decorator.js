@@ -8,7 +8,7 @@ const Logger = require("../hikaru/logger");
 const Compiler = require("../hikaru/compiler");
 const Decorator = require("../hikaru/decorator");
 
-describe("decorator", async () => {
+describe("decorator", () => {
   const logger = new Logger();
   const compiler = new Compiler(logger);
   const decorator = new Decorator(logger, compiler);
@@ -41,13 +41,12 @@ describe("decorator", async () => {
     });
   });
 
-  describe("list", async () => {
-    const result = await compiler.compile(
-      "page.njk", "<div>{{ content }}</div>"
-    );
-    decorator.register("page", result);
-
-    it("should list two layouts", () => {
+  describe("list", () => {
+    it("should list two layouts", async () => {
+      const result = await compiler.compile(
+        "page.njk", "<div>{{ content }}</div>"
+      );
+      decorator.register("page", result);
       expect(decorator.list()).has.lengthOf(2);
     });
   });
