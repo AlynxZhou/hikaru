@@ -22,7 +22,7 @@ class Generator {
   /**
    * @callback generateCallback
    * @param {Site} site
-   * @return {File}
+   * @return {(File|File[])}
    */
   /**
    * @description Register a generator function.
@@ -39,7 +39,7 @@ class Generator {
   /**
    * @description Generator files for site.
    * @param {Site} site
-   * @return {(File|File[])} Generated files.
+   * @return {File[]} Generated files.
    */
   async generate(site) {
     let results = [];
