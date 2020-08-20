@@ -11,7 +11,7 @@ describe("compiler", () => {
   const compiler = new Compiler(logger);
 
   describe("register", () => {
-    it("should register njk compiler", () => {
+    it("should register nunjucks compiler", () => {
       const njkCompiler = (filepath, content) => {
         const njkEnv = nunjucks.configure(
           path.dirname(filepath), {"autoEscape": false}
@@ -30,10 +30,10 @@ describe("compiler", () => {
         };
       };
       compiler.register(".njk", njkCompiler);
-      return expect(compiler._).to.have.property(".njk");
+      expect(compiler._).to.have.property(".njk");
     });
 
-    it("should compile njk", async () => {
+    it("should compile nunjucks", async () => {
       const result = await compiler.compile(
         "example.njk", "<span>{{ content }}</span>"
       );
