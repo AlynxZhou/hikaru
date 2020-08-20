@@ -5,7 +5,6 @@
  */
 
 const path = require("path");
-const {URL} = require("url");
 const glob = require("glob");
 const YAML = require("yaml");
 const parse5 = require("parse5");
@@ -777,7 +776,7 @@ const genTOC = (node) => {
  */
 const getURLProtocol = (url) => {
   try {
-    // If no protocol in url, `URL()` will throw an error.
+    // If no protocol in url, it will throw an error.
     return new URL(url).protocol;
   } catch (error) {
     return null;
@@ -804,7 +803,9 @@ const resolveLinks = (node, baseURL, rootDir, docPath) => {
     if (href != null) {
       // If `href` is a valid URL, `baseURL` will be ignored.
       // So we can compare host for all links here.
-      if (new URL(href, baseURL).origin !== getURL(docPath).origin) {
+      const url = new URL(href, baseURL);
+      // It returns `"null"` for data URL!
+      if (url.origin !== "null" && url.origin !== getURL().origin) {
         setNodeAttr(node, "target", "_blank");
         setNodeAttr(node, "rel", "external nofollow noreferrer noopener");
       }
