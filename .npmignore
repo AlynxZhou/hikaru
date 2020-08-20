@@ -1,4 +1,5 @@
 docs/
+tests/
 tutorials/
 .jsdoc.json
 .eslintrc.json
