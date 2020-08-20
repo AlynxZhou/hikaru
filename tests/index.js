@@ -2,4 +2,5 @@
 
 describe("Hikaru", () => {
   require("./utils");
+  require("./compiler");
 });
