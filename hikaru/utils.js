@@ -697,7 +697,6 @@ const setNodeAttr = (node, attrName, attrValue) => {
     }
     // Have other attrs but not this, so append.
     node["attrs"].push({"name": attrName, "value": attrValue});
-    return;
   }
 };
 
