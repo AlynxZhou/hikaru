@@ -24,9 +24,8 @@ If you are an Arch Linux user, you can also install package `hikarujs` from [AUR
 # Setup site
 
 ```
-$ hikaru i hikaru-site
-$ cd hikaru-site
-$ npm install
+$ mkdir hikaru-site && cd hikaru-site
+$ hikaru init && npm install
 ```
 
 # Install theme
@@ -90,13 +89,13 @@ Some content...
 # Start live server
 
 ```
-$ hikaru s
+$ hikaru serve
 ```
 
 # Build static files
 
 ```
-$ hikaru b
+$ hikaru build
 ```
 
 # More
