@@ -6,7 +6,7 @@ Init Site
 After installing Hikaru, you can use following command to setup a site directory:
 
 ```
-$ hikaru i hikaru-site
+$ hikaru init hikaru-site
 $ cd hikaru-site
 ```
 

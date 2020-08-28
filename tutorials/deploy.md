@@ -21,7 +21,7 @@ $ git remote add origin YOURGITURL
 Then copy files in doc dir to git repo:
 
 ```
-$ cp -R ../docs/* ./
+$ cp -a ../docs/* ./
 ```
 
 Then commit and push like other git project:
@@ -76,9 +76,9 @@ You can write a shell script to do this every time like:
 
 hikaru clean --debug
 hikaru build --debug
-git add .
-git commit -m "Updated site."
-git push -u origin master
+git add --all
+git commit --message "Updated site."
+git push --set-upstream origin master
 ```
 
 Don't forget to go to your GitHub Repo settings and choose `master branch /docs folder` to host pages.
