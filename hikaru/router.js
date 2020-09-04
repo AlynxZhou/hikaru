@@ -314,7 +314,7 @@ class Router {
       const code = this._[pathname] != null ? 200 : 404;
       const file = this._[pathname] || real404File;
       this.logger.log(`${
-        code === 200 ? this.logger.green(code) : this.logger.yellow(code)
+        code === 200 ? this.logger.blue(code) : this.logger.yellow(code)
       } ${this.logger.cyan(pathname)}`);
       response.writeHead(code, {
         "Content-Type": getContentType(file["docPath"])
