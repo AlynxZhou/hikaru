@@ -303,26 +303,22 @@ class Router {
   listen(ip, port) {
     this.ip = ip;
     this.port = port;
+    // Use custom 404 file if available.
+    const real404File = this._[this.getPath("404.html")] || new File({
+      "content": default404,
+      "docPath": this.getPath("404.html")
+    });
     this.server = http.createServer(async (request, response) => {
       // Remove query string.
-      const url = request["url"].split(/[?#]/)[0];
-      let file;
-      if (this._[url] == null) {
-        this.logger.log(`404: ${url}`);
-        file = this._[this.getPath("404.html")] || new File({
-          "content": default404,
-          "docPath": this.getPath("404.html")
-        });
-        response.writeHead(404, {
-          "Content-Type": getContentType(file["docPath"])
-        });
-      } else {
-        this.logger.log(`200: ${url}`);
-        file = this._[url];
-        response.writeHead(200, {
-          "Content-Type": getContentType(file["docPath"])
-        });
-      }
+      const pathname = request["url"].split(/[?#]/)[0];
+      const code = this._[pathname] != null ? 200 : 404;
+      const file = this._[pathname] || real404File;
+      this.logger.log(`${
+        code === 200 ? this.logger.green(code) : this.logger.yellow(code)
+      } ${this.logger.cyan(pathname)}`);
+      response.writeHead(code, {
+        "Content-Type": getContentType(file["docPath"])
+      });
       if (!file["binary"]) {
         response.write(
           await this.decorator.decorate(file, this.loadContext(file))
@@ -333,11 +329,9 @@ class Router {
         fse.createReadStream(getFullSrcPath(file)).pipe(response);
       }
     });
-    this.logger.log(
-      `Hikaru is starting to listen on http://${this.ip}:${this.port}${
-        this.getPath()
-      }...`
-    );
+    this.logger.log(`Hikaru is starting to listen on \`${
+      this.logger.cyan(`http://${this.ip}:${this.port}${this.getPath()}`)
+    }\`...`);
     if (!this.listening) {
       if (this.ip !== "localhost") {
         this.server.listen(this.port, this.ip);
@@ -358,11 +352,9 @@ class Router {
       this.server.close();
       this.listening = false;
       this.unwatchAll();
-      this.logger.log(
-        `Hikaru is stopping to listen on http://${this.ip}:${this.port}${
-          this.getPath()
-        }...`
-      );
+      this.logger.log(`Hikaru is stopping to listen on \`${
+        this.logger.cyan(`http://${this.ip}:${this.port}${this.getPath()}`)
+      }\`...`);
       this.server = null;
     }
   }
