@@ -93,7 +93,6 @@ class File {
     this.binary = false;
     this.createdDate = null;
     this.updatedDate = null;
-    this.zone = null;
     this.title = null;
     this.layout = null;
     this.draft = null;

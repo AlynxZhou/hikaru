@@ -35,7 +35,6 @@
     "highlight.js": "^10.1.2",
     "isbinaryfile": "^4.0.6",
     "marked": "^1.1.1",
-    "moment-timezone": "^0.5.31",
     "nunjucks": "^3.2.2",
     "parse5": "^6.0.1",
     "stylus": "^0.54.8",

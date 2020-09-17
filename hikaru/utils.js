@@ -9,7 +9,6 @@ const glob = require("glob");
 const YAML = require("yaml");
 const parse5 = require("parse5");
 const hljs = require("highlight.js");
-const moment = require("moment-timezone");
 // OMG you are adding new dependency! Why not implement it yourself?
 // Calm down, it has no dependency so just give it a chance.
 // And its code is a little bit long.
@@ -158,23 +157,16 @@ const parseFrontMatter = (file) => {
   file["text"] = parsed["body"];
   file["frontMatter"] = parsed["attributes"];
   file = Object.assign(file, parsed["attributes"]);
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse
+  // ISO 8601 date time format is expected,
+  // and by default a string with date and time will be parsed as local time.
   file["updatedDate"] = file["updatedDate"] || file["updatedTime"];
   if (file["updatedDate"] != null) {
-    // String does not have timezone so we add it.
-    file["updatedMoment"] = moment.tz(
-      file["updatedDate"],
-      file["zone"] || moment.tz.guess()
-    );
-    file["updatedDate"] = file["updatedMoment"].toDate();
+    file["updatedDate"] = new Date(file["updatedDate"]);
   }
   file["createdDate"] = file["createdDate"] || file["createdTime"];
   if (file["createdDate"] != null) {
-    // String does not have timezone so we add it.
-    file["createdMoment"] = moment.tz(
-      file["createdDate"],
-      file["zone"] || moment.tz.guess()
-    );
-    file["createdDate"] = file["createdMoment"].toDate();
+    file["createdDate"] = new Date(file["createdDate"]);
   }
   return file;
 };

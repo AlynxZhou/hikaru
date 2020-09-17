@@ -7,7 +7,6 @@
 const fse = require("fs-extra");
 const path = require("path");
 const http = require("http");
-const moment = require("moment-timezone");
 const chokidar = require("chokidar");
 const {Site, File} = require("./types");
 const {
@@ -153,8 +152,6 @@ class Router {
       "site": this.site,
       "siteConfig": this.site["siteConfig"],
       "themeConfig": this.site["themeConfig"],
-      "moment": moment,
-      "momenttz": moment.tz,
       "getVersion": getVersion,
       "getURL": this.getURL,
       "getPath": this.getPath,
@@ -165,6 +162,10 @@ class Router {
       "isString": isString,
       "isFunction": isFunction,
       "isObject": isObject,
+      // Damn it, you cannot use `new` in Nunjucks.
+      // Every time a decorator starts, context will be loaded,
+      // and we can get decorate date here.
+      "decorateDate": new Date(),
       "__": this.translator.getTranslateFn(lang)
     };
   }
