@@ -31,10 +31,6 @@ File's created time from its front matter. Only available for posts and pages.
 
 File's updated time from its front matter. Only available for posts and pages.
 
-## `zone`
-
-File's timezone from its front matter. Only available for posts and pages.
-
 ## `title`
 
 File's title from its front matter. Only available for posts and pages.

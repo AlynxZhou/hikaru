@@ -10,18 +10,23 @@ A page usually is a Markdown file which has a YAML front matter and a Markdown c
 ```markdown
 ---
 title: Your page title
-createdDate: 2018-08-08 09:27:00
-#updatedDate: 2019-01-01 19:07:00	# If you updated your content, you can use this key.
+# Should in ISO 8601 date time format, local timezone will be used if timezone is omitted.
+createdDate: 2018-08-08T09:27:00
+# If you updated your content, you can use this key.
+#updatedDate: 2019-01-01T19:07:00
 layout: post
-#zone: Asia/Tokyo   # If `createdDate`'s timezone is not the same as your local zone, set here.
 ---
 Text before more will become excerpt.
 
 <!--more-->
 
-# Here are some contents.
+# A Title
 
-## Here are some contents.
+Content.
+
+## Another Title
+
+Content.
 ```
 
 ## Front matter
@@ -34,11 +39,11 @@ Your page's title, **NOT** URL, your page's URL depends on your page's filename.
 
 ### `createdDate`
 
-Your page's writing date, you can set it as `YYYY-MM-DD HH:mm:ss` format.
+Your page's writing date. Should in ISO 8601 date time format, local timezone will be used if timezone is omitted.
 
 ### `updatedDate`
 
-Your page's modifying date, you can set it as `YYYY-MM-DD HH:mm:ss` format.
+Your page's modifying date. Should in ISO 8601 date time format, local timezone will be used if timezone is omitted.
 
 ### `draft`
 

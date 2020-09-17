@@ -71,7 +71,7 @@ $ $EDITOR srcs/my-first-post.md
 ```yaml
 ---
 title: My First Post
-createdDate: 2018-08-08 09:27:00
+createdDate: 2018-08-08T09:27:00
 layout: post
 ---
 ```

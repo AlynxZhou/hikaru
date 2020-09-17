@@ -60,12 +60,11 @@ You can use following helpers in template:
 - `site`: A raw site object.
 - `siteConfig`: Just `site["siteConfig"]`.
 - `themeConfig`: Just `site["themeConfig"]`.
-- `moment`: Moment.js Object.
-- `momenttz`: Moment-timezone Object.
 - `getVersion()`: Hikaru version.
 - `getURL(docPath)`: Convert a path to a full URL.
 - `getPath(docPath)`: Convert a path to a full path.
 - `isCurrentPath(testPath, strict)`: Whether test path is current path, if `strict` is `false`, it return `true` when current path is a sub dir of test path.
+- `decorateDate`: A Date object contains the time when this template is used to render a page.
 - `__()`: Language translator via [`util.format`](https://nodejs.org/api/util.html#util_util_format_format_args).
 
 # Assets
