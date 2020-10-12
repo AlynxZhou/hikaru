@@ -37,11 +37,11 @@ Front matter is written in YAML, which is in the head of file and between `---\n
 
 Your page's title, **NOT** URL, your page's URL depends on your page's filename.
 
-### `createdDate`
+### `created`
 
 Your page's writing date. Should in ISO 8601 date time format, local timezone will be used if timezone is omitted.
 
-### `updatedDate`
+### `updated`
 
 Your page's modifying date. Should in ISO 8601 date time format, local timezone will be used if timezone is omitted.
 

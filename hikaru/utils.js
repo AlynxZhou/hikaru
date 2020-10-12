@@ -177,14 +177,16 @@ const parseFrontMatter = (file) => {
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse
   // ISO 8601 date time format is expected,
   // and by default a string with date and time will be parsed as local time.
-  file["updatedDate"] = file["updatedDate"] || file["updatedTime"];
-  if (file["updatedDate"] != null) {
-    file["updatedDate"] = new Date(file["updatedDate"]);
+  file["updated"] = file["updated"] || file["updatedDate"];
+  if (file["updated"] != null) {
+    file["updated"] = new Date(file["updated"]);
   }
-  file["createdDate"] = file["createdDate"] || file["createdTime"];
-  if (file["createdDate"] != null) {
-    file["createdDate"] = new Date(file["createdDate"]);
+  file["updatedDate"] = file["updated"];
+  file["created"] = file["created"] || file["createdDate"];
+  if (file["created"] != null) {
+    file["created"] = new Date(file["created"]);
   }
+  file["createdDate"] = file["created"];
   return file;
 };
 

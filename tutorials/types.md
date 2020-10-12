@@ -23,13 +23,13 @@ Where the file was read, it should be the site's `srcDir` or `themeSrcDir`.
 
 Input file's path relative to `srcDir`.
 
-## `createdDate`
+## `created`
 
-File's created time from its front matter. Only available for posts and pages.
+File's created time from its front matter. Only available for posts and pages. You can also access this with name `createdDate`.
 
-## `updatedDate`
+## `updated`
 
-File's updated time from its front matter. Only available for posts and pages.
+File's updated time from its front matter. Only available for posts and pages. You can also access this with name `updatedDate`.
 
 ## `title`
 
