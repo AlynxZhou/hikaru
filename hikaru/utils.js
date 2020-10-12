@@ -124,18 +124,35 @@ const removeControlChars = (str) => {
  * @return {FrontMatter}
  */
 const getFrontMatter = (str) => {
-  // Return if not start with /^---\r?\n/.
-  if (!/^---\r?\n/g.test(str)) {
+  // Return if not start with /^---+\r?\n/.
+  // This only matches once so `g` is not required.
+  if (!/^---+\r?\n/.test(str)) {
     return {"attributes": {}, "body": str};
   }
-  // Use flag `m` for per line test, not `g`.
-  const array = str.split(/^---\r?\n/m, 3);
+  // We split string manually instead of using `str.split(regexp, 3)`,
+  // this function will split the whole string first
+  // and then return the first 3 result.
+  // But we want to only split twice.
+  // Flag `m` can be used for per line test.
+  // `exec()`, `matchAll()` requires `g`.
+  // We need to use /\r?\n/ here instead of /$/,
+  // because we need to calculate `\r` and `\n` when splitting.
+  const regexp = /^---+\r?\n/gm;
+  // RegExp is stateful so `exec()` will start after last matched result.
+  const fmBegin = regexp.exec(str);
+  const fmEnd = regexp.exec(str);
+  // `null` is returned if not match.
   // No front-matter at all.
-  if (array.length !== 3) {
+  if (fmBegin == null || fmEnd == null) {
     return {"attributes": {}, "body": str};
   }
-  // ['', frontMatter, body]
-  const result = {"body": array[2], "frontMatter": array[1]};
+  // Matched result looks like
+  // `["---\n", "index": 0, "input": "---\n", "groups": undefined]`.
+  // It is a mix of Array and Object. We use it to split string manually.
+  const result = {
+    "body": str.substring(fmEnd.index + fmEnd[0].length),
+    "frontMatter": str.substring(fmBegin.index + fmBegin[0].length, fmEnd.index)
+  };
   try {
     result["attributes"] = YAML.parse(result["frontMatter"]);
   } catch (error) {

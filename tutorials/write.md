@@ -31,7 +31,7 @@ Content.
 
 ## Front matter
 
-Front matter is written in YAML, which is in the head of file and between `---\n` and `\n---\n`. It is used to save metadata of a page. By default Hikaru needs following 3 option:
+Front matter is written in YAML, which is in the head of file and between `---\n` and `\n---\n`. But more than 3 `-` and `\r\n` are also acceptable. It is used to present metadata of a page. By default Hikaru needs following 3 option:
 
 ### `title`
 

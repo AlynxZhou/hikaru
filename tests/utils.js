@@ -39,24 +39,32 @@ describe("utils", () => {
   });
 
   describe("getFrontMatter", () => {
-    it("should return no attribute if not start with `/^---\\r?\\n/`", () => {
+    it("should return no attribute if not start with `/^---+\\r?\\n/`", () => {
       expect(
         getFrontMatter("--\nsome strings")["attributes"]
       ).to.deep.equal({});
     });
 
-    it("should return no attribute if only one `/^---\\r?\\n/`", () => {
+    it("should return no attribute if only one `/^---+\\r?\\n/gm`", () => {
       expect(
         getFrontMatter("---\r\nsome strings")["attributes"]
       ).to.deep.equal({});
     });
 
-    it("should return attributes if two `/^---\\r?\\n/`", () => {
+    it("should return attributes if two `/^---+\\r?\\n/gm`", () => {
       expect(
         getFrontMatter(
           "---\r\ntitle: some test\n---\nsome strings"
         )["attributes"]
       ).to.deep.equal({"title": "some test"});
+    });
+
+    it("should return body if body contains `/^---+\\r?\\n/gm`", () => {
+      expect(
+        getFrontMatter(
+          "---\r\ntitle: some test\n---\nsome\n---\n----\nstrings"
+        )["body"]
+      ).to.equal("some\n---\n----\nstrings");
     });
   });
 
