@@ -15,6 +15,7 @@
       "named": "never",
       "asyncArrow": "always"
     }],
+    "generator-star-spacing": ["error", "before"],
     "block-spacing": ["error", "never"],
     "object-curly-spacing": ["error", "never"],
     "array-bracket-spacing": ["error", "never"],
