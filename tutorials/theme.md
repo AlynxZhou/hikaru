@@ -15,10 +15,10 @@ themename/
     |- srcs/
     |- languages/
     |- layouts/
-    |- theme-config.yaml.example
+    |- theme-config.yaml
 ```
 
-## `theme-config.yaml.example`
+## `theme-config.yaml`
 
 This is a example of theme's config, user should copy it to site dir and you can access it with `site["themeConfig"]` in template.
 

@@ -253,6 +253,9 @@ class Hikaru {
       }
       siteConfigPath = defaultSiteConfigPath;
     }
+    this.logger.debug(`Hikaru is loading site config in \`${
+      this.logger.cyan(siteConfigPath)
+    }\`...`);
     let siteConfig;
     try {
       siteConfig = YAML.parse(
@@ -266,12 +269,21 @@ class Hikaru {
     siteConfig["srcDir"] = path.join(
       siteDir, siteConfig["srcDir"] || "srcs"
     );
+    this.logger.debug(`Hikaru is reading sources from \`${
+      this.logger.cyan(siteConfig["srcDir"])
+    }\`...`);
     siteConfig["docDir"] = path.join(
       siteDir, siteConfig["docDir"] || "docs"
     );
+    this.logger.debug(`Hikaru is writing documents to \`${
+      this.logger.cyan(siteConfig["docDir"])
+    }\`...`);
     siteConfig["themeDir"] = path.join(
       siteDir, siteConfig["themeDir"]
     );
+    this.logger.debug(`Hikaru is loading theme from \`${
+      this.logger.cyan(siteConfig["themeDir"])
+    }\`...`);
     siteConfig["themeSrcDir"] = path.join(
       siteConfig["themeDir"], "srcs"
     );
@@ -306,6 +318,9 @@ class Hikaru {
       }
       themeConfigPath = defaultThemeConfigPath;
     }
+    this.logger.debug(`Hikaru is loading theme config in \`${
+      this.logger.cyan(themeConfigPath)
+    }\`...`);
     let themeConfig;
     try {
       themeConfig = YAML.parse(
