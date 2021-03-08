@@ -79,7 +79,8 @@ class Hikaru {
    * @param {Boolean} [opts.debug=false] Enable debug output for logger.
    * @param {Boolean} [opts.color=true] Enable colored output for logger.
    * @param {Boolean} [opts.draft] Build drafts.
-   * @param {String} [opts.config] Alternative site config path.
+   * @param {String} [opts.siteConfig] Alternative site config path.
+   * @param {String} [opts.themeConfig] Alternative theme config path.
    * @param {String} [opts.ip=localhost] Alternative listening IP address
    * for router.
    * @param {Number} [opts.port=2333] Alternative listening port for router.
@@ -121,6 +122,14 @@ class Hikaru {
     process.on("exit", () => {
       this.logger.debug("Hikaru is stopping...");
     });
+    if (this.opts["siteConfig"] == null &amp;&amp; this.opts["config"] != null) {
+      this.opts["siteConfig"] = this.opts["config"];
+      this.logger.warn(`Hikaru suggests you to use \`${
+        this.logger.cyan("--site-config")
+      }\` instead of \`${
+        this.logger.cyan("--config")
+      }\` because it's deprecated!`);
+    }
   }
 
   /**
@@ -128,12 +137,12 @@ class Hikaru {
    * @param {String} siteDir Working site dir.
    */
   init(siteDir) {
-    const configPath = this.opts["config"] || path.join(
-      siteDir, "siteConfig.yml"
+    const siteConfigPath = this.opts["siteConfig"] || path.join(
+      siteDir, "site-config.yaml"
     );
     return fse.mkdirp(siteDir).then(() => {
       this.logger.debug(`Hikaru is copying \`${
-        this.logger.cyan(configPath)
+        this.logger.cyan(siteConfigPath)
       }\`...`);
       this.logger.debug(`Hikaru is copying \`${
         this.logger.cyan(path.join(siteDir, "package.json"))
@@ -151,15 +160,15 @@ class Hikaru {
         this.logger.cyan(path.join(siteDir, "scripts", path.sep))
       }\`...`);
       fse.copy(
-        path.join(__dirname, "..", "dists", "siteConfig.yml"),
-        configPath || path.join(siteDir, "siteConfig.yml")
+        path.join(__dirname, "..", "dists", "site-config.yaml"),
+        siteConfigPath
       );
       fse.readFile(
         path.join(__dirname, "..", "dists", "package.json")
       ).then((text) => {
         const json = JSON.parse(text);
         // Set package name to site dir name.
-        json["name"] = path.relative("..", ".");
+        json["name"] = path.relative(path.join("..", siteDir), siteDir);
         return fse.outputFile(
           path.join(siteDir, "package.json"),
           JSON.stringify(json, null, "  ")
@@ -180,28 +189,14 @@ class Hikaru {
    * @param {String} siteDir Working site dir.
    */
   clean(siteDir) {
-    const configPath = this.opts["config"] || path.join(
-      siteDir, "siteConfig.yml"
-    );
-    let siteConfig;
-    try {
-      siteConfig = YAML.parse(fse.readFileSync(configPath, "utf8"));
-    } catch (error) {
-      this.logger.warn("Hikaru cannot find site config!");
-      this.logger.error(error);
-      process.exit(-1);
-    }
-    if (siteConfig == null || siteConfig["docDir"] == null) {
+    const siteConfig = this.loadSiteConfig(siteDir, this.opts["siteConfig"]);
+    if (siteConfig == null) {
       return;
     }
     this.logger.debug(`Hikaru is cleaning \`${
-      this.logger.cyan(
-        path.join(siteDir, siteConfig["docDir"], path.sep)
-      )
+      this.logger.cyan(path.join(siteConfig["docDir"], path.sep))
     }\`...`);
-    return fse.emptyDir(
-      path.join(siteDir, siteConfig["docDir"])
-    ).catch((error) => {
+    return fse.emptyDir(siteConfig["docDir"]).catch((error) => {
       this.logger.warn("Hikaru catched some error during cleaning!");
       this.logger.error(error);
     });
@@ -212,7 +207,7 @@ class Hikaru {
    * @param {String} siteDir Working site dir.
    */
   async build(siteDir) {
-    this.loadSite(siteDir, this.opts["config"]);
+    this.loadSite(siteDir);
     try {
       await this.loadModules();
       await this.loadPlugins();
@@ -243,7 +238,7 @@ class Hikaru {
   async serve(siteDir) {
     const ip = this.opts["ip"] || "localhost";
     const port = this.opts["port"] || 2333;
-    this.loadSite(siteDir, this.opts["config"]);
+    this.loadSite(siteDir);
     try {
       await this.loadModules();
       await this.loadPlugins();
@@ -268,34 +263,42 @@ class Hikaru {
 
   /**
    * @private
-   * @description Load site and theme's config.
+   * @description Load site config.
    * @param {String} siteDir Working site dir.
-   * @param {String} [configPath] Alternative config file path.
+   * @param {String} [siteConfigPath] Alternative site config path.
+   * @return {Object}
    */
-  loadSite(siteDir, configPath) {
-    this.site = new Site(siteDir);
-    configPath = configPath || path.join(
-      this.site["siteDir"],
-      "siteConfig.yml"
-    );
+  loadSiteConfig(siteDir, siteConfigPath) {
+    if (siteConfigPath == null) {
+      let defaultSiteConfigPath = path.join(siteDir, "site-config.yaml");
+      if (!fse.existsSync(defaultSiteConfigPath)) {
+        this.logger.warn(`Hikaru suggests you to rename \`${
+          this.logger.cyan(path.join(siteDir, "site-config.yaml"))
+        }\` to \`${
+          this.logger.cyan(path.join(siteDir, "siteConfig.yml"))
+        }\` because it's deprecated!`);
+        defaultSiteConfigPath = path.join(siteDir, "siteConfig.yml");
+      }
+      siteConfigPath = defaultSiteConfigPath;
+    }
+    let siteConfig;
     try {
-      this.site["siteConfig"] = YAML.parse(
-        fse.readFileSync(configPath, "utf8")
+      siteConfig = YAML.parse(
+        fse.readFileSync(siteConfigPath, "utf8")
       );
     } catch (error) {
-      this.logger.warn("Hikaru cannot find site config!");
+      this.logger.warn("Hikaru cannot load site config!");
       this.logger.error(error);
       process.exit(-1);
     }
-    const siteConfig = this.site["siteConfig"];
     siteConfig["srcDir"] = path.join(
-      this.site["siteDir"], siteConfig["srcDir"] || "srcs"
+      siteDir, siteConfig["srcDir"] || "srcs"
     );
     siteConfig["docDir"] = path.join(
-      this.site["siteDir"], siteConfig["docDir"] || "docs"
+      siteDir, siteConfig["docDir"] || "docs"
     );
     siteConfig["themeDir"] = path.join(
-      this.site["siteDir"], siteConfig["themeDir"]
+      siteDir, siteConfig["themeDir"]
     );
     siteConfig["themeSrcDir"] = path.join(
       siteConfig["themeDir"], "srcs"
@@ -308,17 +311,62 @@ class Hikaru {
     );
     siteConfig["categoryDir"] = siteConfig["categoryDir"] || "categories";
     siteConfig["tagDir"] = siteConfig["tagDir"] || "tags";
-    const themeConfigPath = path.join(this.site["siteDir"], "themeConfig.yml");
+    return siteConfig;
+  }
+
+  /**
+   * @private
+   * @description Load theme config.
+   * @param {String} siteDir Working site dir.
+   * @param {String} [themeConfigPath] Alternative theme config path.
+   * @return {Object}
+   */
+  loadThemeConfig(siteDir, themeConfigPath) {
+    if (themeConfigPath == null) {
+      let defaultThemeConfigPath = path.join(siteDir, "theme-config.yaml");
+      if (!fse.existsSync(defaultThemeConfigPath)) {
+        this.logger.warn(`Hikaru suggests you to rename \`${
+          this.logger.cyan(path.join(siteDir, "theme-config.yaml"))
+        }\` to \`${
+          this.logger.cyan(path.join(siteDir, "themeConfig.yml"))
+        }\` because it's deprecated!`);
+        defaultThemeConfigPath = path.join(siteDir, "themeConfig.yml");
+      }
+      themeConfigPath = defaultThemeConfigPath;
+    }
+    let themeConfig;
     try {
-      this.site["themeConfig"] = YAML.parse(
+      themeConfig = YAML.parse(
         fse.readFileSync(themeConfigPath, "utf8")
       );
     } catch (error) {
       if (error["code"] === "ENOENT") {
         this.logger.warn("Hikaru continues with a empty theme config...");
-        this.site["themeConfig"] = {};
+        themeConfig = {};
+      } else {
+        this.logger.warn("Hikaru cannot load theme config!");
+        this.logger.error(error);
+        process.exit(-1);
       }
     }
+    return themeConfig;
+  }
+
+  /**
+   * @private
+   * @description Load info about the site.
+   * @param {String} siteDir Working site dir.
+   */
+  loadSite(siteDir) {
+    this.site = new Site(siteDir);
+    this.site["siteConfig"] = this.loadSiteConfig(
+      siteDir,
+      this.opts["siteConfig"]
+    );
+    this.site["themeConfig"] = this.loadThemeConfig(
+      siteDir,
+      this.opts["themeConfig"]
+    );
   }
 
   /**
@@ -425,12 +473,37 @@ class Hikaru {
    * @private
    */
   async loadLanguages() {
-    const ext = ".yml";
-    const filenames = await matchFiles(`*${ext}`, {
+    let ext = ".yaml";
+    let filenames = await matchFiles(`*${ext}`, {
       "nodir": true,
       "dot": false,
       "cwd": this.site["siteConfig"]["themeLangDir"]
     });
+    if (filenames.length === 0) {
+      ext = ".yml";
+      filenames = await matchFiles(`*${ext}`, {
+        "nodir": true,
+        "dot": false,
+        "cwd": this.site["siteConfig"]["themeLangDir"]
+      });
+      for (const filename of filenames) {
+        this.logger.warn(`Hikaru suggests you to rename \`${
+          this.logger.cyan(
+            path.join(
+              this.site["siteConfig"]["themeLangDir"],
+              filename
+            )
+          )
+        }\` to \`${
+          this.logger.cyan(
+            path.join(
+              this.site["siteConfig"]["themeLangDir"],
+              `${path.basename(filename, ext)}.yaml`
+            )
+          )
+        }\` because it's deprecated!`);
+      }
+    }
     if (!filenames.includes(`default${ext}`)) {
       this.logger.warn(
         "Hikaru cannot find default language file in your theme!"
@@ -762,7 +835,7 @@ module.exports = Hikaru;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Mon Oct 12 2020 15:33:58 GMT+0800 (China Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.5</a> on Mon Mar 08 2021 18:04:23 GMT+0800 (China Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
