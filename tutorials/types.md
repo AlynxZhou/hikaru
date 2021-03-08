@@ -165,11 +165,11 @@ In which directory Hikaru works.
 
 ## `siteConfig`
 
-From site's `config.yml` file but `srcDir`, `docDir`, `themeDir`, `themeSrcDir` are converted to full path relative to `siteDir` for easier to use.
+From site's `site-config.yaml` file but `srcDir`, `docDir`, `themeDir`, `themeSrcDir` are converted to full path relative to `siteDir` for easier to use.
 
 ## `themeConfig`
 
-From theme's `config.yml` file.
+From theme's `theme-config.yaml` file.
 
 ## `assets`
 

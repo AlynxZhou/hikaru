@@ -26,6 +26,8 @@
   ".glsl": "text/plain; charset=UTF-8",
   ".vim": "text/plain; charset=UTF-8",
   ".vala": "text/plain; charset=UTF-8",
+  ".yml": "text/plain; charset=UTF-8",
+  ".yaml": "text/plain; charset=UTF-8",
   ".manifest": "text/cache-manifest; charset=UTF-8",
   ".bmp": "image/bmp",
   ".gif": "image/gif",

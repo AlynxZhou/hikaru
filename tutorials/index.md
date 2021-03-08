@@ -80,9 +80,9 @@ hikura-site/
     |   |   |   |- tag.njk
     |   |   |   |- page.njk # if no layout specific, fallback to this
     |   |   |- languages/
-    |   |   |   |- default.yml
+    |   |   |   |- default.yaml
     |   |- README.md
     |- package.json # store site plugin list
-    |- siteConfig.yml
-    |- themeConfig.yml
+    |- site-config.yaml
+    |- theme-config.yaml
 ```

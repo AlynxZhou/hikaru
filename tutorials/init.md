@@ -17,7 +17,7 @@ hikura-site/
     |- srcs/
     |- docs/
     |- themes/
-    |- siteConfig.yml
+    |- site-config.yaml
     |- package.json
 ```
 
@@ -50,7 +50,7 @@ $ git submodule add https://github.com/AlynxZhou/hikaru-theme-aria.git themes/ar
 ## Edit site config
 
 ```
-$ $EDITOR siteConfig.yml
+$ $EDITOR site-config.yaml
 ```
 
 Set `themeDir` to `themes/aria`
@@ -63,7 +63,7 @@ themeDir: themes/aria
 
 # File info
 
-## `siteConfig.yml`
+## `site-config.yaml`
 
 This contains most site config.
 
@@ -79,4 +79,4 @@ Your source files will be built to this directory.
 
 This contains your site's themes.
 
-**Most of those dirs can be changed in `siteConfig.yml`.**
+**Most of those dirs can be changed in `site-config.yaml`.**

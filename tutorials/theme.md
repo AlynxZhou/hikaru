@@ -15,12 +15,12 @@ themename/
     |- srcs/
     |- languages/
     |- layouts/
-    |- themeConfig.yml
+    |- theme-config.yaml.example
 ```
 
-## `themeConfig.yml`
+## `theme-config.yaml.example`
 
-This is theme's config, you can access it with `site["themeConfig"]` in template.
+This is a example of theme's config, user should copy it to site dir and you can access it with `site["themeConfig"]` in template.
 
 ## `scripts`
 
@@ -100,7 +100,7 @@ so you can easily theme them and also works with libraries like PrismJS.
 
 # Language Files
 
-You can create file as language files, and their name will be options of site's `language` config. For example you can create `en.yml`:
+You can create file as language files, and their name will be options of site's `language` config. For example you can create `en.yaml`:
 
 ```yaml
 postcount:
@@ -109,7 +109,7 @@ postcount:
   more: You have %d posts!
 ```
 
-and set `config.yml` to `language: en`, you can use `__()` in template like this:
+and set `site-config.yaml` to `language: en`, you can use `__()` in template like this:
 
 ```html
 <p>{{ __("postcount.more", 233) }}</p>

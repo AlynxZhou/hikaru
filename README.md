@@ -47,7 +47,7 @@ $ git submodule add https://github.com/AlynxZhou/hikaru-theme-aria.git themes/ar
 ## Edit site config
 
 ```
-$ $EDITOR siteConfig.yml
+$ $EDITOR site-config.yaml
 ```
 
 Set `themeDir` to `themes/aria`
