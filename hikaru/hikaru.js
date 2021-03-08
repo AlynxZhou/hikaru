@@ -270,19 +270,19 @@ class Hikaru {
       siteDir, siteConfig["srcDir"] || "srcs"
     );
     this.logger.debug(`Hikaru is reading sources from \`${
-      this.logger.cyan(siteConfig["srcDir"])
+      this.logger.cyan(path.join(siteConfig["srcDir"], path.sep))
     }\`...`);
     siteConfig["docDir"] = path.join(
       siteDir, siteConfig["docDir"] || "docs"
     );
     this.logger.debug(`Hikaru is writing documents to \`${
-      this.logger.cyan(siteConfig["docDir"])
+      this.logger.cyan(path.join(siteConfig["docDir"], path.sep))
     }\`...`);
     siteConfig["themeDir"] = path.join(
       siteDir, siteConfig["themeDir"]
     );
     this.logger.debug(`Hikaru is loading theme from \`${
-      this.logger.cyan(siteConfig["themeDir"])
+      this.logger.cyan(path.join(siteConfig["themeDir"], path.sep))
     }\`...`);
     siteConfig["themeSrcDir"] = path.join(
       siteConfig["themeDir"], "srcs"
