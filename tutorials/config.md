@@ -55,7 +55,7 @@ Your site's theme, this is a sub dir relative to site dir, for example, you clon
 
 ## `indexDir`
 
-A dir to place your site's index sub page generated automatically by Hikaru (No source path), relative to `docDir`.
+A dir to place your site's index sub page generated automatically by Hikaru (No source path), relative to `docDir`, generally use a `.` if you want to put indices directly into `docDir`.
 
 ## `archiveDir`
 

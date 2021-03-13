@@ -293,8 +293,6 @@ class Hikaru {
     siteConfig["themeLayoutDir"] = path.join(
       siteConfig["themeDir"], "layouts"
     );
-    siteConfig["categoryDir"] = siteConfig["categoryDir"] || "categories";
-    siteConfig["tagDir"] = siteConfig["tagDir"] || "tags";
     return siteConfig;
   }
 
@@ -707,101 +705,109 @@ class Hikaru {
    * @private
    */
   registerInternalGenerators() {
-    this.generator.register("index pages", (site) => {
-      let perPage;
-      if (isObject(site["siteConfig"]["perPage"])) {
-        perPage = site["siteConfig"]["perPage"]["index"] || 10;
-      } else {
-        perPage = site["siteConfig"]["perPage"] || 10;
-      }
-      return paginate(new File({
-        "layout": "index",
-        "docDir": site["siteConfig"]["docDir"],
-        "docPath": path.join(site["siteConfig"]["indexDir"], "index.html"),
-        "title": "index",
-        "comment": false,
-        "reward": false
-      }), site["posts"], perPage);
-    });
-
-    this.generator.register("archives pages", (site) => {
-      let perPage;
-      if (isObject(site["siteConfig"]["perPage"])) {
-        perPage = site["siteConfig"]["perPage"]["archives"] || 10;
-      } else {
-        perPage = site["siteConfig"]["perPage"] || 10;
-      }
-      return paginate(new File({
-        "layout": "archives",
-        "docDir": site["siteConfig"]["docDir"],
-        "docPath": path.join(site["siteConfig"]["archiveDir"], "index.html"),
-        "title": "archives",
-        "comment": false,
-        "reward": false
-      }), site["posts"], perPage);
-    });
-
-    this.generator.register("categories pages", (site) => {
-      let results = [];
-      let perPage;
-      if (isObject(site["siteConfig"]["perPage"])) {
-        perPage = site["siteConfig"]["perPage"]["category"] || 10;
-      } else {
-        perPage = site["siteConfig"]["perPage"] || 10;
-      }
-      for (const sub of site["categories"]) {
-        sortCategories(sub);
-        results = results.concat(paginateCategories(
-          sub, site["siteConfig"]["categoryDir"], site, perPage
-        ));
-      }
-      results.push(new File({
-        "layout": "categories",
-        "docDir": site["siteConfig"]["docDir"],
-        "docPath": path.join(site["siteConfig"]["categoryDir"], "index.html"),
-        "title": "categories",
-        "comment": false,
-        "reward": false
-      }));
-      return results;
-    });
-
-    this.generator.register("tags pages", (site) => {
-      let results = [];
-      let perPage;
-      if (isObject(site["siteConfig"]["perPage"])) {
-        perPage = site["siteConfig"]["perPage"]["tag"] || 10;
-      } else {
-        perPage = site["siteConfig"]["perPage"] || 10;
-      }
-      for (const tag of site["tags"]) {
-        tag["posts"].sort((a, b) => {
-          return -(a["date"] - b["date"]);
-        });
-        const sp = new File({
-          "layout": "tag",
+    if (this.site["siteConfig"]["indexDir"] != null) {
+      this.generator.register("index pages", (site) => {
+        let perPage;
+        if (isObject(site["siteConfig"]["perPage"])) {
+          perPage = site["siteConfig"]["perPage"]["index"] || 10;
+        } else {
+          perPage = site["siteConfig"]["perPage"] || 10;
+        }
+        return paginate(new File({
+          "layout": "index",
           "docDir": site["siteConfig"]["docDir"],
-          "docPath": path.join(
-            site["siteConfig"]["tagDir"], `${tag["name"]}`, "index.html"
-          ),
-          "title": "tag",
-          "name": tag["name"].toString(),
+          "docPath": path.join(site["siteConfig"]["indexDir"], "index.html"),
+          "title": "index",
           "comment": false,
           "reward": false
-        });
-        tag["docPath"] = sp["docPath"];
-        results = results.concat(paginate(sp, tag["posts"], perPage));
-      }
-      results.push(new File({
-        "layout": "tags",
-        "docDir": site["siteConfig"]["docDir"],
-        "docPath": path.join(site["siteConfig"]["tagDir"], "index.html"),
-        "title": "tags",
-        "comment": false,
-        "reward": false
-      }));
-      return results;
-    });
+        }), site["posts"], perPage);
+      });
+    }
+
+    if (this.site["siteConfig"]["archiveDir"] != null) {
+      this.generator.register("archives pages", (site) => {
+        let perPage;
+        if (isObject(site["siteConfig"]["perPage"])) {
+          perPage = site["siteConfig"]["perPage"]["archives"] || 10;
+        } else {
+          perPage = site["siteConfig"]["perPage"] || 10;
+        }
+        return paginate(new File({
+          "layout": "archives",
+          "docDir": site["siteConfig"]["docDir"],
+          "docPath": path.join(site["siteConfig"]["archiveDir"], "index.html"),
+          "title": "archives",
+          "comment": false,
+          "reward": false
+        }), site["posts"], perPage);
+      });
+    }
+
+    if (this.site["siteConfig"]["categoryDir"] != null) {
+      this.generator.register("categories pages", (site) => {
+        let results = [];
+        let perPage;
+        if (isObject(site["siteConfig"]["perPage"])) {
+          perPage = site["siteConfig"]["perPage"]["category"] || 10;
+        } else {
+          perPage = site["siteConfig"]["perPage"] || 10;
+        }
+        for (const sub of site["categories"]) {
+          sortCategories(sub);
+          results = results.concat(paginateCategories(
+            sub, site["siteConfig"]["categoryDir"], site, perPage
+          ));
+        }
+        results.push(new File({
+          "layout": "categories",
+          "docDir": site["siteConfig"]["docDir"],
+          "docPath": path.join(site["siteConfig"]["categoryDir"], "index.html"),
+          "title": "categories",
+          "comment": false,
+          "reward": false
+        }));
+        return results;
+      });
+    }
+
+    if (this.site["siteConfig"]["tagDir"] != null) {
+      this.generator.register("tags pages", (site) => {
+        let results = [];
+        let perPage;
+        if (isObject(site["siteConfig"]["perPage"])) {
+          perPage = site["siteConfig"]["perPage"]["tag"] || 10;
+        } else {
+          perPage = site["siteConfig"]["perPage"] || 10;
+        }
+        for (const tag of site["tags"]) {
+          tag["posts"].sort((a, b) => {
+            return -(a["date"] - b["date"]);
+          });
+          const sp = new File({
+            "layout": "tag",
+            "docDir": site["siteConfig"]["docDir"],
+            "docPath": path.join(
+              site["siteConfig"]["tagDir"], `${tag["name"]}`, "index.html"
+            ),
+            "title": "tag",
+            "name": tag["name"].toString(),
+            "comment": false,
+            "reward": false
+          });
+          tag["docPath"] = sp["docPath"];
+          results = results.concat(paginate(sp, tag["posts"], perPage));
+        }
+        results.push(new File({
+          "layout": "tags",
+          "docDir": site["siteConfig"]["docDir"],
+          "docPath": path.join(site["siteConfig"]["tagDir"], "index.html"),
+          "title": "tags",
+          "comment": false,
+          "reward": false
+        }));
+        return results;
+      });
+    }
   }
 }
 

@@ -9,18 +9,19 @@ language: default
 baseURL: https://yourdomain.com
 rootDir: /
 
-# Those paths exists on your disk.
+# Those paths are relative to your site dir.
 srcDir: srcs
 docDir: docs
 themeDir: themes/aria
 
-# Those paths are under `docDir`.
+# Those paths are relative to `docDir`.
+# Set to `null` if you don't want them.
 indexDir: .
 archiveDir: archives
 categoryDir: categories
 tagDir: tags
 
-# Those paths are under `srcDir`.
+# Those paths are relative to `srcDir`.
 skipRender:
   - README.md
 
