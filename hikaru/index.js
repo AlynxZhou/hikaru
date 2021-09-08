@@ -4,39 +4,49 @@
  * @module index
  */
 
-const commander = require("commander");
+const {Command} = require("commander");
 const pkg = require("../package.json");
 const Hikaru = require("./hikaru");
 
-commander
+const command = new Command();
+
+command
   .version(pkg["version"], "-v, --version", "Print version number.")
   .usage("<subcommand> [options] [dir]")
   .description(pkg["description"])
-  .helpOption("-h, --help", "Print help infomation.");
+  // Overwrite default help option description.
+  .helpOption("-h, --help", "Print help infomation.")
+  // Overwrite default help command description.
+  .addHelpCommand("help [subcommand]", "Print help information.");
 
-commander.command("init [dir]").alias("i")
+command.command("init").alias("i")
+  .argument("[dir]", "Site dir.")
   .description("Init a Hikaru site dir.")
   .option("-d, --debug", "Enable debug output.")
   .option("--no-color", "Disable colored output.")
   .option("-c, --config <yaml>", "Alternative site config path. (deprecated)")
   .option("-s, --site-config <yaml>", "Alternative site config path.")
+  // Overwrite default help option description.
   .helpOption("-h, --help", "Print help infomation.")
   .action((dir, opts) => {
     new Hikaru(opts).init(dir || ".");
   });
 
-commander.command("clean [dir]").alias("c")
+command.command("clean").alias("c")
+  .argument("[dir]", "Site dir.")
   .description("Clean built docs.")
   .option("-d, --debug", "Enable debug output.")
   .option("--no-color", "Disable colored output.")
   .option("-c, --config <yaml>", "Alternative site config path. (deprecated)")
   .option("-s, --site-config <yaml>", "Alternative site config path.")
+  // Overwrite default help option description.
   .helpOption("-h, --help", "Print help infomation.")
   .action((dir, opts) => {
     new Hikaru(opts).clean(dir || ".");
   });
 
-commander.command("build [dir]").alias("b")
+command.command("build").alias("b")
+  .argument("[dir]", "Site dir.")
   .description("Build site.")
   .option("-d, --debug", "Enable debug output.")
   .option("--no-color", "Disable colored output.")
@@ -44,12 +54,14 @@ commander.command("build [dir]").alias("b")
   .option("-c, --config <yaml>", "Alternative site config path. (deprecated)")
   .option("-s, --site-config <yaml>", "Alternative site config path.")
   .option("-t, --theme-config <yaml>", "Alternative theme config path.")
+  // Overwrite default help option description.
   .helpOption("-h, --help", "Print help infomation.")
   .action((dir, opts) => {
     new Hikaru(opts).build(dir || ".");
   });
 
-commander.command("serve [dir]").alias("s")
+command.command("serve").alias("s")
+  .argument("[dir]", "Site dir.")
   .description("Serve site.")
   .option("-d, --debug", "Enable debug output.")
   .option("--no-color", "Disable colored output.")
@@ -59,14 +71,15 @@ commander.command("serve [dir]").alias("s")
   .option("-t, --theme-config <yaml>", "Alternative theme config path.")
   .option("-i, --ip <ip>", "Alternative listening IP address.")
   .option("-p, --port <port>", "Alternative listening port.", Number.parseInt)
+  // Overwrite default help option description.
   .helpOption("-h, --help", "Print help infomation.")
   .action((dir, opts) => {
     new Hikaru(opts).serve(dir || ".");
   });
 
 // Handle unknown commands.
-commander.on("command:*", () => {
-  console.error(`Invalid command: ${commander.args.join(" ")}`);
+command.on("command:*", () => {
+  console.error(`Invalid command: ${command.args.join(" ")}`);
   console.error("Run `hikaru --help` for a list of available commands.");
   process.exit(1);
 });
@@ -76,5 +89,5 @@ commander.on("command:*", () => {
  * @param {String[]} [argv]
  */
 module.exports = (argv = process.argv) => {
-  commander.parse(argv);
+  command.parse(argv);
 };

@@ -29,22 +29,22 @@
   "homepage": "https://hikaru.alynx.one/",
   "dependencies": {
     "chokidar": "^3.4.2",
-    "commander": "^6.0.0",
-    "fs-extra": "^9.0.1",
+    "commander": "^8.1.0",
+    "fs-extra": "^10.0.0",
     "glob": "^7.1.6",
-    "highlight.js": "^10.1.2",
+    "highlight.js": "^11.2.0",
     "isbinaryfile": "^4.0.6",
-    "marked": "^2.0.1",
+    "marked": "^3.0.2",
     "nunjucks": "^3.2.2",
     "parse5": "^6.0.1",
-    "stylus": "^0.54.8",
+    "stylus": "^0.55.0",
     "yaml": "^1.10.0"
   },
   "devDependencies": {
     "chai": "^4.2.0",
     "jsdoc": "^3.6.5",
-    "mocha": "^8.1.1",
-    "standardx": "^5.0.0"
+    "mocha": "^9.1.1",
+    "standardx": "^7.0.0"
   },
   "engines": {
     "node": ">=10.13.0"
