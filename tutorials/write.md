@@ -83,5 +83,5 @@ Hikaru will resolve content of headers (`<h1>`, `<h2>`, `<h3>`, `<h4>`, `<h5>`, 
 
 ID generating follows those rules:
 
-- Chars not supported by scrollspy will be removed (` `, `\t`, `\n`, `\r`, `(`, `)`, `[`, `]`, `{`, `}`, `<`, `>`, `.`, `,`, `!`, `@`, `#`, `$`, `%`, `^`, `&`, `*`, `=`, `|`, `\``, `'`, `/`, `?`, `~`).
+- Chars not supported by scrollspy will be removed (space, `\t`, `\n`, `\r`, `(`, `)`, `[`, `]`, `{`, `}`, `<`, `>`, `.`, `,`, `!`, `@`, `#`, `$`, `%`, `^`, `&`, `*`, `=`, `|`, <code>\`</code>, `'`, `/`, `?`, `~`).
 - If the same ID has been generated, `-n` will be append to ID, `n` is how many times it has been generated, for example, if we have `abc`, `abc` and `abc-1` as input, we will get `abc`, `abc-1` and `abc-1-1` as output.
