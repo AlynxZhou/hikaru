@@ -68,3 +68,20 @@ This usually is a page that theme will create a nested list of all categories.
 #### `tags`
 
 This usually is a page that theme will create a tag cloud of all tags.
+
+## Useful Rules
+
+Hikaru will resolve anchors (`<a>`) and images (`<img>`) in your posts and try to convert relative path into full path, so even if your post content is on some RSS hubs (most RSS hubs just simply join your domain and link), it still works properly.
+
+Links match the following rules will be considered as already full path and won't be resolved:
+
+- Already has an origin that differs from your site, will add `target="_black"` for them.
+- Starts with `/` or `//`.
+- Have URL protocol, like `https:` or `data:`.
+
+Hikaru will resolve content of headers (`<h1>`, `<h2>`, `<h3>`, `<h4>`, `<h5>`, `<h6>`) to generate a readable ID for them (compared with most Markdown renderer), and make a `TOC` object for theme.
+
+ID generating follows those rules:
+
+- Chars not supported by scrollspy will be removed (` `, `\t`, `\n`, `\r`, `(`, `)`, `[`, `]`, `{`, `}`, `<`, `>`, `.`, `,`, `!`, `@`, `#`, `$`, `%`, `^`, `&`, `*`, `=`, `|`, `\``, `'`, `/`, `?`, `~`).
+- If the same ID has been generated, `-n` will be append to ID, `n` is how many times it has been generated, for example, if we have `abc`, `abc` and `abc-1` as input, we will get `abc`, `abc-1` and `abc-1-1` as output.
