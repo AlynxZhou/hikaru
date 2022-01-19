@@ -14,7 +14,7 @@ describe("renderer", () => {
     it("should register Markdown renderer", () => {
       marked.setOptions({"gfm": true});
       renderer.register(".md", ".html", (file) => {
-        file["content"] = marked(file["text"]);
+        file["content"] = marked.parse(file["text"]);
         return file;
       });
       expect(renderer._).to.have.property(".md");

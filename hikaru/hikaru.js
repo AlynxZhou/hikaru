@@ -9,7 +9,7 @@ const path = require("path");
 const fse = require("fs-extra");
 const YAML = require("yaml");
 const nunjucks = require("nunjucks");
-const marked = require("marked");
+const {marked} = require("marked");
 const stylus = require("stylus");
 
 const Logger = require("./logger");
@@ -547,7 +547,7 @@ class Hikaru {
     );
     marked.setOptions(markedConfig);
     this.renderer.register(".md", ".html", (file) => {
-      file["content"] = marked(file["text"]);
+      file["content"] = marked.parse(file["text"]);
       return file;
     });
 
