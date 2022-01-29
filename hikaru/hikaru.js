@@ -181,11 +181,14 @@ class Hikaru {
   async build(siteDir) {
     this.loadSite(siteDir);
     try {
+      // Modules must be loaded before others.
       await this.loadModules();
-      await this.loadPlugins();
-      await this.loadScripts();
-      await this.loadLanguages();
-      await this.loadLayouts();
+      await Promise.all([
+        this.loadPlugins(),
+        this.loadScripts(),
+        this.loadLanguages(),
+        this.loadLayouts()
+      ]);
       this.router = new Router(
         this.logger,
         this.renderer,
@@ -212,11 +215,14 @@ class Hikaru {
     const port = this.opts["port"] || 2333;
     this.loadSite(siteDir);
     try {
+      // Modules must be loaded before others.
       await this.loadModules();
-      await this.loadPlugins();
-      await this.loadScripts();
-      await this.loadLanguages();
-      await this.loadLayouts();
+      await Promise.all([
+        this.loadPlugins(),
+        this.loadScripts(),
+        this.loadLanguages(),
+        this.loadLayouts()
+      ]);
       this.router = new Router(
         this.logger,
         this.renderer,
