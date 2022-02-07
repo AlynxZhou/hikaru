@@ -10,7 +10,6 @@ const fse = require("fs-extra");
 const YAML = require("yaml");
 const nunjucks = require("nunjucks");
 const {marked} = require("marked");
-const stylus = require("stylus");
 
 const Logger = require("./logger");
 const Watcher = require("./watcher");
@@ -30,8 +29,6 @@ const {
   paginate,
   sortCategories,
   paginateCategories,
-  getPathFn,
-  getURLFn,
   genCategories,
   genTags,
   parseNode,
@@ -640,63 +637,6 @@ class Hikaru {
     this.renderer.register(".md", ".html", (file) => {
       file["content"] = marked.parse(file["text"]);
       return file;
-    });
-
-    const stylConfig = this.site["siteConfig"]["stylus"] || {};
-    const getPath = getPathFn(this.site["siteConfig"]["rootDir"]);
-    const getURL = getURLFn(
-      this.site["siteConfig"]["baseURL"],
-      this.site["siteConfig"]["rootDir"]
-    );
-    this.renderer.register(".styl", ".css", (file) => {
-      return new Promise((resolve, reject) => {
-        stylus(file["text"]).use((style) => {
-          style.define("getSiteConfig", (data) => {
-            const keys = data["val"].toString().trim().split(".");
-            let res = this.site["siteConfig"];
-            for (const k of keys) {
-              if (res[k] == null) {
-                return null;
-              }
-              res = res[k];
-            }
-            return res;
-          });
-          style.define("getThemeConfig", (data) => {
-            const keys = data["val"].toString().trim().split(".");
-            let res = this.site["themeConfig"];
-            for (const k of keys) {
-              if (res[k] == null) {
-                return null;
-              }
-              res = res[k];
-            }
-            return res;
-          });
-          style.define("getPath", (data) => {
-            return getPath(data["val"].toString().trim());
-          });
-          style.define("getURL", (data) => {
-            return getURL(data["val"].toString().trim());
-          });
-          style.define("siteConfig", this.site["siteConfig"]);
-          style.define("themeConfig", this.site["themeConfig"]);
-          style.define("srcDir", file["srcDir"]);
-          style.define("srcPath", file["srcPath"]);
-          style.define("docDir", file["docDir"]);
-          style.define("docPath", file["docPath"]);
-        }).set("filename", path.join(
-          file["srcDir"], file["srcPath"]
-        )).set("sourcemap", stylConfig["sourcemap"])
-          .set("compress", stylConfig["compress"])
-          .set("include css", true).render((error, result) => {
-            if (error != null) {
-              return reject(error);
-            }
-            file["content"] = result;
-            return resolve(file);
-          });
-      });
     });
   }
 

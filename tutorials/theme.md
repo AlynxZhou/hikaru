@@ -74,7 +74,7 @@ You can use following helpers in template:
 
 # Assets
 
-Assets may be CSS or JavaScript files, Hikaru internally supports stylus, so you can write it instead pure CSS. You can also add other preprocessors via registing renderers.
+Assets may be CSS or JavaScript files, Hikaru internally supports no CSS preprocessors but you can install some renderer plugins to support them.
 
 You can use `getThemeConfig(key)` or `getSiteConfig(key)` in CSS preprocessors to get config. Use `getPath(docPath)` or `getURL(docPath)` if you want to get generated path or URL. You can also get file's `docPath`, `docDir`, `srcPath` and `srcDir`.
 

@@ -37,14 +37,6 @@ nunjucks:
 marked:
   gfm: true
 
-stylus:
-  compress: false
-  sourcemaps:
-    comment: true
-    inline: true
-    sourceRoot: ''
-    basePath: .
-
 highlight:
   enable: true
   gutter: true
