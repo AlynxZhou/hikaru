@@ -40,13 +40,13 @@ As the subtitle, it's a static site generator, based on Markdown, CSS preprocess
 
 ```plain
 hikura-site/
-    |- scripts/ # custom scripts
-    |- srcs/ # source dir for user files
+    |- scripts/ # Custom scripts.
+    |- srcs/ # Source dir for user files.
     |   |- images/
     |   |- posts/
     |   |- about/
     |   |   |- index.md
-    |- docs/ # source will be render to here
+    |- docs/ # Source will be render to here.
     |   |- images/
     |   |   |- logo.png
     |   |- css/
@@ -55,21 +55,21 @@ hikura-site/
     |   |   |- index.js
     |   |- posts/
     |   |- index.html
-    |   |- index-2.html # page 2 of index
-    |   |- index-3.html # page 3 of index
+    |   |- index-2.html # Page 2 of index.
+    |   |- index-3.html # Page 3 of index.
     |   |- about/
     |   |   |- index.html
     |   |- tags/
-    |   |   |- index.html # layout: tags
+    |   |   |- index.html # Layout is tags.
     |   |   |- tag-1/
-    |   |   |   |- index.html # automatically generated, layout: tag
-    |   |   |   |- index-2.html # page 2 of tag-1
+    |   |   |   |- index.html # Automatically generated, layout is tag.
+    |   |   |   |- index-2.html # Page 2 of tag-1.
     |- themes/
     |   |- aria/
     |   |   |- scripts/ # custom scripts
     |   |   |- srcs/ # this will be render to docs/
     |   |   |   |- css/
-    |   |   |   |   |- index.styl
+    |   |   |   |   |- index.css
     |   |   |   |- js/
     |   |   |   |   |- index.js
     |   |   |   |- images/
@@ -78,11 +78,13 @@ hikura-site/
     |   |   |   |- index.njk
     |   |   |   |- tags.njk
     |   |   |   |- tag.njk
-    |   |   |   |- page.njk # if no layout specific, fallback to this
+    |   |   |   |- page.njk # If no layout specific, fallback to this.
     |   |   |- languages/
     |   |   |   |- default.yaml
-    |   |- README.md
-    |- package.json # store site plugin list
+    |   |   |- theme-config.yaml # Example file.
+    |   |   |- file-dependencies.yaml
+    |   |   |- README.md
+    |- package.json # Store site plugin list.
     |- site-config.yaml
     |- theme-config.yaml
 ```

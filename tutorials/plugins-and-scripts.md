@@ -13,7 +13,7 @@ module.exports = (hikaru) => {
 }
 ```
 
-You can access Hikaru's `renderer`, `compiler`, `processor`, `generator`, `decorator`, `logger`, `translator`, `types`, `utils`, `opts` and `site` object through the Hikaru object.
+You can access Hikaru's `renderer`, `compiler`, `processor`, `generator`, `decorator`, `logger`, `translator`, `watcher`, `types`, `utils`, `opts` and `site` object through the Hikaru object.
 
 # Plugins
 

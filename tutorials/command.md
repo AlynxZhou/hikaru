@@ -66,6 +66,8 @@ $ hikaru build|b [options] [dir]
 
 Read all src files, render them and start a live reload server. By default it listens in `http://localhost:2333/`.
 
+While this command watch all site and theme files, `site-config.yaml` and `theme-config.yaml` are not able to watch, you should restart server after modifying them.
+
 ## Usage
 
 ```

@@ -16,11 +16,16 @@ themename/
     |- languages/
     |- layouts/
     |- theme-config.yaml
+    |- file-dependencies.yaml
 ```
 
 ## `theme-config.yaml`
 
 This is a example of theme's config, user should copy it to site dir and you can access it with `site["themeConfig"]` in template.
+
+## `file-dependencies.yaml`
+
+This is a file that contains file dependency relationship, Hikaru uses this file to know how many file should be updated if files changed while watching. Also check *File Dependencies Handling* for more info.
 
 ## `scripts`
 
@@ -130,3 +135,37 @@ module.exports = (hikaru) => {
 ```
 
 Plugins are the same but they work as npm packages.
+
+# File Dependencies Handling
+
+Many static site generators say they have a "watch" feature, which means your SSG watch files and re-generate site automatically while serving.
+
+This helps a lot for theme authors because you can reload webpage to see your latest changes, however, most SSGs only watch blog articles but not theme files, and for those SSGs who "support" watching themes, they never work reliably. Because theme files may have dependency problem while blog articles does not. Your HTML templates and CSS preprocessors support feature like `import`, `include` or `extends`, a file should be updated if its included files changed, but SSGs cannot analyze every kinds of templating language to know exactly how many files should be updated.
+
+Since Hikaru v1.10.0, it has another way to resolve this dependency problem. Theme authors can provide a `file-dependencies.yaml` under your theme's root dir, Hikaru will parse it, and when files get modified, Hikaru will use this file to update related files.
+
+Its content looks like:
+
+```yaml
+# Path relative to your theme's root dir.
+dir1:
+  # Path relative to dir1.
+  file1:
+    # Path relative to dir1.
+    - file2 included in file1
+    - file3 included in file1
+# Path relative to your theme's root dir.
+dir2:
+  # Path relative to dir2.
+  file4:
+    # Path relative to dir2.
+    - file5 included in file4
+```
+
+Theme author should update this file for their `srcs/` and `layouts/` dir, for example please check [how hikaru-themes-aria uses it](https://github.com/AlynxZhou/hikaru-theme-aria/blob/master/file-dependencies.yaml).
+
+**WARNING**: Hikaru does not check for circular dependency, theme authors should check their files to prevent circular dependency.
+
+Theme authors can ignore this file totally, Hikaru will continue work without complaining.
+
+Currently we cannot watch `site-config.yaml` and `theme-config.yaml`, if user modifies them, they should restart Hikaru.
