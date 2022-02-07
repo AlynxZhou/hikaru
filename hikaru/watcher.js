@@ -35,7 +35,6 @@ class Watcher {
    * @return {Object} Reversed file dependency tree.
    */
   reverseFileDependencies(rawFileDependencies) {
-    console.log(JSON.stringify(rawFileDependencies));
     // Let's revert dependency tree for fast look up.
     const fileDependencies = {};
     for (const srcDir in rawFileDependencies) {
@@ -58,7 +57,6 @@ class Watcher {
         }
       }
     }
-    console.log(JSON.stringify(fileDependencies));
     return fileDependencies;
   }
 
