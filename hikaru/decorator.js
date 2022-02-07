@@ -41,6 +41,14 @@ class Decorator {
   }
 
   /**
+   * @description Unregister a decorate function.
+   * @param {String} layout
+   */
+  unregister(layout) {
+    delete this._[layout];
+  }
+
+  /**
    * @description Decorate input file with layout.
    * @param {File} file
    * @return {String}

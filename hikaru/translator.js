@@ -42,6 +42,20 @@ class Translator {
   }
 
   /**
+   * @description Unregister a kind of language.
+   * @param {(String|String[])} lang Language names.
+   */
+  unregister(lang) {
+    if (isArray(lang)) {
+      for (const l of lang) {
+        delete this._[l];
+      }
+    } else {
+      delete this._[lang];
+    }
+  }
+
+  /**
    * @description List registered language.
    * @return {String[]}
    */

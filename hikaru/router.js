@@ -5,9 +5,7 @@
  */
 
 const fse = require("fs-extra");
-const path = require("path");
 const http = require("http");
-const chokidar = require("chokidar");
 const {Site, File} = require("./types");
 const {
   isArray,
@@ -41,10 +39,18 @@ class Router {
    * @param {Decorator} decorator
    * @param {Translator} translator
    * @param {Site} site
+   * @param {Watcher} [watcher]
    * @return {Router}
    */
   constructor(
-    logger, renderer, processor, generator, decorator, translator, site
+    logger,
+    renderer,
+    processor,
+    generator,
+    decorator,
+    translator,
+    site,
+    watcher = null
   ) {
     this.logger = logger;
     this.renderer = renderer;
@@ -58,10 +64,7 @@ class Router {
     this.ip = null;
     this.port = null;
     this.listening = false;
-    this.watchers = [];
-    this.watchedEvents = [];
-    this.sourcePages = [];
-    this.handling = false;
+    this.watcher = watcher;
     this.getURL = getURLFn(
       this.site["siteConfig"]["baseURL"], this.site["siteConfig"]["rootDir"]
     );
@@ -176,7 +179,8 @@ class Router {
    * @return {Promise<File[]>}
    */
   async matchAll() {
-    return (await matchFiles(path.join("**", "*"), {
+    // Globs must not contain windows spearators.
+    return (await matchFiles("**/*", {
       "nodir": true,
       "dot": false,
       "cwd": this.site["siteConfig"]["themeSrcDir"]
@@ -186,7 +190,7 @@ class Router {
         this.site["siteConfig"]["themeSrcDir"],
         srcPath
       );
-    }).concat((await matchFiles(path.join("**", "*"), {
+    }).concat((await matchFiles("**/*", {
       "nodir": true,
       "dot": true,
       "cwd": this.site["siteConfig"]["srcDir"]
@@ -218,37 +222,47 @@ class Router {
    * @description Watch all src files.
    */
   watchAll() {
-    for (const srcDir of [
-      this.site["siteConfig"]["themeSrcDir"],
-      this.site["siteConfig"]["srcDir"]
-    ]) {
-      const watcher = chokidar.watch(path.join("**", "*"), {
-        "cwd": srcDir, "ignoreInitial": true
-      });
-      this.watchers.push(watcher);
-      for (const event of ["add", "change", "unlink"]) {
-        watcher.on(event, (srcPath) => {
-          this.logger.debug(
-            `Hikaru is watching event \`${
-              this.logger.blue(event)
-            }\` from \`${
-              this.logger.cyan(path.join(srcDir, srcPath))
-            }\`...`
-          );
-          const i = this.watchedEvents.findIndex((p) => {
-            return p["srcDir"] === srcDir && p["srcPath"] === srcPath;
-          });
-          if (i !== -1) {
-            // Just update event.
-            this.watchedEvents[i]["type"] = event;
-          } else {
-            // Not found.
-            this.watchedEvents.push({event, srcDir, srcPath});
-          }
-          setImmediate(this.handleEvents.bind(this));
-        });
-      }
+    if (this.watcher == null) {
+      return;
     }
+    const onAddedOrChanged = async (srcDir, srcPath) => {
+      const newFile = new File(
+        this.site["siteConfig"]["docDir"], srcDir, srcPath
+      );
+      await this.loadFile(newFile);
+      // TODO: put files in a queue and flush queue only once.
+      await this.handle();
+      this.buildServerRoutes(
+        this.site["assets"]
+          .concat(this.site["posts"])
+          .concat(this.site["pages"])
+          .concat(this.site["files"])
+      );
+    };
+    this.watcher.register(
+      [
+        this.site["siteConfig"]["themeSrcDir"],
+        this.site["siteConfig"]["srcDir"]
+      ],
+      onAddedOrChanged,
+      onAddedOrChanged,
+      async (srcDir, srcPath) => {
+        const file = new File(
+          this.site["siteConfig"]["docDir"], srcDir, srcPath
+        );
+        // TODO: put files in a queue and flush queue only once.
+        for (const key of Site.arrayKeys) {
+          delSite(this.site, key, file);
+        }
+        await this.handle();
+        this.buildServerRoutes(
+          this.site["assets"]
+            .concat(this.site["posts"])
+            .concat(this.site["pages"])
+            .concat(this.site["files"])
+        );
+      }
+    );
   }
 
   /**
@@ -256,43 +270,13 @@ class Router {
    * @description Unwatch all src files.
    */
   unwatchAll() {
-    let w;
-    while ((w = this.watchers.shift()) != null) {
-      w.close();
-    }
-  }
-
-  /**
-   * @private
-   * @description Handle watcher events.
-   */
-  async handleEvents() {
-    // Keep handling atomic. Prevent repeatedly handling.
-    if (this.watchedEvents.length === 0 || this.handling) {
+    if (this.watcher == null) {
       return;
     }
-    this.handling = true;
-    let e;
-    while ((e = this.watchedEvents.shift()) != null) {
-      const file = new File(
-        this.site["siteConfig"]["docDir"], e["srcDir"], e["srcPath"]
-      );
-      if (e["event"] === "unlink") {
-        for (const key of Site.arrayKeys) {
-          delSite(this.site, key, file);
-        }
-      } else {
-        await this.loadFile(file);
-      }
-    }
-    await this.handle();
-    this.buildServerRoutes(
-      this.site["assets"]
-        .concat(this.site["posts"])
-        .concat(this.site["pages"])
-        .concat(this.site["files"])
-    );
-    this.handling = false;
+    this.watcher.unregister([
+      this.site["siteConfig"]["themeSrcDir"],
+      this.site["siteConfig"]["srcDir"]
+    ]);
   }
 
   /**

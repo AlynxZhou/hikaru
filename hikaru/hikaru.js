@@ -13,6 +13,7 @@ const {marked} = require("marked");
 const stylus = require("stylus");
 
 const Logger = require("./logger");
+const Watcher = require("./watcher");
 const Renderer = require("./renderer");
 const Compiler = require("./compiler");
 const Processor = require("./processor");
@@ -72,6 +73,7 @@ class Hikaru {
     this.opts = opts;
     this.logger = new Logger(this.opts);
     this.logger.debug("Hikaru is starting...");
+    this.watcher = null;
     this.types = types;
     this.utils = utils;
     // Catch all unhandled error in promises.
@@ -214,6 +216,8 @@ class Hikaru {
     const ip = this.opts["ip"] || "localhost";
     const port = this.opts["port"] || 2333;
     this.loadSite(siteDir);
+    const rawFileDependencies = this.loadFileDependencies();
+    this.watcher = new Watcher(this.logger, rawFileDependencies);
     try {
       // Modules must be loaded before others.
       await this.loadModules();
@@ -230,7 +234,8 @@ class Hikaru {
         this.generator,
         this.decorator,
         this.translator,
-        this.site
+        this.site,
+        this.watcher
       );
       await this.router.serve(ip, port);
     } catch (error) {
@@ -345,6 +350,35 @@ class Hikaru {
 
   /**
    * @private
+   * @description Read file dependency tree.
+   * @return {Object}
+   */
+  loadFileDependencies() {
+    let rawFileDependencies;
+    try {
+      rawFileDependencies = YAML.parse(
+        fse.readFileSync(
+          path.join(
+            this.site["siteConfig"]["themeDir"],
+            "file-dependencies.yaml"
+          ),
+          "utf8"
+        )
+      );
+    } catch (error) {
+      // Should work if theme author does not provide such a file.
+      rawFileDependencies = {};
+    }
+    const fullRawFileDependencies = {};
+    for (const dir in rawFileDependencies) {
+      const srcDir = path.join(this.site["siteConfig"]["themeDir"], dir);
+      fullRawFileDependencies[srcDir] = rawFileDependencies[dir];
+    }
+    return fullRawFileDependencies;
+  }
+
+  /**
+   * @private
    * @description Load info about the site.
    * @param {String} siteDir Working site dir.
    */
@@ -415,7 +449,8 @@ class Hikaru {
         "types": this.types,
         "utils": this.utils,
         "opts": this.opts,
-        "site": this.site
+        "site": this.site,
+        "watcher": this.watcher
       });
     });
   }
@@ -426,12 +461,13 @@ class Hikaru {
    * which are js files installed into scripts dir.
    */
   async loadScripts() {
-    const scripts = (await matchFiles(path.join("**", "*.js"), {
+    // Globs must not contain windows spearators.
+    const scripts = (await matchFiles("**/*.js", {
       "nodir": true,
       "cwd": path.join(this.site["siteDir"], "scripts")
     })).map((filename) => {
       return path.join(this.site["siteDir"], "scripts", filename);
-    }).concat((await matchFiles(path.join("**", "*.js"), {
+    }).concat((await matchFiles("**/*.js", {
       "nodir": true,
       "cwd": path.join(this.site["siteConfig"]["themeDir"], "scripts")
     })).map((filename) => {
@@ -455,7 +491,8 @@ class Hikaru {
         "types": this.types,
         "utils": this.utils,
         "opts": this.opts,
-        "site": this.site
+        "site": this.site,
+        "watcher": this.watcher
       });
     });
   }
@@ -500,17 +537,40 @@ class Hikaru {
         "Hikaru cannot find default language file in your theme!"
       );
     }
-    for (const filename of filenames) {
-      const lang = path.basename(filename, ext);
-      const filepath = path.join(
-        this.site["siteConfig"]["themeLangDir"],
-        filename
-      );
+    const load = async (srcDir, srcPath) => {
+      const lang = path.basename(srcPath, ext);
+      const filepath = path.join(srcDir, srcPath);
       this.logger.debug(`Hikaru is loading language \`${
         this.logger.blue(lang)
       }\`...`);
       const language = YAML.parse(await fse.readFile(filepath, "utf8"));
       this.translator.register(lang, language);
+    };
+    for (const filename of filenames) {
+      load(this.site["siteConfig"]["themeLangDir"], filename);
+    }
+    if (this.watcher != null) {
+      const onAddedOrChanged = async (srcDir, srcPath) => {
+        // We only register top level yaml files as language.
+        if (path.dirname(srcPath) !== "." && path.extname(srcPath) !== ext) {
+          return;
+        }
+        load(srcDir, srcPath);
+      };
+      this.watcher.register(
+        this.site["siteConfig"]["themeLangDir"],
+        onAddedOrChanged,
+        onAddedOrChanged,
+        (srcPath, srcDir) => {
+          // We only register top level yaml files as language.
+          if (path.dirname(srcPath) !== "." && path.extname(srcPath) !== ext) {
+            return;
+          }
+          const lang = path.basename(srcPath, ext);
+          this.translator.unregister(lang);
+        },
+        {"recursive": false}
+      );
     }
   }
 
@@ -523,18 +583,43 @@ class Hikaru {
       "dot": false,
       "cwd": this.site["siteConfig"]["themeLayoutDir"]
     });
-    for (const filename of filenames) {
-      const ext = path.extname(filename);
-      const layout = path.basename(filename, ext);
+    const load = async (srcDir, srcPath) => {
+      const ext = path.extname(srcPath);
+      const layout = path.basename(srcPath, ext);
       this.logger.debug(`Hikaru is loading layout \`${
         this.logger.blue(layout)
       }\`...`);
-      const filepath = path.join(
-        this.site["siteConfig"]["themeLayoutDir"],
-        filename
-      );
+      const filepath = path.join(srcDir, srcPath);
       const fn = await this.compiler.compile(filepath);
       this.decorator.register(layout, fn);
+    };
+    for (const filename of filenames) {
+      load(this.site["siteConfig"]["themeLayoutDir"], filename);
+    }
+    if (this.watcher != null) {
+      const onAddedOrChanged = (srcDir, srcPath) => {
+        // We only register top level template files as layout.
+        if (path.dirname(srcPath) !== ".") {
+          return;
+        }
+        load(srcDir, srcPath);
+      };
+      this.watcher.register(
+        this.site["siteConfig"]["themeLayoutDir"],
+        onAddedOrChanged,
+        onAddedOrChanged,
+        (srcDir, srcPath) => {
+          // We only register top level template files as layout.
+          if (path.dirname(srcPath) !== ".") {
+            return;
+          }
+          const ext = path.extname(srcPath);
+          const layout = path.basename(srcPath, ext);
+          this.decorator.unregister(layout);
+        }
+        // Even though we don't load files recursively, we need to watch files
+        // recursively, because our loaded layouts may depend on them.
+      );
     }
   }
 
