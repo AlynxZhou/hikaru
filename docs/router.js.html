@@ -33,9 +33,7 @@
  */
 
 const fse = require("fs-extra");
-const path = require("path");
 const http = require("http");
-const chokidar = require("chokidar");
 const {Site, File} = require("./types");
 const {
   isArray,
@@ -69,10 +67,18 @@ class Router {
    * @param {Decorator} decorator
    * @param {Translator} translator
    * @param {Site} site
+   * @param {Watcher} [watcher]
    * @return {Router}
    */
   constructor(
-    logger, renderer, processor, generator, decorator, translator, site
+    logger,
+    renderer,
+    processor,
+    generator,
+    decorator,
+    translator,
+    site,
+    watcher = null
   ) {
     this.logger = logger;
     this.renderer = renderer;
@@ -86,10 +92,7 @@ class Router {
     this.ip = null;
     this.port = null;
     this.listening = false;
-    this.watchers = [];
-    this.watchedEvents = [];
-    this.sourcePages = [];
-    this.handling = false;
+    this.watcher = watcher;
     this.getURL = getURLFn(
       this.site["siteConfig"]["baseURL"], this.site["siteConfig"]["rootDir"]
     );
@@ -204,7 +207,8 @@ class Router {
    * @return {Promise&lt;File[]>}
    */
   async matchAll() {
-    return (await matchFiles(path.join("**", "*"), {
+    // Globs must not contain windows spearators.
+    return (await matchFiles("**/*", {
       "nodir": true,
       "dot": false,
       "cwd": this.site["siteConfig"]["themeSrcDir"]
@@ -214,7 +218,7 @@ class Router {
         this.site["siteConfig"]["themeSrcDir"],
         srcPath
       );
-    }).concat((await matchFiles(path.join("**", "*"), {
+    }).concat((await matchFiles("**/*", {
       "nodir": true,
       "dot": true,
       "cwd": this.site["siteConfig"]["srcDir"]
@@ -246,37 +250,47 @@ class Router {
    * @description Watch all src files.
    */
   watchAll() {
-    for (const srcDir of [
-      this.site["siteConfig"]["themeSrcDir"],
-      this.site["siteConfig"]["srcDir"]
-    ]) {
-      const watcher = chokidar.watch(path.join("**", "*"), {
-        "cwd": srcDir, "ignoreInitial": true
-      });
-      this.watchers.push(watcher);
-      for (const event of ["add", "change", "unlink"]) {
-        watcher.on(event, (srcPath) => {
-          this.logger.debug(
-            `Hikaru is watching event \`${
-              this.logger.blue(event)
-            }\` from \`${
-              this.logger.cyan(path.join(srcDir, srcPath))
-            }\`...`
-          );
-          const i = this.watchedEvents.findIndex((p) => {
-            return p["srcDir"] === srcDir &amp;&amp; p["srcPath"] === srcPath;
-          });
-          if (i !== -1) {
-            // Just update event.
-            this.watchedEvents[i]["type"] = event;
-          } else {
-            // Not found.
-            this.watchedEvents.push({event, srcDir, srcPath});
-          }
-          setImmediate(this.handleEvents.bind(this));
-        });
-      }
+    if (this.watcher == null) {
+      return;
     }
+    const onAddedOrChanged = async (srcDir, srcPath) => {
+      const newFile = new File(
+        this.site["siteConfig"]["docDir"], srcDir, srcPath
+      );
+      await this.loadFile(newFile);
+      // TODO: put files in a queue and flush queue only once.
+      await this.handle();
+      this.buildServerRoutes(
+        this.site["assets"]
+          .concat(this.site["posts"])
+          .concat(this.site["pages"])
+          .concat(this.site["files"])
+      );
+    };
+    this.watcher.register(
+      [
+        this.site["siteConfig"]["themeSrcDir"],
+        this.site["siteConfig"]["srcDir"]
+      ],
+      onAddedOrChanged,
+      onAddedOrChanged,
+      async (srcDir, srcPath) => {
+        const file = new File(
+          this.site["siteConfig"]["docDir"], srcDir, srcPath
+        );
+        // TODO: put files in a queue and flush queue only once.
+        for (const key of Site.arrayKeys) {
+          delSite(this.site, key, file);
+        }
+        await this.handle();
+        this.buildServerRoutes(
+          this.site["assets"]
+            .concat(this.site["posts"])
+            .concat(this.site["pages"])
+            .concat(this.site["files"])
+        );
+      }
+    );
   }
 
   /**
@@ -284,43 +298,13 @@ class Router {
    * @description Unwatch all src files.
    */
   unwatchAll() {
-    let w;
-    while ((w = this.watchers.shift()) != null) {
-      w.close();
-    }
-  }
-
-  /**
-   * @private
-   * @description Handle watcher events.
-   */
-  async handleEvents() {
-    // Keep handling atomic. Prevent repeatedly handling.
-    if (this.watchedEvents.length === 0 || this.handling) {
+    if (this.watcher == null) {
       return;
     }
-    this.handling = true;
-    let e;
-    while ((e = this.watchedEvents.shift()) != null) {
-      const file = new File(
-        this.site["siteConfig"]["docDir"], e["srcDir"], e["srcPath"]
-      );
-      if (e["event"] === "unlink") {
-        for (const key of Site.arrayKeys) {
-          delSite(this.site, key, file);
-        }
-      } else {
-        await this.loadFile(file);
-      }
-    }
-    await this.handle();
-    this.buildServerRoutes(
-      this.site["assets"]
-        .concat(this.site["posts"])
-        .concat(this.site["pages"])
-        .concat(this.site["files"])
-    );
-    this.handling = false;
+    this.watcher.unregister([
+      this.site["siteConfig"]["themeSrcDir"],
+      this.site["siteConfig"]["srcDir"]
+    ]);
   }
 
   /**
@@ -437,13 +421,13 @@ module.exports = Router;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-compiler.html">compiler</a></li><li><a href="module-decorator.html">decorator</a></li><li><a href="module-generator.html">generator</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li></ul><h3>Classes</h3><ul><li><a href="module-compiler-Compiler.html">Compiler</a></li><li><a href="module-decorator-Decorator.html">Decorator</a></li><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-types-TOC.html">TOC</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-compiler.html">compiler</a></li><li><a href="module-decorator.html">decorator</a></li><li><a href="module-generator.html">generator</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li><li><a href="module-watcher.html">watcher</a></li></ul><h3>Classes</h3><ul><li><a href="module-compiler-Compiler.html">Compiler</a></li><li><a href="module-decorator-Decorator.html">Decorator</a></li><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-types-TOC.html">TOC</a></li><li><a href="module-watcher-Watcher.html">Watcher</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Sat Jan 29 2022 17:38:41 GMT+0800 (China Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.7</a> on Mon Feb 07 2022 18:14:26 GMT+0800 (China Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

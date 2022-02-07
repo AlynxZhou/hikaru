@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Class: Processor</title>
+    <title>JSDoc: Class: Watcher</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Class: Processor</h1>
+    <h1 class="page-title">Class: Watcher</h1>
 
     
 
@@ -29,7 +29,7 @@
 <header>
     
         <h2><span class="attribs"><span class="type-signature"></span></span>
-            <span class="ancestors"><a href="module-processor.html">processor</a>~</span>Processor<span class="signature">(logger)</span><span class="type-signature"> &rarr; {Processor}</span></h2>
+            <span class="ancestors"><a href="module-watcher.html">watcher</a>~</span>Watcher<span class="signature">(logger, rawFileDependencies)</span><span class="type-signature"> &rarr; {Watcher}</span></h2>
         
     
 </header>
@@ -42,7 +42,7 @@
     
 
     
-    <h4 class="name" id="Processor"><span class="type-signature"></span>new Processor<span class="signature">(logger)</span><span class="type-signature"> &rarr; {Processor}</span></h4>
+    <h4 class="name" id="Watcher"><span class="type-signature"></span>new Watcher<span class="signature">(logger, rawFileDependencies)</span><span class="type-signature"> &rarr; {Watcher}</span></h4>
     
 
     
@@ -50,7 +50,7 @@
 
 
 <div class="description">
-    <p>Site processor.</p>
+    <p>File watcher with dependency handling.</p>
 </div>
 
 
@@ -106,6 +106,29 @@
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>rawFileDependencies</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"><p>File depenency tree.</p></td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -143,7 +166,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="processor.js.html">processor.js</a>, <a href="processor.js.html#line12">line 12</a>
+        <a href="watcher.js.html">watcher.js</a>, <a href="watcher.js.html#line16">line 16</a>
     </li></ul></dd>
     
 
@@ -179,7 +202,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Processor</span>
+<span class="param-type">Watcher</span>
 
 
     </dd>
@@ -217,7 +240,7 @@
     
 
     
-    <h4 class="name" id="process"><span class="type-signature">(async) </span>process<span class="signature">(site)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="register"><span class="type-signature"></span>register<span class="signature">(dirs, onAdded, onChanged, onRemoved, opts<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -225,7 +248,7 @@
 
 
 <div class="description">
-    <p>Process site.</p>
+    <p>Register handler for dirs.</p>
 </div>
 
 
@@ -249,6 +272,8 @@
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -261,23 +286,229 @@
 
         <tr>
             
-                <td class="name"><code>site</code></td>
+                <td class="name"><code>dirs</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">Site</span>
+<span class="param-type">String</span>
+|
+
+<span class="param-type">Array.&lt;String></span>
 
 
             
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Dirs to watch.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>onAdded</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">watchCallback</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
             <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>onChanged</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">watchCallback</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>onRemoved</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">watchCallback</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>opts</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Optional watch parameters.</p>
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>recursive</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    true
+                
+                </td>
+            
+
+            <td class="description last"><p>Whether watch files in subdirs.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -318,7 +549,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="processor.js.html">processor.js</a>, <a href="processor.js.html#line43">line 43</a>
+        <a href="watcher.js.html">watcher.js</a>, <a href="watcher.js.html#line79">line 79</a>
     </li></ul></dd>
     
 
@@ -354,7 +585,7 @@
     
 
     
-    <h4 class="name" id="register"><span class="type-signature"></span>register<span class="signature">(name, fn)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="unregister"><span class="type-signature"></span>unregister<span class="signature">(dirs)</span><span class="type-signature"></span></h4>
     
 
     
@@ -362,7 +593,7 @@
 
 
 <div class="description">
-    <p>Register a processor function.</p>
+    <p>Unregister dirs.</p>
 </div>
 
 
@@ -398,13 +629,16 @@
 
         <tr>
             
-                <td class="name"><code>name</code></td>
+                <td class="name"><code>dirs</code></td>
             
 
             <td class="type">
             
                 
 <span class="param-type">String</span>
+|
+
+<span class="param-type">Array.&lt;String></span>
 
 
             
@@ -414,30 +648,7 @@
 
             
 
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>fn</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">processCallback</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
+            <td class="description last"><p>Dirs to stop watching.</p></td>
         </tr>
 
     
@@ -478,7 +689,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="processor.js.html">processor.js</a>, <a href="processor.js.html#line32">line 32</a>
+        <a href="watcher.js.html">watcher.js</a>, <a href="watcher.js.html#line187">line 187</a>
     </li></ul></dd>
     
 
