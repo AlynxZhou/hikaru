@@ -212,7 +212,7 @@ class Watcher {
   }
 
   /**
-   * @description Unregister all watchers.
+   * @description Unregister all dirs.
    */
   close() {
     this.unregister([...this._.keys()]);
