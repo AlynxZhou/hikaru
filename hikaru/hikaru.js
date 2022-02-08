@@ -78,18 +78,17 @@ class Hikaru {
       this.logger.warn("Hikaru catched some error during running!");
       this.logger.error(error);
     });
-    process.on("SIGINT", () => {
+    const exit = () => {
       if (this.router != null) {
         this.router.close();
       }
-      process.exit(0);
-    });
-    process.on("SIGTERM", () => {
-      if (this.router != null) {
-        this.router.close();
+      if (this.watcher != null) {
+        this.watcher.close();
       }
       process.exit(0);
-    });
+    };
+    process.on("SIGINT", exit);
+    process.on("SIGTERM", exit);
     process.on("exit", () => {
       this.logger.debug("Hikaru is stopping...");
     });
@@ -215,9 +214,20 @@ class Hikaru {
     this.loadSite(siteDir);
     const rawFileDependencies = this.loadFileDependencies();
     this.watcher = new Watcher(this.logger, rawFileDependencies);
+    const reloadFileDependencies = () => {
+      const rawFileDependencies = this.loadFileDependencies();
+      this.watcher.updateFileDependencies(rawFileDependencies);
+    };
+    this.watcher.register(
+      this.site["siteConfig"]["themeDir"],
+      reloadFileDependencies,
+      reloadFileDependencies,
+      reloadFileDependencies,
+      {"customGlob": "file-dependencies.yaml"}
+    );
     try {
       // Modules must be loaded before others.
-      await this.loadModules();
+      this.loadModules();
       await Promise.all([
         this.loadPlugins(),
         this.loadScripts(),
@@ -351,17 +361,16 @@ class Hikaru {
    * @return {Object}
    */
   loadFileDependencies() {
+    const filepath = path.join(
+      this.site["siteConfig"]["themeDir"],
+      "file-dependencies.yaml"
+    );
+    this.logger.debug(`Hikaru is loading file dependencies in \`${
+      this.logger.cyan(filepath)
+    }\`...`);
     let rawFileDependencies;
     try {
-      rawFileDependencies = YAML.parse(
-        fse.readFileSync(
-          path.join(
-            this.site["siteConfig"]["themeDir"],
-            "file-dependencies.yaml"
-          ),
-          "utf8"
-        )
-      );
+      rawFileDependencies = YAML.parse(fse.readFileSync(filepath, "utf8"));
     } catch (error) {
       // Should work if theme author does not provide such a file.
       rawFileDependencies = {};
@@ -395,7 +404,7 @@ class Hikaru {
    * @private
    * @description Load Hikaru's internal module.
    */
-  async loadModules() {
+  loadModules() {
     this.renderer = new Renderer(
       this.logger,
       this.site["siteConfig"]["skipRender"]
@@ -416,7 +425,7 @@ class Hikaru {
    * @description Load local plugins for site,
    * which are installed into site's dir and starts with `hikaru-`.
    */
-  async loadPlugins() {
+  loadPlugins() {
     const sitePkgPath = path.join(this.site["siteDir"], "package.json");
     if (!fse.existsSync(sitePkgPath)) {
       return;
@@ -427,15 +436,15 @@ class Hikaru {
     if (plugins == null) {
       return;
     }
-    return Object.keys(plugins).filter((name) => {
+    return Promise.all(Object.keys(plugins).filter((name) => {
       return /^hikaru-/.test(name);
-    }).map(async (name) => {
+    }).map((name) => {
       const modulePath = path.join(this.site["siteDir"], "node_modules", name);
       this.logger.debug(`Hikaru is loading plugin \`${
         this.logger.blue(name)
       }\`...`);
       // Use absolute path to load from siteDir instead of program dir.
-      return await require(path.resolve(modulePath))({
+      return require(path.resolve(modulePath))({
         "logger": this.logger,
         "renderer": this.renderer,
         "compiler": this.compiler,
@@ -449,7 +458,7 @@ class Hikaru {
         "site": this.site,
         "watcher": this.watcher
       });
-    });
+    }));
   }
 
   /**
@@ -472,12 +481,12 @@ class Hikaru {
         this.site["siteConfig"]["themeDir"], "scripts", filename
       );
     }));
-    return scripts.map(async (filepath) => {
+    return Promise.all(scripts.map((filepath) => {
       this.logger.debug(`Hikaru is loading script \`${
         this.logger.cyan(filepath)
       }\`...`);
       // Use absolute path to load from siteDir instead of program dir.
-      return await require(path.resolve(filepath))({
+      return require(path.resolve(filepath))({
         "logger": this.logger,
         "renderer": this.renderer,
         "compiler": this.compiler,
@@ -491,7 +500,7 @@ class Hikaru {
         "site": this.site,
         "watcher": this.watcher
       });
-    });
+    }));
   }
 
   /**
@@ -543,9 +552,9 @@ class Hikaru {
       const language = YAML.parse(await fse.readFile(filepath, "utf8"));
       this.translator.register(lang, language);
     };
-    for (const filename of filenames) {
-      load(this.site["siteConfig"]["themeLangDir"], filename);
-    }
+    const all = Promise.all(filenames.map((filename) => {
+      return load(this.site["siteConfig"]["themeLangDir"], filename);
+    }));
     if (this.watcher != null) {
       const onAddedOrChanged = async (srcDir, srcPath) => {
         // We only register top level yaml files as language.
@@ -569,6 +578,7 @@ class Hikaru {
         {"recursive": false}
       );
     }
+    return all;
   }
 
   /**
@@ -590,9 +600,9 @@ class Hikaru {
       const fn = await this.compiler.compile(filepath);
       this.decorator.register(layout, fn);
     };
-    for (const filename of filenames) {
-      load(this.site["siteConfig"]["themeLayoutDir"], filename);
-    }
+    const all = Promise.all(filenames.map((filename) => {
+      return load(this.site["siteConfig"]["themeLayoutDir"], filename);
+    }));
     if (this.watcher != null) {
       const onAddedOrChanged = (srcDir, srcPath) => {
         // We only register top level template files as layout.
@@ -618,6 +628,7 @@ class Hikaru {
         // recursively, because our loaded layouts may depend on them.
       );
     }
+    return all;
   }
 
   /**
@@ -709,26 +720,33 @@ class Hikaru {
 
     this.processor.register("content resolving", (site) => {
       const all = site["posts"].concat(site["pages"]);
-      for (const p of all) {
-        const node = parseNode(p["content"]);
-        resolveHeaderIDs(node);
-        p["toc"] = genTOC(node);
-        resolveAnchors(
-          node,
-          site["siteConfig"]["baseURL"],
-          site["siteConfig"]["rootDir"],
-          p["docPath"]
-        );
-        resolveImages(node, site["siteConfig"]["rootDir"], p["docPath"]);
-        resolveCodeBlocks(node, site["siteConfig"]["highlight"]);
-        p["content"] = serializeNode(node);
-        if (p["content"].indexOf("<!--more-->") !== -1) {
-          const split = p["content"].split("<!--more-->");
-          p["excerpt"] = split[0];
-          p["more"] = split[1];
-          p["content"] = split.join("<a id=\"more\"></a>");
-        }
-      }
+      // Resolve contents may take a long time so we make it async and handle
+      // it with Promises.
+      return Promise.all(all.map((p) => {
+        return new Promise((resolve, reject) => {
+          setImmediate(() => {
+            const node = parseNode(p["content"]);
+            resolveHeaderIDs(node);
+            p["toc"] = genTOC(node);
+            resolveAnchors(
+              node,
+              site["siteConfig"]["baseURL"],
+              site["siteConfig"]["rootDir"],
+              p["docPath"]
+            );
+            resolveImages(node, site["siteConfig"]["rootDir"], p["docPath"]);
+            resolveCodeBlocks(node, site["siteConfig"]["highlight"]);
+            p["content"] = serializeNode(node);
+            if (p["content"].indexOf("<!--more-->") !== -1) {
+              const split = p["content"].split("<!--more-->");
+              p["excerpt"] = split[0];
+              p["more"] = split[1];
+              p["content"] = split.join("<a id=\"more\"></a>");
+            }
+            resolve();
+          });
+        });
+      }));
     });
   }
 

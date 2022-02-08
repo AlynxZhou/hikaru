@@ -170,4 +170,4 @@ Theme author should update this file for their `srcs/` and `layouts/` dir, for e
 
 Theme authors can ignore this file totally, Hikaru will continue work without complaining.
 
-Currently we cannot watch `site-config.yaml` and `theme-config.yaml`, if user modifies them, they should restart Hikaru.
+Currently we cannot watch `site-config.yaml` and `theme-config.yaml`, if user modifies them, they should restart Hikaru. `file-dependencies.yaml` is also not able to watch.

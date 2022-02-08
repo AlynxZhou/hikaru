@@ -6,7 +6,7 @@
 
 const path = require("path");
 const {File} = require("./types");
-const {isFunction} = require("./utils");
+const {getFullSrcPath, getFullDocPath, isFunction} = require("./utils");
 
 /**
  * @description File renderer.
@@ -54,11 +54,10 @@ class Renderer {
   /**
    * @description Render file with renderer function.
    * @param {File} input
-   * @return {File} Rendered file.
+   * @return {Promise<File[]>} Promise of rendered files.
    */
-  async render(input) {
+  render(input) {
     const srcExt = path.extname(input["srcPath"]);
-    const results = [];
     // It might be OK to allow renderer for binary file, but why?
     // It has no `raw`, `text` and why you want to handle binary with a SSG?
     // So better to just skip binary here.
@@ -66,7 +65,7 @@ class Renderer {
       this._.has(srcExt) && !input["binary"] &&
       !this.skipRenderSet.has(input["srcPath"])
     ) {
-      for (const handler of this._.get(srcExt).values()) {
+      return Promise.all([...this._.get(srcExt).values()].map((handler) => {
         const output = new File(input);
         const docExt = handler["docExt"];
         if (docExt !== srcExt) {
@@ -74,30 +73,28 @@ class Renderer {
           const basename = path.basename(output["srcPath"], srcExt);
           output["docPath"] = path.join(dirname, `${basename}${docExt}`);
           this.logger.debug(`Hikaru is rendering \`${
-            this.logger.cyan(output["srcPath"])
+            this.logger.cyan(getFullSrcPath(output))
           }\` to \`${
-            this.logger.cyan(output["docPath"])
+            this.logger.cyan(getFullDocPath(output))
           }\`...`);
         } else {
           output["docPath"] = output["srcPath"];
           this.logger.debug(`Hikaru is rendering \`${
-            this.logger.cyan(output["srcPath"])
+            this.logger.cyan(getFullDocPath(output))
           }\`...`);
         }
-        results.push(await handler["fn"](output));
-      }
-    } else {
-      const output = new File(input);
-      output["docPath"] = output["srcPath"];
-      // this.logger.debug(`Hikaru is rendering \`${
-      //   this.logger.cyan(output['srcPath'])
-      // }\`...`)
-      // For binary files, this is useless,
-      // but we have to keep this line for other text files without renderer.
-      output["content"] = output["text"];
-      results.push(output);
+        return handler["fn"](output);
+      }));
     }
-    return results;
+    const output = new File(input);
+    output["docPath"] = output["srcPath"];
+    // this.logger.debug(`Hikaru is rendering \`${
+    //   this.logger.cyan(output['srcPath'])
+    // }\`...`)
+    // For binary files, this is useless,
+    // but we have to keep this line for other text files without renderer.
+    output["content"] = output["text"];
+    return [output];
   }
 }
 

@@ -42,22 +42,19 @@ class Generator {
    * @return {File[]} Generated files.
    */
   async generate(site) {
-    let results = [];
-    for (const {name, fn} of this._) {
+    const all = await Promise.all(this._.map(({name, fn}) => {
       this.logger.debug(`Hikaru is generating \`${
         this.logger.blue(name)
       }\`...`);
-      const res = await fn(site);
-      if (res == null) {
-        continue;
-      }
-      if (!isArray(res)) {
-        results.push(res);
-      } else {
-        results = results.concat(res);
-      }
-    }
-    return results;
+      return fn(site);
+    }));
+    return all.filter((cur) => {
+      return cur != null;
+    }).map((cur) => {
+      return isArray(cur) ? cur : [cur];
+    }).reduce((acc, cur, idx, src) => {
+      return acc.concat(cur);
+    }, []);
   }
 }
 

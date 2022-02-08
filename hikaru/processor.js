@@ -39,14 +39,16 @@ class Processor {
   /**
    * @description Process site.
    * @param {Site} site
+   * @return {Promise}
    */
-  async process(site) {
-    for (const {name, fn} of this._) {
+  process(site) {
+    // Process maybe async.
+    return Promise.all(this._.map(({name, fn}) => {
       this.logger.debug(`Hikaru is processing \`${
         this.logger.blue(name)
       }\`...`);
-      await fn(site);
-    }
+      return fn(site);
+    }));
   }
 }
 

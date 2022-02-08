@@ -51,6 +51,14 @@ class Watcher {
   }
 
   /**
+   * @description Update file dependencies.
+   * @param {Object} rawFileDependencies File depenency tree.
+   */
+  updateFileDependencies(rawFileDependencies) {
+    this.fileDependencies = this.reverseFileDependencies(rawFileDependencies);
+  }
+
+  /**
    * @callback watchCallback
    * @param {String} srcDir
    * @param {String} srcPath
@@ -63,6 +71,7 @@ class Watcher {
    * @param {watchCallback} onRemoved
    * @param {Object} [opts] Optional watch parameters.
    * @param {Boolean} [opts.recursive=true] Whether watch files in subdirs.
+   * @param {Boolean} [opts.customGlob] Custom glob pass to chokidar.
    */
   register(dirs, onAdded, onChanged, onRemoved, opts = {}) {
     if (dirs == null) {
@@ -83,8 +92,9 @@ class Watcher {
         "handlers": {onAdded, onChanged, onRemoved}
       });
       // Globs must not contain windows spearators.
+      const glob = opts["recursive"] ? "**/*" : "*";
       const watcher = chokidar.watch(
-        opts["recursive"] ? "**/*" : "*",
+        opts["customGlob"] || glob,
         {"cwd": srcDir, "ignoreInitial": true}
       );
       this._.get(srcDir)["watchers"].push(watcher);
@@ -199,6 +209,13 @@ class Watcher {
       }
       this._.delete(srcDir);
     }
+  }
+
+  /**
+   * @description Unregister all watchers.
+   */
+  close() {
+    this.unregister([...this._.keys()]);
   }
 }
 

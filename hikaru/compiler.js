@@ -51,7 +51,7 @@ class Compiler {
     }
     const ext = path.extname(filepath);
     const handler = this._.get(ext);
-    return await handler["fn"](filepath, content);
+    return handler["fn"](filepath, content);
   }
 }
 

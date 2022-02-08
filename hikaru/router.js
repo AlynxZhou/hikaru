@@ -65,6 +65,7 @@ class Router {
     this.port = null;
     this.listening = false;
     this.watcher = watcher;
+    this.queuedFlush = false;
     this.getURL = getURLFn(
       this.site["siteConfig"]["baseURL"], this.site["siteConfig"]["rootDir"]
     );
@@ -219,6 +220,26 @@ class Router {
 
   /**
    * @private
+   * @description Queue operations and handle only once.
+   */
+  flush() {
+    if (!this.queuedFlush) {
+      this.queuedFlush = true;
+      setImmediate(async () => {
+        this.queuedFlush = false;
+        await this.handle();
+        this.buildServerRoutes(
+          this.site["assets"]
+            .concat(this.site["posts"])
+            .concat(this.site["pages"])
+            .concat(this.site["files"])
+        );
+      });
+    }
+  }
+
+  /**
+   * @private
    * @description Watch all src files.
    */
   watchAll() {
@@ -230,14 +251,7 @@ class Router {
         this.site["siteConfig"]["docDir"], srcDir, srcPath
       );
       await this.loadFile(newFile);
-      // TODO: put files in a queue and flush queue only once.
-      await this.handle();
-      this.buildServerRoutes(
-        this.site["assets"]
-          .concat(this.site["posts"])
-          .concat(this.site["pages"])
-          .concat(this.site["files"])
-      );
+      this.flush();
     };
     this.watcher.register(
       [
@@ -250,17 +264,10 @@ class Router {
         const file = new File(
           this.site["siteConfig"]["docDir"], srcDir, srcPath
         );
-        // TODO: put files in a queue and flush queue only once.
         for (const key of Site.arrayKeys) {
           delSite(this.site, key, file);
         }
-        await this.handle();
-        this.buildServerRoutes(
-          this.site["assets"]
-            .concat(this.site["posts"])
-            .concat(this.site["pages"])
-            .concat(this.site["files"])
-        );
+        this.flush();
       }
     );
   }
