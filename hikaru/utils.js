@@ -560,7 +560,7 @@ const getFullDocPath = (file) => {
  * @param {Object} [node] If specified, given fragment will be parsed as if
  * it was set to the context element's `innerHTML` property.
  * @param {String} html HTML string to parse.
- * @param {Object} [options] parse5 options.\
+ * @param {Object} [options] parse5 options.
  * @return {Object}
  */
 const parseNode = (node, html, options) => {
@@ -868,14 +868,14 @@ let hljsAliases = null;
 
 /**
  * @private
- * @return {Object} Key is alias, value is hljs language name.
+ * @return {Map} Key is alias, value is hljs language name.
  */
 const hljsLoadAliases = () => {
-  const hljsAliases = {};
+  const hljsAliases = new Map();
   const languages = hljs.listLanguages();
   for (const lang of languages) {
     // First add language itself.
-    hljsAliases[lang] = lang;
+    hljsAliases.set(lang, lang);
     // Then register it.
     const hljsModule = require(`highlight.js/lib/languages/${lang}`);
     hljs.registerLanguage(lang, hljsModule);
@@ -883,7 +883,7 @@ const hljsLoadAliases = () => {
     const aliases = hljsModule(hljs)["aliases"];
     if (aliases != null) {
       for (const alias of aliases) {
-        hljsAliases[alias] = lang;
+        hljsAliases.set(alias, lang);
       }
     }
   }
@@ -950,10 +950,10 @@ const resolveCodeBlocks = (node, hlOpts = {}) => {
           lang === "plaintext" ||
           lang === "nohighlight") {
         data = {"value": escapedCode};
-      } else if (hljsAliases[lang] != null) {
+      } else if (hljsAliases.has(lang)) {
         // If user gives a reasonable language hint (but maybe incorrect),
         // we use it, because auto detect all code is too slow.
-        data = hljs.highlight(hljsAliases[lang], code);
+        data = hljs.highlight(hljsAliases.get(lang), code);
       } else {
         // No language hint, or just not resonable.
         data = hljs.highlightAuto(code);

@@ -18,7 +18,7 @@ class Compiler {
    */
   constructor(logger) {
     this.logger = logger;
-    this._ = {};
+    this._ = new Map();
   }
 
   /**
@@ -36,7 +36,7 @@ class Compiler {
     if (!isFunction(fn)) {
       throw new TypeError("fn must be a Function");
     }
-    this._[ext] = {ext, fn};
+    this._.set(ext, {ext, fn});
   }
 
   /**
@@ -50,7 +50,7 @@ class Compiler {
       content = await fse.readFile(filepath, "utf8");
     }
     const ext = path.extname(filepath);
-    const handler = this._[ext];
+    const handler = this._.get(ext);
     return await handler["fn"](filepath, content);
   }
 }

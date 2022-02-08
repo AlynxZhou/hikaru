@@ -18,7 +18,7 @@ class Translator {
    */
   constructor(logger) {
     this.logger = logger;
-    this._ = {};
+    this._ = new Map();
   }
 
   /**
@@ -34,10 +34,10 @@ class Translator {
     }
     if (isArray(lang)) {
       for (const l of lang) {
-        this._[l] = obj;
+        this._.set(l, obj);
       }
     } else {
-      this._[lang] = obj;
+      this._.set(lang, obj);
     }
   }
 
@@ -48,10 +48,10 @@ class Translator {
   unregister(lang) {
     if (isArray(lang)) {
       for (const l of lang) {
-        delete this._[l];
+        this._.delete(l);
       }
     } else {
-      delete this._[lang];
+      this._.delete(lang);
     }
   }
 
@@ -60,7 +60,7 @@ class Translator {
    * @return {String[]}
    */
   list() {
-    return Object.keys(this._);
+    return [...this._.keys()];
   }
 
   /**
@@ -78,12 +78,12 @@ class Translator {
   getTranslateFn(lang) {
     return (key, ...args) => {
       const keys = key.toString().trim().split(".");
-      let res = this._[lang];
+      let res = this._.get(lang);
       if (res == null) {
         this.logger.info(`Hikaru cannot find language \`${
           this.logger.blue(lang)
         }\`, using default.`);
-        res = this._["default"];
+        res = this._.get("default");
       }
       for (const k of keys) {
         if (res[k] == null) {

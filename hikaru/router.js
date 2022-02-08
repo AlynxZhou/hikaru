@@ -59,7 +59,7 @@ class Router {
     this.decorator = decorator;
     this.translator = translator;
     this.site = site;
-    this._ = {};
+    this._ = new Map();
     this.server = null;
     this.ip = null;
     this.port = null;
@@ -209,11 +209,11 @@ class Router {
    * @param {File[]} allFiles All built files.
    */
   buildServerRoutes(allFiles) {
-    this._ = {};
+    this._.clear();
     for (const f of allFiles) {
       const key = this.getPath(f["docPath"]);
       this.logger.debug(`Hikaru is serving \`${this.logger.cyan(key)}\`...`);
-      this._[key] = f;
+      this._.set(key, f);
     }
   }
 
@@ -289,15 +289,15 @@ class Router {
     this.ip = ip;
     this.port = port;
     // Use custom 404 file if available.
-    const real404File = this._[this.getPath("404.html")] || new File({
+    const real404File = this._.get(this.getPath("404.html")) || new File({
       "content": default404,
       "docPath": this.getPath("404.html")
     });
     this.server = http.createServer(async (request, response) => {
       // Remove query string.
       const pathname = request["url"].split(/[?#]/)[0];
-      const code = this._[pathname] != null ? 200 : 404;
-      const file = this._[pathname] || real404File;
+      const code = this._.has(pathname) ? 200 : 404;
+      const file = this._.get(pathname) || real404File;
       this.logger.log(`${
         code === 200 ? this.logger.blue(code) : this.logger.yellow(code)
       } ${this.logger.cyan(pathname)}`);

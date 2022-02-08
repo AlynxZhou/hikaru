@@ -17,7 +17,7 @@ describe("renderer", () => {
         file["content"] = marked.parse(file["text"]);
         return file;
       });
-      expect(renderer._).to.have.property(".md");
+      expect(renderer._).to.have.all.keys(".md");
     });
   });
 

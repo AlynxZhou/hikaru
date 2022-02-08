@@ -30,7 +30,7 @@ describe("compiler", () => {
         };
       };
       compiler.register(".njk", njkCompiler);
-      expect(compiler._).to.have.property(".njk");
+      expect(compiler._).to.have.all.keys(".njk");
     });
 
     it("should compile nunjucks", async () => {

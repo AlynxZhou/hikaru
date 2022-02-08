@@ -16,7 +16,7 @@ describe("translator", () => {
           "more": "%d 只蛤蟆 %d 张嘴。"
         }
       });
-      expect(translator._).to.have.property("zh-Hans");
+      expect(translator._).to.have.all.keys("zh-Hans");
     });
 
     it("should register the same language with an array", () => {
@@ -26,8 +26,8 @@ describe("translator", () => {
           "more": "%d toads have %d mouses."
         }
       });
-      expect(translator._).to.have.property("en");
-      expect(translator._).to.have.property("default");
+      expect(translator._).to.include.all.keys("en", "default");
+      expect(translator._.get("default")).to.equal(translator._.get("en"));
     });
   });
 

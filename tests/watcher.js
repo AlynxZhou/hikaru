@@ -15,8 +15,8 @@ describe("watcher", () => {
 
   describe("reverseFileDependencies", () => {
     it("should reverse file dependency tree", () => {
-      expect(JSON.stringify(watcher.fileDependencies)).to.equal(
-        "{\"/tmp\":{\"2.txt\":[\"1.txt\"]}}"
+      expect(watcher.fileDependencies).to.deep.equal(
+        new Map([["/tmp", new Map([["2.txt", new Set(["1.txt"])]])]])
       );
     });
   });
@@ -24,7 +24,7 @@ describe("watcher", () => {
   describe("getDependencies", () => {
     it("should return all files that needs to update", () => {
       const dependencies = watcher.getDependencies("/tmp", "2.txt");
-      expect(JSON.stringify(dependencies)).to.equal("[\"1.txt\"]");
+      expect(dependencies).to.deep.equal(new Set(["1.txt"]));
     });
   });
 });

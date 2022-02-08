@@ -37,7 +37,8 @@ describe("decorator", () => {
         "example.njk", "<span>{{ content }}</span>"
       );
       decorator.register("example", result);
-      expect(decorator._["example"]["fn"]).to.be.a("function");
+      expect(decorator._).have.all.keys("example");
+      expect(decorator._.get("example")["fn"]).to.be.a("function");
     });
   });
 

@@ -19,8 +19,8 @@ class Renderer {
    */
   constructor(logger, skipRenderList = []) {
     this.logger = logger;
-    this._ = {};
-    this.skipRenderList = skipRenderList;
+    this._ = new Map();
+    this.skipRenderSet = new Set(skipRenderList);
   }
 
   /**
@@ -42,13 +42,13 @@ class Renderer {
     } else if (!isFunction(fn)) {
       throw new TypeError("fn must be a Function");
     }
-    if (this._[srcExt] == null) {
-      this._[srcExt] = {};
+    if (!this._.has(srcExt)) {
+      this._.set(srcExt, new Map());
     }
-    // Use another object for docExt,
+    // Use another Map for docExt,
     // so renderer for the same src and doc in plugin
     // can replace internal renderer.
-    this._[srcExt][docExt] = {srcExt, docExt, fn};
+    this._.get(srcExt).set(docExt, {srcExt, docExt, fn});
   }
 
   /**
@@ -63,10 +63,10 @@ class Renderer {
     // It has no `raw`, `text` and why you want to handle binary with a SSG?
     // So better to just skip binary here.
     if (
-      this._[srcExt] != null && !input["binary"] &&
-      !this.skipRenderList.includes(input["srcPath"])
+      this._.has(srcExt) && !input["binary"] &&
+      !this.skipRenderSet.has(input["srcPath"])
     ) {
-      for (const handler of Object.values(this._[srcExt])) {
+      for (const handler of this._.get(srcExt).values()) {
         const output = new File(input);
         const docExt = handler["docExt"];
         if (docExt !== srcExt) {

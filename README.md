@@ -98,6 +98,40 @@ $ hikaru serve
 $ hikaru build
 ```
 
+# Contribute
+
+If you want to contribute, please follow my coding style.
+
+Most things can be fixed by standardx and custom eslint rules, so please run `npm test` before commit, and use `npx standardx --fix bin/* hikaru/*.js tests/*.js` to fix most problems, and fix remaining problems that cannot pass tests manually.
+
+I'll list personal flavors that cannot be handled by eslint here. If some things are not listed, follow existing code.
+
+## Arrays, Objects or Sets, Maps
+
+If we have some simple types and we want to exclude same elements, just use Set.
+
+If we want a dictionary to store keys and values, and keys are not fixed, just use Map.
+
+Otherwise, use Arrays and Objects, for example lists, queues or dictionaries that have fixed keys.
+
+If we got parsed Objects, for example options from YAML files, don't convert them into Maps except we need to do other operations on them.
+
+## `for...of`, `for...in`, `.forEach()`, `.map()`
+
+If we are not only doing some operations to array elements but also caring about their return values, just use `.map()`.
+
+If we just do some opeartions to array elements but not caring about return values, don't use `.map()`.
+
+If we are iterating Objects, use `for...in`.
+
+Otherwise, use `for...of`.
+
+Never use `.forEach()` unless you cannot use `for...of`, they are almost the same and we learn `for` in the first coding lesson so why not `for`?
+
+## `class` or `.prototype`
+
+I just prefer `class`.
+
 # More
 
 Docs: <https://hikaru.alynx.one/>
@@ -116,6 +150,7 @@ My blog built with Hikaru and ARIA: [喵's StackHarbor](https://sh.alynx.one/)
 
 Since Hikaru v1.2.11, nib was dropped because [its the only dependency has NodeJS 14 warnings](https://github.com/stylus/nib/issues/347), and many nib features can be done in newer CSS. So it was splitted into a single plugin.
 
-If you need nib for your theme, please install [hikaru-renderer-stylus-nib](https://github.com/AlynxZhou/hikaru-renderer-stylus-nib/) to your site.
+Since Hikaru v1.10.0, Stylus was also dropped, now Hikaru does not contain any CSS preprocessors.
 
-I may re-add nib into Hikaru if they solve the issue.
+If you need Stylus and nib for your theme, please install [hikaru-renderer-stylus-nib](https://github.com/AlynxZhou/hikaru-renderer-stylus-nib/) to your site.
+

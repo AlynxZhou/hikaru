@@ -21,9 +21,8 @@ class Watcher {
    */
   constructor(logger, rawFileDependencies) {
     this.logger = logger;
-    this._ = {};
+    this._ = new Map();
     this.fileDependencies = this.reverseFileDependencies(rawFileDependencies);
-    this.dirs = null;
     this.queue = [];
     this.handling = false;
   }
@@ -32,28 +31,19 @@ class Watcher {
    * @private
    * @description Parse and reverse dependency tree for faster look up.
    * @param {Object} rawFileDependencies File depenency tree.
-   * @return {Object} Reversed file dependency tree.
+   * @return {Map} Reversed file dependency tree.
    */
   reverseFileDependencies(rawFileDependencies) {
     // Let's revert dependency tree for fast look up.
-    const fileDependencies = {};
+    const fileDependencies = new Map();
     for (const srcDir in rawFileDependencies) {
-      fileDependencies[srcDir] = {};
+      fileDependencies.set(srcDir, new Map());
       for (const k in rawFileDependencies[srcDir]) {
         for (const v of rawFileDependencies[srcDir][k]) {
-          if (fileDependencies[srcDir][v] == null) {
-            fileDependencies[srcDir][v] = [];
+          if (!fileDependencies.get(srcDir).has(v)) {
+            fileDependencies.get(srcDir).set(v, new Set());
           }
-          let found = false;
-          for (const p of fileDependencies[srcDir][v]) {
-            if (p === k) {
-              found = true;
-              break;
-            }
-          }
-          if (!found) {
-            fileDependencies[srcDir][v].push(k);
-          }
+          fileDependencies.get(srcDir).get(v).add(k);
         }
       }
     }
@@ -85,19 +75,19 @@ class Watcher {
       opts["recursive"] = true;
     }
     for (const srcDir of dirs) {
-      if (this._[srcDir] != null) {
+      if (!this._.has(srcDir)) {
         this.unregister(srcDir);
       }
-      this._[srcDir] = {
+      this._.set(srcDir, {
         "watchers": [],
         "handlers": {onAdded, onChanged, onRemoved}
-      };
+      });
       // Globs must not contain windows spearators.
       const watcher = chokidar.watch(
         opts["recursive"] ? "**/*" : "*",
         {"cwd": srcDir, "ignoreInitial": true}
       );
-      this._[srcDir]["watchers"].push(watcher);
+      this._.get(srcDir)["watchers"].push(watcher);
       for (const event of ["add", "change", "unlink"]) {
         watcher.on(event, (srcPath) => {
           this.logger.debug(
@@ -126,16 +116,22 @@ class Watcher {
    * @private
    * @description Look up dependency tree recursively to collect all affected
    * files.
-   * @return {String[]}
+   * @return {Set}
    */
   getDependencies(srcDir, srcPath) {
-    if (this.fileDependencies[srcDir] == null ||
-      this.fileDependencies[srcDir][srcPath] == null) {
-      return [];
+    const res = new Set();
+    if (this.fileDependencies.has(srcDir) &&
+      this.fileDependencies.get(srcDir).has(srcPath)) {
+      const subset = this.fileDependencies.get(srcDir).get(srcPath);
+      for (const e of subset) {
+        res.add(e);
+      }
     }
-    let res = [].concat(this.fileDependencies[srcDir][srcPath]);
-    for (const p of this.fileDependencies[srcDir][srcPath]) {
-      res = res.concat(this.getDependencies(srcDir, p));
+    for (const p of res) {
+      const subres = this.getDependencies(srcDir, p);
+      for (const e of subres) {
+        res.add(e);
+      }
     }
     return res;
   }
@@ -150,10 +146,14 @@ class Watcher {
     this.handling = true;
     let e;
     while ((e = this.queue.shift()) != null) {
-      if (this._[e["srcDir"]] == null) {
+      if (!this._.has(e["srcDir"])) {
         continue;
       }
-      const {onAdded, onChanged, onRemoved} = this._[e["srcDir"]]["handlers"];
+      const {
+        onAdded,
+        onChanged,
+        onRemoved
+      } = this._.get(e["srcDir"])["handlers"];
       if (e["event"] === "unlink") {
         if (onRemoved != null) {
           onRemoved(e["srcDir"], e["srcPath"]);
@@ -168,9 +168,9 @@ class Watcher {
         }
       }
       // Call changed on all dependencies.
-      const array = this.getDependencies(e["srcDir"], e["srcPath"]);
+      const set = this.getDependencies(e["srcDir"], e["srcPath"]);
       if (onChanged != null) {
-        for (const p of array) {
+        for (const p of set) {
           onChanged(e["srcDir"], p);
         }
       }
@@ -190,14 +190,14 @@ class Watcher {
       dirs = [dirs];
     }
     for (const srcDir of dirs) {
-      if (this._[srcDir] == null) {
+      if (!this._.has(srcDir)) {
         continue;
       }
       let w;
-      while ((w = this._[srcDir]["watchers"].shift()) != null) {
+      while ((w = this._.get(srcDir)["watchers"].shift()) != null) {
         w.close();
       }
-      this._[srcDir] = null;
+      this._.delete(srcDir);
     }
   }
 }

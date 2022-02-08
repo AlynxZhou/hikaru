@@ -19,7 +19,7 @@ class Decorator {
   constructor(logger, compiler) {
     this.logger = logger;
     this.compiler = compiler;
-    this._ = {};
+    this._ = new Map();
   }
 
   /**
@@ -37,7 +37,7 @@ class Decorator {
     if (!(isFunction(fn) || isString(fn))) {
       throw new TypeError("fn must be a Function or filepath");
     }
-    this._[layout] = {layout, fn};
+    this._.set(layout, {layout, fn});
   }
 
   /**
@@ -61,7 +61,7 @@ class Decorator {
       }\` with layout \`${
         this.logger.blue(layout)
       }\`...`);
-      const handler = this._[layout];
+      const handler = this._.get(layout);
       if (handler == null) {
         throw new Error(`Decorator for \`${layout}\` is not registered!`);
       }
@@ -79,7 +79,7 @@ class Decorator {
    * @return {String[]}
    */
   list() {
-    return Object.keys(this._);
+    return [...this._.keys()];
   }
 
   /**
@@ -93,7 +93,7 @@ class Decorator {
     if (file["layout"] == null) {
       return null;
     }
-    if (this._[file["layout"]] == null) {
+    if (!this._.has(file["layout"])) {
       return "page";
     }
     return file["layout"];

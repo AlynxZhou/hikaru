@@ -51,6 +51,8 @@ Hikaru works with templates, it supports Nunjucks, and can support others by reg
 
 Templates in subdir won't be treat as layouts so you can use them as modules.
 
+Some templating engines have a root dir that all include commands is relative to this path, typically Hikaru will set it to `layouts/` dir.
+
 - `index`: Site index page.
 - `archives`: Site archive page.
 - `tags`: This page shows all tags of this site.
