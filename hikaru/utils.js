@@ -105,10 +105,11 @@ const matchFiles = (pattern, opts = {}) => {
     opts["recursive"] = true;
   }
   opts["workDir"] = opts["workDir"] || ".";
-  const isMatch = picomatch(pattern);
+  const isMatch = picomatch(pattern, {"dot": !opts["ignoreHidden"]});
   const matchWithHidden = (entry) => {
     return isMatch(entry["path"]);
   };
+  // We don't use picomatch for hidden files, basename is more reliable.
   const matchWithoutHidden = (entry) => {
     const basename = path.basename(entry["path"]);
     return !basename.startsWith(".") && matchWithHidden(entry);
