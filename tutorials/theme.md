@@ -162,11 +162,14 @@ dir2:
   file4:
     # Path relative to dir2.
     - file5 included in file4
+    - glob that matches files included in file4
 ```
+
+You can use globs to describe file dependencies since v1.11.0, it's only allowed in lists (the third level of this YAML).
 
 Theme author should update this file for their `srcs/` and `layouts/` dir, for example please check [how hikaru-themes-aria uses it](https://github.com/AlynxZhou/hikaru-theme-aria/blob/master/file-dependencies.yaml).
 
-**WARNING**: Hikaru does not check for circular dependency, theme authors should check their files to prevent circular dependency.
+**WARNING**: Although Hikaru checks circular dependency since v1.11.0, theme authors should also check it to prevent unpredicted problems.
 
 Theme authors can ignore this file totally, Hikaru will continue work without complaining.
 

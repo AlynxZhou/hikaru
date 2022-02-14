@@ -6,7 +6,9 @@
 
 const path = require("path");
 
+const isGlob = require("is-glob");
 const chokidar = require("chokidar");
+const picomatch = require("picomatch");
 
 const {isArray, isString} = require("./utils");
 
@@ -22,7 +24,11 @@ class Watcher {
   constructor(logger, rawFileDependencies) {
     this.logger = logger;
     this._ = new Map();
-    this.fileDependencies = this.reverseFileDependencies(rawFileDependencies);
+    this.fileDependencies = null;
+    // We cache compiled globs here
+    // so we don't need to recompile them again and again.
+    this.dependencyGlobs = null;
+    this.updateFileDependencies(rawFileDependencies);
     this.queue = [];
     this.handling = false;
   }
@@ -51,11 +57,29 @@ class Watcher {
   }
 
   /**
+   * @private
+   * @description Compile globs in dependency tree.
+   * @return {Map} Key is glob pattern string, value is compiled function.
+   */
+  compileDependenyGlobs() {
+    const dependencyGlobs = new Map();
+    for (const srcDir of this.fileDependencies.keys()) {
+      for (const dep of this.fileDependencies.get(srcDir).keys()) {
+        if (isGlob(dep) && !dependencyGlobs.has(dep)) {
+          dependencyGlobs.set(dep, picomatch(dep));
+        }
+      }
+    }
+    return dependencyGlobs;
+  }
+
+  /**
    * @description Update file dependencies.
    * @param {Object} rawFileDependencies File depenency tree.
    */
   updateFileDependencies(rawFileDependencies) {
     this.fileDependencies = this.reverseFileDependencies(rawFileDependencies);
+    this.dependencyGlobs = this.compileDependenyGlobs();
   }
 
   /**
@@ -128,17 +152,29 @@ class Watcher {
    * files.
    * @return {Set}
    */
-  getDependencies(srcDir, srcPath) {
+  getDependencies(srcDir, srcPath, checkedPaths = new Set()) {
     const res = new Set();
-    if (this.fileDependencies.has(srcDir) &&
-      this.fileDependencies.get(srcDir).has(srcPath)) {
-      const subset = this.fileDependencies.get(srcDir).get(srcPath);
-      for (const e of subset) {
-        res.add(e);
+    if (this.fileDependencies.has(srcDir)) {
+      for (const dep of this.fileDependencies.get(srcDir).keys()) {
+        if (srcPath === dep ||
+          (this.dependencyGlobs.has(dep) &&
+            this.dependencyGlobs.get(dep)(srcPath))) {
+          checkedPaths.add(srcPath);
+          const subset = this.fileDependencies.get(srcDir).get(dep);
+          for (const e of subset) {
+            res.add(e);
+          }
+        }
       }
     }
     for (const p of res) {
-      const subres = this.getDependencies(srcDir, p);
+      // Break circular dependencies here.
+      if (checkedPaths.has(p)) {
+        continue;
+      }
+      // I'm not good at handling recursive functions,
+      // but this time it's different! I did a good job!
+      const subres = this.getDependencies(srcDir, p, checkedPaths);
       for (const e of subres) {
         res.add(e);
       }
@@ -179,6 +215,8 @@ class Watcher {
       }
       // Call changed on all dependencies.
       const set = this.getDependencies(e["srcDir"], e["srcPath"]);
+      // Break potential circular dependencies.
+      set.delete(e["srcPath"]);
       if (onChanged != null) {
         for (const p of set) {
           onChanged(e["srcDir"], p);
