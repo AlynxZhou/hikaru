@@ -55,6 +55,8 @@ class Hikaru {
    * for router.
    * @param {Number} [opts.port=2333] Alternative listening port for router.
    * @property {Logger} logger
+   * @property {Watcher} watcher
+   * @property {Router} router
    * @property {Renderer} renderer
    * @property {Processor} processor
    * @property {Generator} generator
@@ -79,11 +81,11 @@ class Hikaru {
       this.logger.error(error);
     });
     const exit = () => {
-      if (this.router != null) {
-        this.router.close();
-      }
       if (this.watcher != null) {
         this.watcher.close();
+      }
+      if (this.router != null) {
+        this.router.close();
       }
       process.exit(0);
     };
@@ -166,7 +168,7 @@ class Hikaru {
     this.logger.debug(`Hikaru is cleaning \`${
       this.logger.cyan(path.join(siteConfig["docDir"], path.sep))
     }\`...`);
-    return fse.emptyDir(siteConfig["docDir"]).catch((error) => {
+    fse.emptyDir(siteConfig["docDir"]).catch((error) => {
       this.logger.warn("Hikaru catched some error during cleaning!");
       this.logger.error(error);
     });
@@ -428,13 +430,13 @@ class Hikaru {
   loadPlugins() {
     const sitePkgPath = path.join(this.site["siteDir"], "package.json");
     if (!fse.existsSync(sitePkgPath)) {
-      return;
+      return null;
     }
     const plugins = JSON.parse(
       fse.readFileSync(sitePkgPath, "utf8")
     )["dependencies"];
     if (plugins == null) {
-      return;
+      return null;
     }
     return Promise.all(Object.keys(plugins).filter((name) => {
       return /^hikaru-/.test(name);
@@ -720,33 +722,28 @@ class Hikaru {
 
     this.processor.register("content resolving", (site) => {
       const all = site["posts"].concat(site["pages"]);
-      // Resolve contents may take a long time so we make it async and handle
-      // it with Promises.
-      return Promise.all(all.map((p) => {
-        return new Promise((resolve, reject) => {
-          setImmediate(() => {
-            const node = parseNode(p["content"]);
-            resolveHeaderIDs(node);
-            p["toc"] = genTOC(node);
-            resolveAnchors(
-              node,
-              site["siteConfig"]["baseURL"],
-              site["siteConfig"]["rootDir"],
-              p["docPath"]
-            );
-            resolveImages(node, site["siteConfig"]["rootDir"], p["docPath"]);
-            resolveCodeBlocks(node, site["siteConfig"]["highlight"]);
-            p["content"] = serializeNode(node);
-            if (p["content"].indexOf("<!--more-->") !== -1) {
-              const split = p["content"].split("<!--more-->");
-              p["excerpt"] = split[0];
-              p["more"] = split[1];
-              p["content"] = split.join("<a id=\"more\"></a>");
-            }
-            resolve();
-          });
-        });
-      }));
+      // It turns out that single threaded resolving works faster,
+      // and takes less memory, because Node.js Workers needs to copy message.
+      for (const p of all) {
+        const node = parseNode(p["content"]);
+        resolveHeaderIDs(node);
+        p["toc"] = genTOC(node);
+        resolveAnchors(
+          node,
+          site["siteConfig"]["baseURL"],
+          site["siteConfig"]["rootDir"],
+          p["docPath"]
+        );
+        resolveImages(node, site["siteConfig"]["rootDir"], p["docPath"]);
+        resolveCodeBlocks(node, site["siteConfig"]["highlight"]);
+        p["content"] = serializeNode(node);
+        if (p["content"].indexOf("<!--more-->") !== -1) {
+          const split = p["content"].split("<!--more-->");
+          p["excerpt"] = split[0];
+          p["more"] = split[1];
+          p["content"] = split.join("<a id=\"more\"></a>");
+        }
+      }
     });
   }
 

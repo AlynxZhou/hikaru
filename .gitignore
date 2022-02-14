@@ -61,5 +61,6 @@ typings/
 .next
 
 package-lock.json
+*.0x/
 libs/
 hikarujs-*.tgz

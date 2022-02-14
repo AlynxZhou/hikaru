@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build:docs": "jsdoc -c .jsdoc.json -R README.md -u tutorials/ && echo \"hikaru.alynx.one\" > docs/CNAME && touch docs/.nojekyll && git add -A docs/ && git commit -m \"Updated docs.\"",
+    "pref": "0x -o bin/hikaru build",
     "test": "standardx bin/* hikaru/*.js tests/*.js && mocha tests/index.js",
     "preversion": "npm test",
     "version": "npm run build:docs"
@@ -40,6 +41,7 @@
     "yaml": "^1.10.2"
   },
   "devDependencies": {
+    "0x": "^5.1.2",
     "chai": "^4.3.4",
     "jsdoc": "^3.6.7",
     "mocha": "^9.1.4",

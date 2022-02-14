@@ -203,9 +203,8 @@ class Watcher {
       if (!this._.has(srcDir)) {
         continue;
       }
-      let w;
-      while ((w = this._.get(srcDir)["watchers"].shift()) != null) {
-        w.close();
+      for (const watcher of this._.get(srcDir)["watchers"]) {
+        watcher.close();
       }
       this._.delete(srcDir);
     }

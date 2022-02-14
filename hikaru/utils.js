@@ -8,7 +8,6 @@ const path = require("path");
 const glob = require("glob");
 const YAML = require("yaml");
 const parse5 = require("parse5");
-const hljs = require("highlight.js");
 // OMG you are adding new dependency! Why not implement it yourself?
 // Calm down, it has no dependency so just give it a chance.
 // And its code is a little bit long.
@@ -862,6 +861,12 @@ const resolveImages = (node, rootDir, docPath) => {
 
 /**
  * @private
+ * @description Require hljs still takes a long time so only require it
+ * when needed.
+ */
+let hljs = null;
+/**
+ * @private
  * @description Cache table for hljs's aliases.
  */
 let hljsAliases = null;
@@ -902,6 +907,9 @@ const resolveCodeBlocks = (node, hlOpts = {}) => {
   if (hlOpts["enable"]) {
     if (hlOpts["hljs"]) {
       hlOpts["classPrefix"] = "hljs-";
+    }
+    if (hljs == null) {
+      hljs = require("highlight.js");
     }
     hljs.configure(hlOpts);
     if (hljsAliases == null) {

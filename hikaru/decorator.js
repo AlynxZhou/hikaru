@@ -45,7 +45,7 @@ class Decorator {
    * @param {String} layout
    */
   unregister(layout) {
-    delete this._[layout];
+    this._.delete(layout);
   }
 
   /**
