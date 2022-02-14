@@ -5,13 +5,16 @@
  */
 
 const path = require("path");
-const glob = require("glob");
+
 const YAML = require("yaml");
 const parse5 = require("parse5");
+const readdirp = require("readdirp");
+const picomatch = require("picomatch");
 // OMG you are adding new dependency! Why not implement it yourself?
 // Calm down, it has no dependency so just give it a chance.
 // And its code is a little bit long.
 const {isBinaryFile, isBinaryFileSync} = require("isbinaryfile");
+
 const {Site, File, Category, Tag, TOC} = require("./types");
 const pkg = require("../package.json");
 const extMIME = require("../dists/ext-mime.json");
@@ -83,17 +86,45 @@ const escapeHTML = (str) => {
 /**
  * @description A Promised glob.
  * @param {String} pattern
- * @param {Objects} [opts] Optional glob opts.
+ * @param {Objects} [opts] Optional match opts.
+ * @param {String} [opts.workDir=.] Working dir for this match.
+ * @param {Boolean} [opts.ignoreDir=true] Ignore directories or not.
+ * @param {Boolean} [opts.ignoreHidden=true] Ignore hidden files or not.
+ * @param {Boolean} [opts.recursive=true] Set to false if you don't need
+ * subdirs, will help on performance.
  * @return {Promise<String[]>}
  */
 const matchFiles = (pattern, opts = {}) => {
-  return new Promise((resolve, reject) => {
-    glob(pattern, opts, (error, result) => {
-      if (error != null) {
-        return reject(error);
-      }
-      return resolve(result);
-    });
+  if (opts["ignoreDir"] == null) {
+    opts["ignoreDir"] = true;
+  }
+  if (opts["ignoreHidden"] == null) {
+    opts["ignoreHidden"] = true;
+  }
+  if (opts["recursive"] == null) {
+    opts["recursive"] = true;
+  }
+  opts["workDir"] = opts["workDir"] || ".";
+  const isMatch = picomatch(pattern);
+  const matchWithHidden = (entry) => {
+    return isMatch(entry["path"]);
+  };
+  const matchWithoutHidden = (entry) => {
+    const basename = path.basename(entry["path"]);
+    return !basename.startsWith(".") && matchWithHidden(entry);
+  };
+  const readdirpOpts = {
+    // readdirp supports glob patterns as filter and will call picomatch
+    // internally, but we won't use it because it does not support `**` and
+    // patterns must be all inclusive or all exclusive.
+    "fileFilter": opts["ignoreHidden"] ? matchWithoutHidden : matchWithHidden,
+    "type": opts["ignoreDir"] ? "files" : "files_directories"
+  };
+  if (!opts["recursive"]) {
+    readdirpOpts["depth"] = 1;
+  }
+  return readdirp.promise(opts["workDir"], readdirpOpts).then((entries) => {
+    return entries.map((entry) => {return entry["path"];});
   });
 };
 

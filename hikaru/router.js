@@ -182,9 +182,8 @@ class Router {
   async matchAll() {
     // Globs must not contain windows spearators.
     return (await matchFiles("**/*", {
-      "nodir": true,
-      "dot": false,
-      "cwd": this.site["siteConfig"]["themeSrcDir"]
+      "ignoreHidden": false,
+      "workDir": this.site["siteConfig"]["themeSrcDir"]
     })).map((srcPath) => {
       return new File(
         this.site["siteConfig"]["docDir"],
@@ -192,9 +191,8 @@ class Router {
         srcPath
       );
     }).concat((await matchFiles("**/*", {
-      "nodir": true,
-      "dot": true,
-      "cwd": this.site["siteConfig"]["srcDir"]
+      "ignoreHidden": false,
+      "workDir": this.site["siteConfig"]["srcDir"]
     })).map((srcPath) => {
       return new File(
         this.site["siteConfig"]["docDir"],

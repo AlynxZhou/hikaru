@@ -448,6 +448,7 @@ class Hikaru {
       // Use absolute path to load from siteDir instead of program dir.
       return require(path.resolve(modulePath))({
         "logger": this.logger,
+        "watcher": this.watcher,
         "renderer": this.renderer,
         "compiler": this.compiler,
         "processor": this.processor,
@@ -456,9 +457,8 @@ class Hikaru {
         "translator": this.translator,
         "types": this.types,
         "utils": this.utils,
-        "opts": this.opts,
         "site": this.site,
-        "watcher": this.watcher
+        "opts": this.opts
       });
     }));
   }
@@ -471,13 +471,11 @@ class Hikaru {
   async loadScripts() {
     // Globs must not contain windows spearators.
     const scripts = (await matchFiles("**/*.js", {
-      "nodir": true,
-      "cwd": path.join(this.site["siteDir"], "scripts")
+      "workDir": path.join(this.site["siteDir"], "scripts")
     })).map((filename) => {
       return path.join(this.site["siteDir"], "scripts", filename);
     }).concat((await matchFiles("**/*.js", {
-      "nodir": true,
-      "cwd": path.join(this.site["siteConfig"]["themeDir"], "scripts")
+      "workDir": path.join(this.site["siteConfig"]["themeDir"], "scripts")
     })).map((filename) => {
       return path.join(
         this.site["siteConfig"]["themeDir"], "scripts", filename
@@ -490,6 +488,7 @@ class Hikaru {
       // Use absolute path to load from siteDir instead of program dir.
       return require(path.resolve(filepath))({
         "logger": this.logger,
+        "watcher": this.watcher,
         "renderer": this.renderer,
         "compiler": this.compiler,
         "processor": this.processor,
@@ -498,9 +497,8 @@ class Hikaru {
         "translator": this.translator,
         "types": this.types,
         "utils": this.utils,
-        "opts": this.opts,
         "site": this.site,
-        "watcher": this.watcher
+        "opts": this.opts
       });
     }));
   }
@@ -511,16 +509,14 @@ class Hikaru {
   async loadLanguages() {
     let ext = ".yaml";
     let filenames = await matchFiles(`*${ext}`, {
-      "nodir": true,
-      "dot": false,
-      "cwd": this.site["siteConfig"]["themeLangDir"]
+      "workDir": this.site["siteConfig"]["themeLangDir"],
+      "recursive": false
     });
     if (filenames.length === 0) {
       ext = ".yml";
       filenames = await matchFiles(`*${ext}`, {
-        "nodir": true,
-        "dot": false,
-        "cwd": this.site["siteConfig"]["themeLangDir"]
+        "workDir": this.site["siteConfig"]["themeLangDir"],
+        "recursive": false
       });
       for (const filename of filenames) {
         this.logger.warn(`Hikaru suggests you to rename \`${
@@ -588,9 +584,8 @@ class Hikaru {
    */
   async loadLayouts() {
     const filenames = await matchFiles("*", {
-      "nodir": true,
-      "dot": false,
-      "cwd": this.site["siteConfig"]["themeLayoutDir"]
+      "workDir": this.site["siteConfig"]["themeLayoutDir"],
+      "recursive": false
     });
     const load = async (srcDir, srcPath) => {
       const ext = path.extname(srcPath);

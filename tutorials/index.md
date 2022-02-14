@@ -29,7 +29,7 @@ As the subtitle, it's a static site generator, based on Markdown, CSS preprocess
 - [X] Parser-based toc generating.
 - [X] Parser-based path converting (relative to absolute).
 - [X] Date operations in templates.
-- [X] sprintf-js based multi-languages support.
+- [X] I18n support.
 - [X] Local search JSON gengrating.
 - [X] RSS feed generating.
 - [X] Port theme ARIA.
