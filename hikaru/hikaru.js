@@ -12,6 +12,7 @@ const nunjucks = require("nunjucks");
 const {marked} = require("marked");
 
 const Logger = require("./logger");
+const Worker = require("./worker");
 const Watcher = require("./watcher");
 const Renderer = require("./renderer");
 const Compiler = require("./compiler");
@@ -55,6 +56,7 @@ class Hikaru {
    * for router.
    * @param {Number} [opts.port=2333] Alternative listening port for router.
    * @property {Logger} logger
+   * @property {Worker} worker
    * @property {Watcher} watcher
    * @property {Router} router
    * @property {Renderer} renderer
@@ -72,6 +74,7 @@ class Hikaru {
     this.opts = opts;
     this.logger = new Logger(this.opts);
     this.logger.debug("Hikaru is starting...");
+    this.worker = null;
     this.watcher = null;
     this.types = types;
     this.utils = utils;
@@ -83,6 +86,9 @@ class Hikaru {
     const exit = () => {
       if (this.watcher != null) {
         this.watcher.close();
+      }
+      if (this.worker != null) {
+        this.worker.close();
       }
       if (this.router != null) {
         this.router.close();
@@ -407,6 +413,7 @@ class Hikaru {
    * @description Load Hikaru's internal module.
    */
   loadModules() {
+    this.worker = new Worker(this.logger);
     this.renderer = new Renderer(
       this.logger,
       this.site["siteConfig"]["skipRender"]
@@ -448,6 +455,7 @@ class Hikaru {
       // Use absolute path to load from siteDir instead of program dir.
       return require(path.resolve(modulePath))({
         "logger": this.logger,
+        "worker": this.worker,
         "renderer": this.renderer,
         "compiler": this.compiler,
         "processor": this.processor,
@@ -490,6 +498,7 @@ class Hikaru {
       // Use absolute path to load from siteDir instead of program dir.
       return require(path.resolve(filepath))({
         "logger": this.logger,
+        "worker": this.worker,
         "renderer": this.renderer,
         "compiler": this.compiler,
         "processor": this.processor,
@@ -720,30 +729,33 @@ class Hikaru {
       site["tagsLength"] = result["tagsLength"];
     });
 
-    this.processor.register("content resolving", (site) => {
+    this.processor.register("content resolving", async (site) => {
       const all = site["posts"].concat(site["pages"]);
-      // It turns out that single threaded resolving works faster,
-      // and takes less memory, because Node.js Workers needs to copy message.
-      for (const p of all) {
-        const node = parseNode(p["content"]);
-        resolveHeaderIDs(node);
-        p["toc"] = genTOC(node);
-        resolveAnchors(
-          node,
-          site["siteConfig"]["baseURL"],
-          site["siteConfig"]["rootDir"],
-          p["docPath"]
-        );
-        resolveImages(node, site["siteConfig"]["rootDir"], p["docPath"]);
-        resolveCodeBlocks(node, site["siteConfig"]["highlight"]);
-        p["content"] = serializeNode(node);
+      // Resolve contents is CPU heavy so we make it threaded with Worker.
+      const scriptPath = path.join(
+        __dirname,
+        "workers",
+        "content-resolving.js"
+      );
+      this.worker.register(scriptPath, 4);
+      await Promise.all(all.map(async (p) => {
+        const res = await this.worker.work(scriptPath, {
+          "rawContent": p["content"],
+          "docPath": p["docPath"],
+          "baseURL": site["siteConfig"]["baseURL"],
+          "rootDir": site["siteConfig"]["rootDir"],
+          "highlight": site["siteConfig"]["highlight"]
+        });
+        p["content"] = res["content"];
+        p["toc"] = res["toc"];
         if (p["content"].indexOf("<!--more-->") !== -1) {
           const split = p["content"].split("<!--more-->");
           p["excerpt"] = split[0];
           p["more"] = split[1];
           p["content"] = split.join("<a id=\"more\"></a>");
         }
-      }
+      }));
+      this.worker.unregister(scriptPath);
     });
   }
 
