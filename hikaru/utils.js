@@ -294,9 +294,9 @@ const paginateCategories = (category, parentPath, site, perPage = 10) => {
   const sp = new File({
     "layout": "category",
     "docDir": site["siteConfig"]["docDir"],
-    "docPath": path.join(parentPath, `${category["name"]}`, "index.html"),
+    "docPath": path.join(parentPath, category["name"], "index.html"),
     "title": "category",
-    "name": category["name"].toString(),
+    "name": category["name"],
     "comment": false,
     "reward": false
   });
@@ -305,7 +305,7 @@ const paginateCategories = (category, parentPath, site, perPage = 10) => {
   for (const sub of category["subs"]) {
     results = results.concat(
       paginateCategories(sub, path.join(
-        parentPath, `${category["name"]}`
+        parentPath, category["name"]
       ), site, perPage)
     );
   }
@@ -441,24 +441,20 @@ const genCategories = (posts) => {
     }
     const postCategories = [];
     let subCategories = categories;
-    for (const cateName of post["frontMatter"]["categories"]) {
-      let found = false;
-      for (const category of subCategories) {
-        if (category["name"] === cateName) {
-          found = true;
-          postCategories.push(category);
-          category["posts"].push(post);
-          subCategories = category["subs"];
-          break;
-        }
-      }
-      if (!found) {
-        const newCate = new Category(cateName, [post], []);
+    for (const c of post["frontMatter"]["categories"]) {
+      // Maybe Numbers? I don't know.
+      const cateName = c.toString();
+      let category = subCategories.find((category) => {
+        return category["name"] === cateName;
+      });
+      if (category == null) {
+        category = new Category(cateName);
         ++categoriesLength;
-        postCategories.push(newCate);
-        subCategories.push(newCate);
-        subCategories = newCate["subs"];
+        subCategories.push(category);
       }
+      postCategories.push(category);
+      category["posts"].push(post);
+      subCategories = category["subs"];
     }
     post["categories"] = postCategories;
   }
@@ -486,22 +482,19 @@ const genTags = (posts) => {
       continue;
     }
     const postTags = [];
-    for (const tagName of post["frontMatter"]["tags"]) {
-      let found = false;
-      for (const tag of tags) {
-        if (tag["name"] === tagName) {
-          found = true;
-          postTags.push(tag);
-          tag["posts"].push(post);
-          break;
-        }
-      }
-      if (!found) {
-        const newTag = new Tag(tagName, [post]);
+    for (const t of post["frontMatter"]["tags"]) {
+      // Maybe Numbers? I don't know.
+      const tagName = t.toString();
+      let tag = tags.find((tag) => {
+        return tag["name"] === tagName;
+      });
+      if (tag == null) {
+        tag = new Tag(tagName);
         ++tagsLength;
-        postTags.push(newTag);
-        tags.push(newTag);
+        tags.push(tag);
       }
+      postTags.push(tag);
+      tag["posts"].push(post);
     }
     post["tags"] = postTags;
   }
