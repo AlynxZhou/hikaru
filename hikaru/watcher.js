@@ -156,9 +156,11 @@ class Watcher {
     const res = new Set();
     if (this.fileDependencies.has(srcDir)) {
       for (const dep of this.fileDependencies.get(srcDir).keys()) {
-        if (srcPath === dep ||
+        if (
+          srcPath === dep ||
           (this.dependencyGlobs.has(dep) &&
-            this.dependencyGlobs.get(dep)(srcPath))) {
+          this.dependencyGlobs.get(dep)(srcPath))
+        ) {
           checkedPaths.add(srcPath);
           const subset = this.fileDependencies.get(srcDir).get(dep);
           for (const e of subset) {
@@ -196,9 +198,7 @@ class Watcher {
         continue;
       }
       const {
-        onAdded,
-        onChanged,
-        onRemoved
+        onAdded, onChanged, onRemoved
       } = this._.get(e["srcDir"])["handlers"];
       if (e["event"] === "unlink") {
         if (onRemoved != null) {

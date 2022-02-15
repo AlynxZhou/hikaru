@@ -182,13 +182,9 @@ class Hikaru {
     this.loadSite(siteDir);
     try {
       // Modules must be loaded before others.
-      await this.loadModules();
-      await Promise.all([
-        this.loadPlugins(),
-        this.loadScripts(),
-        this.loadLanguages(),
-        this.loadLayouts()
-      ]);
+      this.loadModules();
+      await Promise.all([this.loadPlugins(), this.loadScripts()]);
+      await Promise.all([this.loadLanguages(), this.loadLayouts()]);
       this.router = new Router(
         this.logger,
         this.renderer,
@@ -214,10 +210,10 @@ class Hikaru {
     const ip = this.opts["ip"] || "localhost";
     const port = this.opts["port"] || 2333;
     this.loadSite(siteDir);
-    const rawFileDependencies = this.loadFileDependencies();
+    const rawFileDependencies = await this.loadFileDependencies();
     this.watcher = new Watcher(this.logger, rawFileDependencies);
-    const reloadFileDependencies = () => {
-      const rawFileDependencies = this.loadFileDependencies();
+    const reloadFileDependencies = async () => {
+      const rawFileDependencies = await this.loadFileDependencies();
       this.watcher.updateFileDependencies(rawFileDependencies);
     };
     this.watcher.register(
@@ -230,12 +226,8 @@ class Hikaru {
     try {
       // Modules must be loaded before others.
       this.loadModules();
-      await Promise.all([
-        this.loadPlugins(),
-        this.loadScripts(),
-        this.loadLanguages(),
-        this.loadLayouts()
-      ]);
+      await Promise.all([this.loadPlugins(), this.loadScripts()]);
+      await Promise.all([this.loadLanguages(), this.loadLayouts()]);
       this.router = new Router(
         this.logger,
         this.renderer,
@@ -279,6 +271,8 @@ class Hikaru {
     let siteConfig;
     try {
       siteConfig = YAML.parse(
+        // Only site config and theme config can use readFileSync
+        // because they are basic.
         fse.readFileSync(siteConfigPath, "utf8")
       );
     } catch (error) {
@@ -342,6 +336,8 @@ class Hikaru {
     let themeConfig;
     try {
       themeConfig = YAML.parse(
+        // Only site config and theme config can use readFileSync
+        // because they are basic.
         fse.readFileSync(themeConfigPath, "utf8")
       );
     } catch (error) {
@@ -362,17 +358,16 @@ class Hikaru {
    * @description Read file dependency tree.
    * @return {Object}
    */
-  loadFileDependencies() {
+  async loadFileDependencies() {
     const filepath = path.join(
-      this.site["siteConfig"]["themeDir"],
-      "file-dependencies.yaml"
+      this.site["siteConfig"]["themeDir"], "file-dependencies.yaml"
     );
     this.logger.debug(`Hikaru is loading file dependencies in \`${
       this.logger.cyan(filepath)
     }\`...`);
     let rawFileDependencies;
     try {
-      rawFileDependencies = YAML.parse(fse.readFileSync(filepath, "utf8"));
+      rawFileDependencies = YAML.parse(await fse.readFile(filepath, "utf8"));
     } catch (error) {
       // Should work if theme author does not provide such a file.
       rawFileDependencies = {};
@@ -427,13 +422,13 @@ class Hikaru {
    * @description Load local plugins for site,
    * which are installed into site's dir and starts with `hikaru-`.
    */
-  loadPlugins() {
+  async loadPlugins() {
     const sitePkgPath = path.join(this.site["siteDir"], "package.json");
     if (!fse.existsSync(sitePkgPath)) {
       return null;
     }
     const plugins = JSON.parse(
-      fse.readFileSync(sitePkgPath, "utf8")
+      await fse.readFile(sitePkgPath, "utf8")
     )["dependencies"];
     if (plugins == null) {
       return null;
@@ -828,10 +823,10 @@ class Hikaru {
             "layout": "tag",
             "docDir": site["siteConfig"]["docDir"],
             "docPath": path.join(
-              site["siteConfig"]["tagDir"], `${tag["name"]}`, "index.html"
+              site["siteConfig"]["tagDir"], tag["name"], "index.html"
             ),
             "title": "tag",
-            "name": tag["name"].toString(),
+            "name": tag["name"],
             "comment": false,
             "reward": false
           });
