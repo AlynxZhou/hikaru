@@ -690,6 +690,7 @@ class Hikaru {
           );
         }
       }
+
       getSource(srcPath) {
         if (!this.layouts.has(srcPath)) {
           // Layouts not in theme's layout dir, for example plugin's template,
