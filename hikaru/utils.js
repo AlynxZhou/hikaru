@@ -248,12 +248,18 @@ const paginate = (p, posts = [], perPage = 10) => {
     perPagePosts.push(post);
   }
   results.push(Object.assign(new File(), p, {"posts": perPagePosts}));
-  results[0]["pageArray"] = results;
-  results[0]["pageIndex"] = 0;
+  results[0]["pages"] = results;
+  // Don't break themes.
+  results[0]["index"] = 0;
+  results[0]["pageIndex"] = results[0]["index"];
+  results[0]["pageArray"] = results[0]["pages"];
   results[0]["docPath"] = p["docPath"];
   for (let i = 1; i < results.length; ++i) {
-    results[i]["pageArray"] = results;
-    results[i]["pageIndex"] = i;
+    results[i]["pages"] = results;
+    results[i]["index"] = i;
+    // Don't break themes.
+    results[i]["pageArray"] = results[i]["pages"];
+    results[i]["pageIndex"] = results[i]["index"];
     results[i]["docPath"] = path.join(
       path.dirname(p["docPath"]),
       `${path.basename(
@@ -290,7 +296,7 @@ const sortCategories = (category) => {
  * @return {File[]} All category and it's subs pages.
  */
 const paginateCategories = (category, parentPath, site, perPage = 10) => {
-  let results = [];
+  const results = [];
   const sp = new File({
     "layout": "category",
     "docDir": site["siteConfig"]["docDir"],
@@ -301,10 +307,10 @@ const paginateCategories = (category, parentPath, site, perPage = 10) => {
     "reward": false
   });
   category["docPath"] = sp["docPath"];
-  results = results.concat(paginate(sp, category["posts"], perPage));
+  results.push(...paginate(sp, category["posts"], perPage));
   for (const sub of category["subs"]) {
-    results = results.concat(
-      paginateCategories(sub, path.join(
+    results.push(
+      ...paginateCategories(sub, path.join(
         parentPath, category["name"]
       ), site, perPage)
     );
