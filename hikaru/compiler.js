@@ -4,7 +4,6 @@
  * @module compiler
  */
 
-const fse = require("fs-extra");
 const path = require("path");
 const {isFunction} = require("./utils");
 
@@ -23,8 +22,10 @@ class Compiler {
 
   /**
    * @callback compileCallback
-   * @param {String} filepath
-   * @param {String} content
+   * @description Typically you should configure your templating engines to load
+   * template from your theme's layout dir.
+   * @param {String} srcPath File path relative to your theme's layout dir.
+   * @param {String} [content] If this is null, you need to compile file.
    * @return {Function}
    */
   /**
@@ -41,17 +42,17 @@ class Compiler {
 
   /**
    * @description Compile template into function.
-   * @param {String} filepath
-   * @param {String} content
+   * @param {String} srcPath
+   * @param {String} [content]
    * @return {Function}
    */
-  async compile(filepath, content) {
-    if (content == null) {
-      content = await fse.readFile(filepath, "utf8");
+  async compile(srcPath, content) {
+    const ext = path.extname(srcPath);
+    if (!this._.has(ext)) {
+      throw new Error(`No avaliable compiler for ${ext}`);
     }
-    const ext = path.extname(filepath);
     const handler = this._.get(ext);
-    return handler["fn"](filepath, content);
+    return handler["fn"](srcPath, content);
   }
 }
 
