@@ -32,12 +32,14 @@ class Decorator {
    * @param {String} layout
    * @param {decorateCallback|String} fn If string,
    * will call Compiler while decorating.
+   * @param {Object} ctx Custom context if you want to pass something
+   * to this decorator.
    */
-  register(layout, fn) {
+  register(layout, fn, ctx = {}) {
     if (!(isFunction(fn) || isString(fn))) {
       throw new TypeError("fn must be a Function or filepath");
     }
-    this._.set(layout, {layout, fn});
+    this._.set(layout, {layout, fn, ctx});
   }
 
   /**
@@ -69,7 +71,9 @@ class Decorator {
         const fn = await this.compiler.compile(handler["fn"]);
         return fn(Object.assign(new File(), file, ctx));
       }
-      return handler["fn"](Object.assign(new File(), file, ctx));
+      return handler["fn"](Object.assign(
+        new File(), file, ctx, handler["ctx"]
+      ));
     }
     return file["content"];
   }
@@ -86,7 +90,6 @@ class Decorator {
    * @private
    * @description Get simpified layout for file.
    * @param {File} file
-   * @param {String[]} available If not in available, fallback to `page`.
    * @return {String}
    */
   getFileLayout(file) {
