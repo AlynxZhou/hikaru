@@ -112,21 +112,30 @@ class Watcher {
 
   /**
    * @callback watchCallback
+   * @description On each time a file added/changed/removed, itself will be
+   * emitted, and after that, an array of dependency files are also emitted as
+   * changed, this keeps related files get latest dependency.
    * @param {String} srcDir
-   * @param {String} srcPath
+   * @param {Object} srcPaths
+   * @param {String[]} [srcPaths.added] Added files.
+   * @param {String[]} [srcPaths.changed] Changed files.
+   * @param {String[]} [srcPaths.removed] Removed files.
    */
   /**
    * @description Register handler for dirs.
    * @param {(String|String[])} dirs Dirs to watch.
-   * @param {watchCallback} onAdded
-   * @param {watchCallback} onChanged
-   * @param {watchCallback} onRemoved
-   * @param {Object} [opts] Optional watch parameters.
+   * @param {watchCallback} fn
+   * @param {Object} [opts] Optional watch parameters. Please notice that
+   * if you register a dir twice with different opts, the latter will replace
+   * the former.
    * @param {Boolean} [opts.recursive=true] Whether watch files in subdirs.
    * @param {Boolean} [opts.customGlob] Custom glob pass to chokidar.
    */
-  register(dirs, onAdded, onChanged, onRemoved, opts = {}) {
+  register(dirs, fn, opts = {}) {
     if (dirs == null) {
+      return;
+    }
+    if (fn == null) {
       return;
     }
     if (!isArray(dirs) &amp;&amp; isString(dirs)) {
@@ -135,21 +144,29 @@ class Watcher {
     if (opts["recursive"] !== false) {
       opts["recursive"] = true;
     }
+    // Globs must not contain windows spearators.
+    const starGlob = opts["recursive"] ? "**/*" : "*";
+    const glob = opts["customGlob"] || starGlob;
     for (const srcDir of dirs) {
-      if (!this._.has(srcDir)) {
-        this.unregister(srcDir);
+      if (this._.has(srcDir)) {
+        const handler = this._.get(srcDir);
+        if (!handler["fns"].includes(fn)) {
+          handler["fns"].push(fn);
+        }
+        console.log(this._);
+        // Always update glob.
+        if (handler["glob"] !== glob &amp;&amp; handler["watcher"] != null) {
+          handler["watcher"].unwatch(handler["glob"]);
+          handler["watcher"].add(glob);
+          handler["glob"] = glob;
+        }
+        continue;
       }
-      this._.set(srcDir, {
-        "watchers": [],
-        "handlers": {onAdded, onChanged, onRemoved}
-      });
-      // Globs must not contain windows spearators.
-      const glob = opts["recursive"] ? "**/*" : "*";
+      this._.set(srcDir, {glob, "watcher": null, "fns": [fn]});
       const watcher = chokidar.watch(
-        opts["customGlob"] || glob,
-        {"cwd": srcDir, "ignoreInitial": true}
+        glob, {"cwd": srcDir, "ignoreInitial": true}
       );
-      this._.get(srcDir)["watchers"].push(watcher);
+      this._.get(srcDir)["watcher"] = watcher;
       for (const event of ["add", "change", "unlink"]) {
         watcher.on(event, (srcPath) => {
           this.logger.debug(
@@ -220,35 +237,28 @@ class Watcher {
       return;
     }
     this.handling = true;
+    // Don't merge different events' files here, some maybe conflict,
+    // e.g. A is changed and then removed.
     let e;
     while ((e = this.queue.shift()) != null) {
       if (!this._.has(e["srcDir"])) {
         continue;
       }
-      const {
-        onAdded, onChanged, onRemoved
-      } = this._.get(e["srcDir"])["handlers"];
-      if (e["event"] === "unlink") {
-        if (onRemoved != null) {
-          onRemoved(e["srcDir"], e["srcPath"]);
-        }
-      } else if (e["event"] === "add") {
-        if (onAdded != null) {
-          onAdded(e["srcDir"], e["srcPath"]);
-        }
+      const srcPaths = {"added": [], "changed": [], "removed": []};
+      if (e["event"] === "add") {
+        srcPaths["added"].push(e["srcPath"]);
+      } else if (e["event"] === "unlink") {
+        srcPaths["removed"].push(e["srcPath"]);
       } else {
-        if (onChanged != null) {
-          onChanged(e["srcDir"], e["srcPath"]);
-        }
+        srcPaths["changed"].push(e["srcPath"]);
       }
       // Call changed on all dependencies.
       const set = this.getDependencies(e["srcDir"], e["srcPath"]);
       // Break potential circular dependencies.
       set.delete(e["srcPath"]);
-      if (onChanged != null) {
-        for (const p of set) {
-          onChanged(e["srcDir"], p);
-        }
+      srcPaths["changed"].push(...set);
+      for (const fn of this._.get(e["srcDir"])["fns"]) {
+        fn(e["srcDir"], srcPaths);
       }
     }
     this.handling = false;
@@ -269,8 +279,8 @@ class Watcher {
       if (!this._.has(srcDir)) {
         continue;
       }
-      for (const watcher of this._.get(srcDir)["watchers"]) {
-        watcher.close();
+      if (this._.get(srcDir)["watcher"] != null) {
+        this._.get(srcDir)["watcher"].close();
       }
       this._.delete(srcDir);
     }
@@ -301,7 +311,7 @@ module.exports = Watcher;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Tue Feb 15 2022 20:13:43 GMT+0800 (China Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Thu Feb 17 2022 11:58:59 GMT+0800 (China Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
