@@ -212,14 +212,13 @@ class Hikaru {
     this.loadSite(siteDir);
     const rawFileDependencies = await this.loadFileDependencies();
     this.watcher = new Watcher(this.logger, rawFileDependencies);
+    // This watcher only watch one file so don't care about arguments.
     const reloadFileDependencies = async () => {
       const rawFileDependencies = await this.loadFileDependencies();
       this.watcher.updateFileDependencies(rawFileDependencies);
     };
     this.watcher.register(
       this.site["siteConfig"]["themeDir"],
-      reloadFileDependencies,
-      reloadFileDependencies,
       reloadFileDependencies,
       {"customGlob": "file-dependencies.yaml"}
     );
@@ -538,37 +537,34 @@ class Hikaru {
     }
     const load = async (srcDir, srcPath) => {
       const lang = path.basename(srcPath, ext);
-      const filepath = path.join(srcDir, srcPath);
       this.logger.debug(`Hikaru is loading language \`${
         this.logger.blue(lang)
       }\`...`);
-      const language = YAML.parse(await fse.readFile(filepath, "utf8"));
+      const filepath = path.join(srcDir, srcPath);
+      const content = await fse.readFile(filepath, "utf8");
+      this.site["languages"].set(srcPath, content);
+      const language = YAML.parse(content);
       this.translator.register(lang, language);
     };
     const all = Promise.all(filenames.map((filename) => {
       return load(this.site["siteConfig"]["themeLangDir"], filename);
     }));
     if (this.watcher != null) {
-      const onAddedOrChanged = async (srcDir, srcPath) => {
-        // We only register top level yaml files as language.
-        if (path.dirname(srcPath) !== "." && path.extname(srcPath) !== ext) {
-          return;
-        }
-        load(srcDir, srcPath);
-      };
       this.watcher.register(
         this.site["siteConfig"]["themeLangDir"],
-        onAddedOrChanged,
-        onAddedOrChanged,
-        (srcPath, srcDir) => {
-          // We only register top level yaml files as language.
-          if (path.dirname(srcPath) !== "." && path.extname(srcPath) !== ext) {
-            return;
+        (srcDir, srcPaths) => {
+          const {added, changed, removed} = srcPaths;
+          // Handle remove first because it is sync.
+          for (const srcPath of removed) {
+            this.site["languages"].delete(srcPath);
+            const lang = path.basename(srcPath, ext);
+            this.translator.unregister(lang);
           }
-          const lang = path.basename(srcPath, ext);
-          this.translator.unregister(lang);
+          Promise.all(added.concat(changed).map((srcPath) => {
+            return load(srcDir, srcPath);
+          }));
         },
-        {"recursive": false}
+        {"customGlob": `*${ext}`}
       );
     }
     return all;
@@ -578,46 +574,61 @@ class Hikaru {
    * @private
    */
   async loadLayouts() {
-    const filenames = await matchFiles("*", {
-      "workDir": this.site["siteConfig"]["themeLayoutDir"],
-      "recursive": false
+    const filenames = await matchFiles("**/*", {
+      "workDir": this.site["siteConfig"]["themeLayoutDir"]
     });
     const load = async (srcDir, srcPath) => {
+      const filepath = path.join(srcDir, srcPath);
+      const content = await fse.readFile(filepath, "utf8");
+      this.site["layouts"].set(srcPath, content);
+    };
+    const compile = async (srcPath) => {
       const ext = path.extname(srcPath);
       const layout = path.basename(srcPath, ext);
       this.logger.debug(`Hikaru is loading layout \`${
         this.logger.blue(layout)
       }\`...`);
-      const filepath = path.join(srcDir, srcPath);
-      const fn = await this.compiler.compile(filepath);
+      const content = this.site["layouts"].get(srcPath);
+      const fn = await this.compiler.compile(srcPath, content);
       this.decorator.register(layout, fn);
     };
     const all = Promise.all(filenames.map((filename) => {
       return load(this.site["siteConfig"]["themeLayoutDir"], filename);
-    }));
+    })).then(() => {
+      return Promise.all(filenames.filter((filename) => {
+        // We only compile top level templates as decorate functions.
+        return path.dirname(filename) === ".";
+      }).map((filename) => {
+        return compile(filename);
+      }));
+    });
     if (this.watcher != null) {
-      const onAddedOrChanged = (srcDir, srcPath) => {
-        // We only register top level template files as layout.
-        if (path.dirname(srcPath) !== ".") {
-          return;
-        }
-        load(srcDir, srcPath);
-      };
       this.watcher.register(
         this.site["siteConfig"]["themeLayoutDir"],
-        onAddedOrChanged,
-        onAddedOrChanged,
-        (srcDir, srcPath) => {
-          // We only register top level template files as layout.
-          if (path.dirname(srcPath) !== ".") {
-            return;
+        async (srcDir, srcPaths) => {
+          const {added, changed, removed} = srcPaths;
+          // Handle remove first because it is sync.
+          for (const srcPath of removed) {
+            this.site["layouts"].delete(srcPath);
+            // We only register top level template files as decorate functions.
+            if (path.dirname(srcPath) !== ".") {
+              continue;
+            }
+            const ext = path.extname(srcPath);
+            const layout = path.basename(srcPath, ext);
+            this.decorator.unregister(layout);
           }
-          const ext = path.extname(srcPath);
-          const layout = path.basename(srcPath, ext);
-          this.decorator.unregister(layout);
+          const updated = added.concat(changed);
+          await Promise.all(updated.map((srcPath) => {
+            return load(srcDir, srcPath);
+          }));
+          // We only register top level template files as decorate functions.
+          await Promise.all(updated.filter((srcPath) => {
+            return path.dirname(srcPath) === ".";
+          }).map((srcPath) => {
+            return compile(srcPath);
+          }));
         }
-        // Even though we don't load files recursively, we need to watch files
-        // recursively, because our loaded layouts may depend on them.
       );
     }
     return all;
@@ -632,11 +643,11 @@ class Hikaru {
       return file;
     });
 
-    const markedConfig = Object.assign(
+    const markedOpts = Object.assign(
       {"gfm": true},
       this.site["siteConfig"]["marked"]
     );
-    marked.setOptions(markedConfig);
+    marked.setOptions(markedOpts);
     this.renderer.register(".md", ".html", (file) => {
       file["content"] = marked.parse(file["text"]);
       return file;
@@ -647,16 +658,77 @@ class Hikaru {
    * @private
    */
   registerInternalCompilers() {
-    const njkConfig = Object.assign(
-      {"autoescape": false},
+    // Nunjucks uses runtime including instead of compiled including,
+    // and it will cache included templates internally.
+    // The only way to update cache is emit update from a watcher.
+    const njkOpts = Object.assign(
+      {"autoescape": false, "watch": false, "noCache": false},
       this.site["siteConfig"]["nunjucks"]
     );
-    const njkCompiler = (filepath, content) => {
-      const njkEnv = nunjucks.configure(
-        path.dirname(filepath), njkConfig
-      );
-      const template = nunjucks.compile(content, njkEnv, filepath);
-      // For template you must give a render function as content.
+    // Nunjucks' default loader will read included templates sync,
+    // we create a custom loader which will share loaded layouts.
+    class SiteLayoutLoader extends nunjucks.Loader {
+      constructor(hikaru) {
+        super();
+        this.watcher = hikaru.watcher;
+        this.layouts = hikaru.site["layouts"];
+        this.layoutDir = hikaru.site["siteConfig"]["themeLayoutDir"];
+        if (this.watcher != null) {
+          // This will be called before our actuall read file async calls,
+          // but it's not a problem, nunjucks uses runtime including,
+          // so the actual loading happens when decorating (refreshing
+          // webpage), I don't believe a user can save file and refresh webpage
+          // at the same time.
+          this.watcher.register(
+            this.layoutDir, (srcDir, srcPaths) => {
+              const {added, changed, removed} = srcPaths;
+              const all = added.concat(changed).concat(removed);
+              for (const srcPath of all) {
+                this.emit("update", srcPath);
+              }
+            }
+          );
+        }
+      }
+      getSource(srcPath) {
+        if (!this.layouts.has(srcPath)) {
+          // Layouts not in theme's layout dir, for example plugin's template,
+          // fallback to read from disk.
+          if (!fse.existsSync(srcPath)) {
+            return null;
+          }
+          // Load such files sync to prevent include in for loop problem.
+          return {
+            "src": fse.readFileSync(srcPath, "utf8"),
+            "path": srcPath
+          };
+        }
+        return {
+          "src": this.layouts.get(srcPath),
+          "path": srcPath
+        };
+      }
+    }
+    const njkEnv = new nunjucks.Environment(
+      new SiteLayoutLoader(this), njkOpts
+    );
+    const njkCompiler = (srcPath, content) => {
+      // Only srcPath provided, but no content, load them via loader.
+      if (content == null) {
+        return (ctx) => {
+          return new Promise((resolve, reject) => {
+            njkEnv.render(srcPath, ctx, (error, result) => {
+              if (error != null) {
+                return reject(error);
+              }
+              return resolve(result);
+            });
+          });
+        };
+      }
+      // The last argument is eagerCompile, which means we compile now
+      // instead of delaying compile to rendering.
+      const template = new nunjucks.Template(content, njkEnv, srcPath, true);
       return (ctx) => {
         return new Promise((resolve, reject) => {
           template.render(ctx, (error, result) => {
@@ -781,7 +853,7 @@ class Hikaru {
 
     if (this.site["siteConfig"]["categoryDir"] != null) {
       this.generator.register("categories pages", (site) => {
-        let results = [];
+        const results = [];
         let perPage;
         if (isObject(site["siteConfig"]["perPage"])) {
           perPage = site["siteConfig"]["perPage"]["category"] || 10;
@@ -790,7 +862,7 @@ class Hikaru {
         }
         for (const sub of site["categories"]) {
           sortCategories(sub);
-          results = results.concat(paginateCategories(
+          results.push(...paginateCategories(
             sub, site["siteConfig"]["categoryDir"], site, perPage
           ));
         }
@@ -808,7 +880,7 @@ class Hikaru {
 
     if (this.site["siteConfig"]["tagDir"] != null) {
       this.generator.register("tags pages", (site) => {
-        let results = [];
+        const results = [];
         let perPage;
         if (isObject(site["siteConfig"]["perPage"])) {
           perPage = site["siteConfig"]["perPage"]["tag"] || 10;
@@ -831,7 +903,7 @@ class Hikaru {
             "reward": false
           });
           tag["docPath"] = sp["docPath"];
-          results = results.concat(paginate(sp, tag["posts"], perPage));
+          results.push(...paginate(sp, tag["posts"], perPage));
         }
         results.push(new File({
           "layout": "tags",
