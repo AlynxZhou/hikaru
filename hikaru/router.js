@@ -244,30 +244,29 @@ class Router {
     if (this.watcher == null) {
       return;
     }
-    const fn = async (srcDir, srcPaths) => {
-      const {added, changed, removed} = srcPaths;
-      for (const srcPath of removed) {
-        const file = new File(
-          this.site["siteConfig"]["docDir"], srcDir, srcPath
-        );
-        for (const key of Site.arrayKeys) {
-          delSite(this.site, key, file);
-        }
-      }
-      await Promise.all(added.concat(changed).map((srcPath) => {
-        const newFile = new File(
-          this.site["siteConfig"]["docDir"], srcDir, srcPath
-        );
-        return this.loadFile(newFile);
-      }));
-      this.flush();
-    };
     this.watcher.register(
       [
         this.site["siteConfig"]["themeSrcDir"],
         this.site["siteConfig"]["srcDir"]
       ],
-      fn
+      async (srcDir, srcPaths) => {
+        const {added, changed, removed} = srcPaths;
+        for (const srcPath of removed) {
+          const file = new File(
+            this.site["siteConfig"]["docDir"], srcDir, srcPath
+          );
+          for (const key of Site.arrayKeys) {
+            delSite(this.site, key, file);
+          }
+        }
+        await Promise.all(added.concat(changed).map((srcPath) => {
+          const newFile = new File(
+            this.site["siteConfig"]["docDir"], srcDir, srcPath
+          );
+          return this.loadFile(newFile);
+        }));
+        this.flush();
+      }
     );
   }
 

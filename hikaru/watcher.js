@@ -122,10 +122,7 @@ class Watcher {
     for (const srcDir of dirs) {
       if (this._.has(srcDir)) {
         const handler = this._.get(srcDir);
-        if (!handler["fns"].includes(fn)) {
-          handler["fns"].push(fn);
-        }
-        console.log(this._);
+        handler["fns"].add(fn);
         // Always update glob.
         if (handler["glob"] !== glob && handler["watcher"] != null) {
           handler["watcher"].unwatch(handler["glob"]);
@@ -134,7 +131,9 @@ class Watcher {
         }
         continue;
       }
-      this._.set(srcDir, {glob, "watcher": null, "fns": [fn]});
+      const handler = {glob, "watcher": null, "fns": new Set()};
+      handler["fns"].add(fn);
+      this._.set(srcDir, handler);
       const watcher = chokidar.watch(
         glob, {"cwd": srcDir, "ignoreInitial": true}
       );
