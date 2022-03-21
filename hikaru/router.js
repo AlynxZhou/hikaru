@@ -18,12 +18,13 @@ const {
   getVersion,
   getPathFn,
   getURLFn,
+  isCurrentHostFn,
+  isCurrentPathFn,
   getContentType,
   putSite,
   delSite,
   getFullSrcPath,
   getFullDocPath,
-  isCurrentPathFn,
   parseFrontMatter
 } = require("./utils");
 
@@ -66,10 +67,13 @@ class Router {
     this.listening = false;
     this.watcher = watcher;
     this.queuedFlush = false;
+    this.getPath = getPathFn(this.site["siteConfig"]["rootDir"]);
     this.getURL = getURLFn(
       this.site["siteConfig"]["baseURL"], this.site["siteConfig"]["rootDir"]
     );
-    this.getPath = getPathFn(this.site["siteConfig"]["rootDir"]);
+    this.isCurrentHost = isCurrentHostFn(
+      this.site["siteConfig"]["baseURL"], this.site["siteConfig"]["rootDir"]
+    );
   }
 
   /**
@@ -157,8 +161,9 @@ class Router {
       "siteConfig": this.site["siteConfig"],
       "themeConfig": this.site["themeConfig"],
       "getVersion": getVersion,
-      "getURL": this.getURL,
       "getPath": this.getPath,
+      "getURL": this.getURL,
+      "isCurrentHost": this.isCurrentHost,
       "isCurrentPath": isCurrentPathFn(
         this.site["siteConfig"]["rootDir"], file["docPath"]
       ),

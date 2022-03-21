@@ -9,6 +9,7 @@ const {
   paginate,
   getPathFn,
   getURLFn,
+  isCurrentHostFn,
   isCurrentPathFn,
   putSite,
   delSite,
@@ -150,6 +151,21 @@ describe("utils", () => {
 
     it("should throw error if no URL protocol", () => {
       expect(getURLFn("localhost:2333", "/blog/")).to.throw();
+    });
+  });
+
+  describe("isCurrentHostFn", () => {
+    const isCurrentHost = isCurrentHostFn("http://localhost:2333", "/blog/");
+    it("should return true if only a path is given", () => {
+      return expect(isCurrentHost("tags/")).to.be.true;
+    });
+
+    it("should return false if a URL with different host is given", () => {
+      return expect(isCurrentHost("//localhost:8080?p=1")).not.to.be.true;
+    });
+
+    it("should return true if a URL with the same host is given", () => {
+      return expect(isCurrentHost("//localhost:2333/az/#top", true)).to.be.true;
     });
   });
 

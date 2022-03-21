@@ -379,6 +379,31 @@ const getURLFn = (baseURL, rootDir = path.posix.sep) => {
 };
 
 /**
+ * @callback isCurrentHost
+ * @description Test if given URL is on current host.
+ * This function does not care query string and hash.
+ * @param {String} [testURL] URL needed to test.
+ * @return {Boolean}
+ */
+/**
+ * @description Get a function to handle if parameter is on current host.
+ * @param {String} baseURL Site baseURL.
+ * @param {String} [rootDir] Site rootDir.
+ * @return {isCurrentHost}
+ */
+const isCurrentHostFn = (baseURL, rootDir = path.posix.sep) => {
+  const getURL = getURLFn(baseURL, rootDir);
+  const currentHost = getURL().host;
+  return (testURL) => {
+    // If `testURL` is a valid URL, `baseURL` will be ignored.
+    // So we can compare host for all links here.
+    const url = new URL(testURL, baseURL);
+    // It returns `""` for data URL!
+    return url.host === currentHost || url.host === "";
+  };
+};
+
+/**
  * @callback isCurrentPath
  * @description Test if given path is current path.
  * This function does not care query string and hash.
@@ -828,12 +853,12 @@ const getURLProtocol = (url) => {
  * @description Update site's internal link to absolute path,
  * and add attributes for external link.
  * @param {Object} node parse5 Node.
- * @param {String} [baseURL] Site baseURL.
- * @param {String} [rootDir] Site rootDir.
- * @param {String} [docPath]
+ * @param {String} baseURL Site baseURL.
+ * @param {String} rootDir Site rootDir.
+ * @param {String} docPath
  */
 const resolveAnchors = (node, baseURL, rootDir, docPath) => {
-  const getURL = getURLFn(baseURL, rootDir);
+  const isCurrentHost = isCurrentHostFn(baseURL, rootDir);
   const getPath = getPathFn(rootDir);
   // Replace relative path to absolute path.
   const anchorNodes = nodesFilter(node, (node) => {
@@ -842,11 +867,7 @@ const resolveAnchors = (node, baseURL, rootDir, docPath) => {
   for (const node of anchorNodes) {
     const href = getNodeAttr(node, "href");
     if (href != null) {
-      // If `href` is a valid URL, `baseURL` will be ignored.
-      // So we can compare host for all links here.
-      const url = new URL(href, baseURL);
-      // It returns `"null"` for data URL!
-      if (url.origin !== "null" && url.origin !== getURL().origin) {
+      if (!isCurrentHost(href)) {
         setNodeAttr(node, "target", "_blank");
         setNodeAttr(node, "rel", "external nofollow noreferrer noopener");
       }
@@ -1091,6 +1112,7 @@ module.exports = {
   paginateCategories,
   getPathFn,
   getURLFn,
+  isCurrentHostFn,
   isCurrentPathFn,
   genCategories,
   genTags,
