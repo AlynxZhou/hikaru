@@ -992,7 +992,7 @@ const resolveCodeBlocks = (node, hlOpts = {}) => {
       } else if (hljsAliases.has(lang)) {
         // If user gives a reasonable language hint (but maybe incorrect),
         // we use it, because auto detect all code is too slow.
-        data = hljs.highlight(hljsAliases.get(lang), code);
+        data = hljs.highlight(code, {"language": hljsAliases.get(lang)});
       } else {
         // No language hint, or just not resonable.
         data = hljs.highlightAuto(code);
