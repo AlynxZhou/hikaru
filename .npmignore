@@ -1,4 +1,5 @@
 *.0x/
+.log/
 docs/
 tests/
 tutorials/
