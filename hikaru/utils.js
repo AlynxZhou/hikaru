@@ -1086,19 +1086,16 @@ const default404 = [
   "  <head>",
   "    <meta charset=\"utf-8\">",
   "    <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">",
-  "    <meta name=\"viewport\" content=\"",
-  "      width=device-width,",
-  "      initial-scale=1,",
-  "      maximum-scale=1",
-  "    \">",
+  "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1\">",
   "    <title>404 Not Found</title>",
   "  </head>",
   "  <body>",
   "    <h1>404 Not Found</h1>",
   `    <p>Hikaru v${getVersion()}</p>`,
   "  </body>",
-  "</html>"
-].join("");
+  "</html>",
+  ""
+].join("\n");
 
 module.exports = {
   isString,

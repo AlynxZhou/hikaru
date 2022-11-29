@@ -90,6 +90,8 @@ class File {
    * @property {File} prev Prev post.
    */
   constructor(docDir, srcDir, srcPath) {
+    // Most members are optional, so set things like tags, posts and pages to
+    // `null` for File. This is different from what I do for Site and Tags.
     this.srcDir = srcDir;
     this.srcPath = srcPath;
     this.docDir = docDir;
@@ -167,11 +169,11 @@ class Tag {
 class TOC {
   /**
    * @param {String} name
-   * @param {String} anchor HTML ID as anchor,
+   * @param {String} anchor HTML ID as anchor.
    * @param {String} text Title text.
    * @param {TOC[]} subs Sub TOCs.
    * @property {String} name
-   * @property {String} anchor HTML ID as anchor,
+   * @property {String} anchor HTML ID as anchor.
    * @property {String} text Title text.
    * @property {TOC[]} subs Sub TOCs.
    */
