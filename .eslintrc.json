@@ -24,11 +24,11 @@
     "max-len": ["error", {
       "code": 80,
       "ignoreComments": true,
-      "ignoreTrailingComments": false,
+      "ignoreTrailingComments": true,
       "ignoreUrls": true,
-      "ignoreStrings": false,
-      "ignoreTemplateLiterals": false,
-      "ignoreRegExpLiterals": false
+      "ignoreStrings": true,
+      "ignoreTemplateLiterals": true,
+      "ignoreRegExpLiterals": true
     }]
   }
 }
