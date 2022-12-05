@@ -785,7 +785,7 @@ const setNodeAttr = (node, attrName, attrValue) => {
  * @description Update headers' ID for bootstrap scrollspy.
  * @param {Object} node parse5 Node.
  */
-const resolveHeaderIDs = (node) => {
+const resolveHeadingIDs = (node) => {
   const headerNames = ["h1", "h2", "h3", "h4", "h5", "h6"];
   const headerIDs = {};
   const headerNodes = nodesFilter(node, (node) => {
@@ -811,6 +811,8 @@ const resolveHeaderIDs = (node) => {
     }
   }
 };
+
+const resolveHeaderIDs = resolveHeadingIDs;
 
 /**
  * @description Generate TOC from HTML headers.
@@ -1134,6 +1136,7 @@ module.exports = {
   setNodeText,
   getNodeAttr,
   setNodeAttr,
+  resolveHeadingIDs,
   resolveHeaderIDs,
   genTOC,
   getURLProtocol,

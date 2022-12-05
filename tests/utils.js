@@ -24,7 +24,7 @@ const {
   setNodeText,
   getNodeAttr,
   setNodeAttr,
-  resolveHeaderIDs,
+  resolveHeadingIDs,
   genTOC,
   getURLProtocol,
   resolveAnchors,
@@ -408,10 +408,10 @@ describe("utils", () => {
     });
   });
 
-  describe("resolveHeaderIDs", () => {
+  describe("resolveHeadingIDs", () => {
     it("should not resolve header ID if no text", () => {
       const node = parseNode("<h1></h1>");
-      resolveHeaderIDs(node);
+      resolveHeadingIDs(node);
       expect(serializeNode(node)).to.equal("<h1></h1>");
     });
 
@@ -420,7 +420,7 @@ describe("utils", () => {
         "<h1 id=\"h1\">h1</h1>",
         "<h2 id=\"h2\">h2</h2>"
       ].join(""));
-      resolveHeaderIDs(node);
+      resolveHeadingIDs(node);
       expect(serializeNode(node)).to.equal([
         "<h1 id=\"h1\">",
         "<a class=\"header-link\" href=\"#h1\"></a>h1",
@@ -440,7 +440,7 @@ describe("utils", () => {
         "<h1>h1-1</h1>",
         "<h3 id=\"h3\">h3</h3>"
       ].join(""));
-      resolveHeaderIDs(node);
+      resolveHeadingIDs(node);
       expect(serializeNode(node)).to.equal([
         "<h1 id=\"h1\">",
         "<a class=\"header-link\" href=\"#h1\"></a>h1",
@@ -468,7 +468,7 @@ describe("utils", () => {
         "<h1 id=\"h1\">中文</h1>",
         "<h2 id=\"h2\">中文</h2>"
       ].join(""));
-      resolveHeaderIDs(node);
+      resolveHeadingIDs(node);
       expect(serializeNode(node)).to.equal([
         "<h1 id=\"%E4%B8%AD%E6%96%87\">",
         "<a class=\"header-link\" href=\"#%E4%B8%AD%E6%96%87\"></a>中文",
@@ -484,7 +484,7 @@ describe("utils", () => {
         "<h1 id=\"h1\">中<>文</h1>",
         "<h2 id=\"h2\">中<>文</h2>"
       ].join(""));
-      resolveHeaderIDs(node);
+      resolveHeadingIDs(node);
       expect(serializeNode(node)).to.equal([
         "<h1 id=\"%E4%B8%AD%E6%96%87\">",
         "<a class=\"header-link\" href=\"#%E4%B8%AD%E6%96%87\"></a>",

@@ -33,7 +33,7 @@ const {
   genTags,
   parseNode,
   serializeNode,
-  resolveHeaderIDs,
+  resolveHeadingIDs,
   resolveAnchors,
   resolveImages,
   resolveCodeBlocks,
@@ -789,7 +789,7 @@ class Hikaru {
       // and takes less memory, because Node.js Workers needs to copy message.
       for (const p of all) {
         const node = parseNode(p["content"]);
-        resolveHeaderIDs(node);
+        resolveHeadingIDs(node);
         p["toc"] = genTOC(node);
         resolveAnchors(
           node,
