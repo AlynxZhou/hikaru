@@ -5,7 +5,7 @@ author: Hikaru
 email:
 language: default
 
-# Those makes up your site's full URL.
+# Those make up your site's full URL.
 baseURL: https://yourdomain.com
 rootDir: /
 
