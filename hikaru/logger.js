@@ -1,10 +1,8 @@
-"use strict";
-
 /**
  * @module logger
  */
 
-const {isFunction} = require("./utils");
+import {isFunction} from "./utils.js";
 
 /**
  * @description A Logger with colored output.
@@ -132,4 +130,4 @@ class Logger extends console.Console {
   }
 }
 
-module.exports = Logger;
+export default Logger;

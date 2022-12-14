@@ -1,10 +1,8 @@
-"use strict";
-
 /**
  * @module processor
  */
 
-const {isFunction} = require("./utils");
+import {isFunction} from "./utils.js";
 
 /**
  * @description Site processor.
@@ -52,4 +50,4 @@ class Processor {
   }
 }
 
-module.exports = Processor;
+export default Processor;

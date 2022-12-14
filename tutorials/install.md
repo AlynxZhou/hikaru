@@ -13,10 +13,9 @@ If you want to install themes with [git](https://git-scm.com/), you need to inst
 
 # Install
 
-If you have installed dependences, you can install Hikaru with NPM:
+Hikaru is a command line program (not a module) and you can install it from NPM, since version `1.14.0`, it is recommended to install it locally in your site dir and run it with `npx`:
 
 ```
-# npm i -g hikarujs
+$ mkdir hikaru-site && cd hikaru-site
+$ npm install --save hikarujs hikaru-generator-feed hikaru-generator-sitemap hikaru-generator-search
 ```
-
-Hikaru is a command line program and it provides a binary called `hikaru`, so you need to install it globally as root.

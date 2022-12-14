@@ -11,21 +11,20 @@ A static site generator that generates routes based on directories naturally.
 
 # Install
 
-Hikaru is a command line program (not a module) and you can install it from NPM:
+Hikaru is a command line program (not a module) and you can install it from NPM, since Hikaru v1.14.0, it is recommended to install it locally in your site dir and run it with `npx`:
 
 ```
-# npm i -g hikarujs
+$ npm i -s hikarujs && npx hikaru i
 ```
 
-If you are an Arch Linux user, you can also install package `hikarujs` from [AUR](https://aur.archlinux.org/packages/hikarujs/).
-
-**Hikaru works on Node.js v12.20.0 LTS or later.**
+**Hikaru works on Node.js v14.16.0 LTS or later.**
 
 # Setup site
 
 ```
 $ mkdir hikaru-site && cd hikaru-site
-$ hikaru init && npm install
+$ npm install --save hikarujs hikaru-generator-feed hikaru-generator-sitemap hikaru-generator-search
+$ npx hikaru init --debug
 ```
 
 # Install theme
@@ -44,19 +43,24 @@ Or if you want commit the whole site you can use submodule:
 $ git submodule add https://github.com/AlynxZhou/hikaru-theme-aria.git themes/aria
 ```
 
-## Edit site config
+## Edit config
 
 ```
 $ $EDITOR site-config.yaml
 ```
 
-Set `themeDir` to `themes/aria`
+Set `themeDir` to `themes/aria`:
 
 ```yaml
 themeDir: themes/aria
 ```
 
-**Don't forget to copy your theme config to site's dir and edit it as its README file.**
+Copy theme config to site dir and edit it:
+
+```
+$ cp themes/aria/theme-config.yaml theme-config.yaml
+$ $EDITOR site-config.yaml
+```
 
 # Create src file
 
@@ -89,13 +93,13 @@ Some content...
 # Start live server
 
 ```
-$ hikaru serve
+$ npx hikaru serve --debug
 ```
 
 # Build static files
 
 ```
-$ hikaru build
+$ npx hikaru build --debug
 ```
 
 # Contribute
@@ -132,6 +136,10 @@ Never use `.forEach()` unless you cannot use `for...of`, they are almost the sam
 
 I just prefer `class`.
 
+## Common JS or ES Module
+
+I personally like Common JS, but more and more libraries uses ES module, so use ES module.
+
 # More
 
 Docs: <https://hikaru.alynx.one/>
@@ -145,12 +153,3 @@ My blog built with Hikaru and ARIA: [喵's StackHarbor](https://sh.alynx.one/)
 # License
 
 [Apache-2.0](LICENSE)
-
-# For Stylus and nib
-
-Since Hikaru v1.2.11, nib was dropped because [its the only dependency has NodeJS 14 warnings](https://github.com/stylus/nib/issues/347), and many nib features can be done in newer CSS. So it was splitted into a single plugin.
-
-Since Hikaru v1.10.0, Stylus was also dropped, now Hikaru does not contain any CSS preprocessors.
-
-If you need Stylus and nib for your theme, please install [hikaru-renderer-stylus-nib](https://github.com/AlynxZhou/hikaru-renderer-stylus-nib/) to your site.
-

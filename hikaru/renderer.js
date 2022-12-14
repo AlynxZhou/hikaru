@@ -1,12 +1,11 @@
-"use strict";
-
 /**
  * @module renderer
  */
 
-const path = require("path");
-const {File} = require("./types");
-const {getFullSrcPath, getFullDocPath, isFunction} = require("./utils");
+import * as path from "node:path";
+
+import {File} from "./types.js";
+import {getFullSrcPath, getFullDocPath, isFunction} from "./utils.js";
 
 /**
  * @description File renderer.
@@ -98,4 +97,4 @@ class Renderer {
   }
 }
 
-module.exports = Renderer;
+export default Renderer;

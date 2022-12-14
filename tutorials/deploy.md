@@ -36,9 +36,9 @@ You can write a shell script to do this every time.
 
 Don't forget to go to your GitHub Repo settings and choose `master branch` to host pages.
 
-# Commit whole site (Recommanded if available)
+# Commit whole site (Recommended if available)
 
-Some host, like [GitHub Pages](https://pages.github.com/), allows you to commit whole site and host files in `docs/` dir only, so you can just commit your whole site, and use git to control your sources, too.
+Some host, like [GitHub Pages](https://pages.github.com/), allows you to commit the whole site and host files in `docs/` dir only, so you can just commit your whole site, and use git to control your sources, too.
 
 ## Init repo before clone theme
 
@@ -74,10 +74,15 @@ You can write a shell script to do this every time like:
 ```
 #!/bin/bash
 
-hikaru clean --debug
-hikaru build --debug
+npx hikaru clean --debug
+npx hikaru build --debug
+
 git add --all
-git commit --message "Updated site."
+if [[ -n "${*}" ]]; then
+    git commit --message "${*}"
+else
+    git commit --message "Updated site."
+fi
 git push --set-upstream origin master
 ```
 

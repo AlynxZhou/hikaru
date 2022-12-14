@@ -1,29 +1,32 @@
-"use strict";
-
 /**
  * @module hikaru
  */
 
-const path = require("path");
+import * as path from "node:path";
 
-const fse = require("fs-extra");
-const YAML = require("yaml");
-const nunjucks = require("nunjucks");
-const {marked} = require("marked");
+import fse from "fs-extra";
+import YAML from "yaml";
+import nunjucks from "nunjucks";
+import {marked} from "marked";
 
-const Logger = require("./logger");
-const Watcher = require("./watcher");
-const Renderer = require("./renderer");
-const Compiler = require("./compiler");
-const Processor = require("./processor");
-const Generator = require("./generator");
-const Decorator = require("./decorator");
-const Translator = require("./translator");
-const Router = require("./router");
-const types = require("./types");
+import Logger from "./logger.js";
+import Watcher from "./watcher.js";
+import Renderer from "./renderer.js";
+import Compiler from "./compiler.js";
+import Processor from "./processor.js";
+import Generator from "./generator.js";
+import Decorator from "./decorator.js";
+import Translator from "./translator.js";
+import Router from "./router.js";
+import * as types from "./types.js";
+import * as utils from "./utils.js";
 const {Site, File} = types;
-const utils = require("./utils");
 const {
+  hikaruDir,
+  loadJSON,
+  loadYAML,
+  loadYAMLSync,
+  isString,
   isObject,
   isReadableSync,
   matchFiles,
@@ -117,9 +120,6 @@ class Hikaru {
       this.logger.debug(`Hikaru is copying \`${
         this.logger.cyan(siteConfigPath)
       }\`...`);
-      this.logger.debug(`Hikaru is copying \`${
-        this.logger.cyan(path.join(siteDir, "package.json"))
-      }\`...`);
       this.logger.debug(`Hikaru is creating \`${
         this.logger.cyan(path.join(siteDir, "srcs", path.sep))
       }\`...`);
@@ -133,20 +133,9 @@ class Hikaru {
         this.logger.cyan(path.join(siteDir, "scripts", path.sep))
       }\`...`);
       fse.copy(
-        path.join(__dirname, "..", "dists", "site-config.yaml"),
+        path.join(hikaruDir, "dists", "site-config.yaml"),
         siteConfigPath
       );
-      fse.readFile(
-        path.join(__dirname, "..", "dists", "package.json")
-      ).then((text) => {
-        const json = JSON.parse(text);
-        // Set package name to site dir name.
-        json["name"] = path.relative(path.join("..", siteDir), siteDir);
-        return fse.outputFile(
-          path.join(siteDir, "package.json"),
-          JSON.stringify(json, null, "  ")
-        );
-      });
       fse.mkdirp(path.join(siteDir, "srcs"));
       fse.mkdirp(path.join(siteDir, "docs"));
       fse.mkdirp(path.join(siteDir, "themes"));
@@ -270,11 +259,8 @@ class Hikaru {
     }\`...`);
     let siteConfig;
     try {
-      siteConfig = YAML.parse(
-        // Only site config and theme config can use readFileSync
-        // because they are basic.
-        fse.readFileSync(siteConfigPath, "utf8")
-      );
+      // Only site config and theme config can be block because they are basic.
+      siteConfig = loadYAMLSync(siteConfigPath);
     } catch (error) {
       this.logger.warn("Hikaru cannot load site config!");
       this.logger.error(error);
@@ -335,11 +321,8 @@ class Hikaru {
     }\`...`);
     let themeConfig;
     try {
-      themeConfig = YAML.parse(
-        // Only site config and theme config can use readFileSync
-        // because they are basic.
-        fse.readFileSync(themeConfigPath, "utf8")
-      );
+      // Only site config and theme config can be block because they are basic.
+      themeConfig = loadYAMLSync(themeConfigPath);
     } catch (error) {
       if (error["code"] === "ENOENT") {
         this.logger.warn("Hikaru continues with a empty theme config...");
@@ -367,7 +350,7 @@ class Hikaru {
     }\`...`);
     let rawFileDependencies;
     try {
-      rawFileDependencies = YAML.parse(await fse.readFile(filepath, "utf8"));
+      rawFileDependencies = await loadYAML(filepath);
     } catch (error) {
       // Should work if theme author does not provide such a file.
       rawFileDependencies = {};
@@ -424,24 +407,46 @@ class Hikaru {
    */
   async loadPlugins() {
     const sitePkgPath = path.join(this.site["siteDir"], "package.json");
-    if (!isReadableSync(sitePkgPath)) {
+    let sitePkgJSON;
+    try {
+      sitePkgJSON = await loadJSON(sitePkgPath);
+    } catch (error) {
       return null;
     }
-    const plugins = JSON.parse(
-      await fse.readFile(sitePkgPath, "utf8")
-    )["dependencies"];
-    if (plugins == null) {
+    if (sitePkgJSON["dependencies"] == null) {
       return null;
     }
-    return Promise.all(Object.keys(plugins).filter((name) => {
+    const plugins = Object.keys(sitePkgJSON["dependencies"]).filter((name) => {
       return /^hikaru-/.test(name);
-    }).map((name) => {
-      const modulePath = path.join(this.site["siteDir"], "node_modules", name);
+    });
+    return Promise.all(plugins.map(async (name) => {
       this.logger.debug(`Hikaru is loading plugin \`${
         this.logger.blue(name)
       }\`...`);
-      // Use absolute path to load from siteDir instead of program dir.
-      return require(path.resolve(modulePath))({
+      const pluginDir = path.join(this.site["siteDir"], "node_modules", name);
+      // Unlike `require()`, `import ()` does not check entries in `package.json`
+      // if you pass a path, so we do this manually.
+      let pluginPkgJSON;
+      try {
+        pluginPkgJSON = await loadJSON(path.join(pluginDir, "package.json"));
+      } catch (error) {
+        // Plugin should be a valid package.
+        return null;
+      }
+      let pluginPath;
+      if (pluginPkgJSON["exports"] != null &&
+          isString(pluginPkgJSON["exports"])) {
+        // Could be an Object, but we don't accept this as a plugin.
+        pluginPath = path.resolve(pluginDir, pluginPkgJSON["exports"]);
+      } else if (pluginPkgJSON["main"] != null) {
+        // If exists, main is always a string.
+        pluginPath = path.resolve(pluginDir, pluginPkgJSON["main"]);
+      } else {
+        pluginPath = path.resolve(pluginDir, "index.js");
+      }
+      // import is a keyword, not a function.
+      const module = await import(pluginPath);
+      return module["default"]({
         "logger": this.logger,
         "watcher": this.watcher,
         "renderer": this.renderer,
@@ -476,12 +481,14 @@ class Hikaru {
         this.site["siteConfig"]["themeDir"], "scripts", filename
       );
     }));
-    return Promise.all(scripts.map((filepath) => {
+    return Promise.all(scripts.map(async (filepath) => {
       this.logger.debug(`Hikaru is loading script \`${
         this.logger.cyan(filepath)
       }\`...`);
       // Use absolute path to load from siteDir instead of program dir.
-      return require(path.resolve(filepath))({
+      // import is a keyword, not a function.
+      const module = await import(path.resolve(filepath));
+      return module["default"]({
         "logger": this.logger,
         "watcher": this.watcher,
         "renderer": this.renderer,
@@ -784,10 +791,10 @@ class Hikaru {
       site["tagsLength"] = result["tagsLength"];
     });
 
-    this.processor.register("content resolving", (site) => {
+    this.processor.register("content resolving", async (site) => {
       const all = site["posts"].concat(site["pages"]);
       // It turns out that single threaded resolving works faster,
-      // and takes less memory, because Node.js Workers needs to copy message.
+      // and takes less memory, because Node.js Workers needs to copy messages.
       for (const p of all) {
         const node = parseNode(p["content"]);
         resolveHeadingIDs(node);
@@ -799,7 +806,7 @@ class Hikaru {
           p["docPath"]
         );
         resolveImages(node, site["siteConfig"]["rootDir"], p["docPath"]);
-        resolveCodeBlocks(node, site["siteConfig"]["highlight"]);
+        await resolveCodeBlocks(node, site["siteConfig"]["highlight"]);
         p["content"] = serializeNode(node);
         if (p["content"].indexOf("<!--more-->") !== -1) {
           const split = p["content"].split("<!--more-->");
@@ -921,4 +928,4 @@ class Hikaru {
   }
 }
 
-module.exports = Hikaru;
+export default Hikaru;

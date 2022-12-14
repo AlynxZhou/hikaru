@@ -1,24 +1,64 @@
-"use strict";
-
 /**
  * @module utils
  */
 
-const path = require("path");
+import * as path from "node:path";
 
-const fse = require("fs-extra");
-const YAML = require("yaml");
-const parse5 = require("parse5");
-const readdirp = require("readdirp");
-const picomatch = require("picomatch");
-// OMG you are adding new dependency! Why not implement it yourself?
-// Calm down, it has no dependency so just give it a chance.
-// And its code is a little bit long.
-const {isBinaryFile, isBinaryFileSync} = require("isbinaryfile");
+import fse from "fs-extra";
+import YAML from "yaml";
+import * as parse5 from "parse5";
+import readdirp from "readdirp";
+import picomatch from "picomatch";
+// This works better than what I wrote and it has no dependency.
+import {isBinaryFile, isBinaryFileSync} from "isbinaryfile";
 
-const {Site, File, Category, Tag, TOC} = require("./types");
-const pkg = require("../package.json");
-const extMIME = require("../dists/ext-mime.json");
+import {Site, File, Category, Tag, TOC} from "./types.js";
+
+/**
+ * @description Hikaru's package dir.
+ */
+const hikaruDir = path.resolve(
+  path.dirname(new URL(import.meta.url).pathname),
+  "../"
+);
+
+/**
+ * @param {String} path
+ * @return {Promise<Object>}
+ */
+const loadJSON = async (path) => {
+  return JSON.parse(await fse.readFile(path, "utf8"));
+};
+
+/**
+ * @param {String} path
+ * @return {Object}
+ */
+const loadJSONSync = (path) => {
+  return JSON.parse(fse.readFileSync(path, "utf8"));
+};
+
+/**
+ * @private
+ * @description This is Hikaru's package.json, it is used internally.
+ */
+const pkgJSON = loadJSONSync(path.join(hikaruDir, "package.json"));
+
+/**
+ * @param {String} path
+ * @return {Promise<Object>}
+ */
+const loadYAML = async (path) => {
+  return YAML.parse(await fse.readFile(path, "utf8"));
+};
+
+/**
+ * @param {String} path
+ * @return {Object}
+ */
+const loadYAMLSync = (path) => {
+  return YAML.parse(fse.readFileSync(path, "utf8"));
+};
 
 /**
  * @param {*} o
@@ -240,11 +280,19 @@ const parseFrontMatter = (file) => {
 };
 
 /**
+ * @private
+ * @description This is only used for serve.
+ */
+let extMIME = null;
+/**
  * @description Detect Content-Type via filename.
  * @param {String} docPath
  * @return {String} Content-Type value.
  */
 const getContentType = (docPath) => {
+  if (extMIME == null) {
+    extMIME = loadJSONSync(path.join(hikaruDir, "hikaru", "ext-mime.json"));
+  }
   return extMIME[path.extname(docPath)] || "application/octet-stream";
 };
 
@@ -660,17 +708,24 @@ const serializeNode = (node, options) => {
 };
 
 /**
- * @description Quick and not so dirty way to replace a Node with given HTML string,
- * if more then one node parsed from string, only use the first one.
+ * @description Quick and not so dirty way to replace a Node with given HTML string.
  * @param {Object} node parse5 Node to replace.
  * @param {String} html
  */
 const replaceNode = (node, html) => {
-  if (node["parentNode"] != null && html != null) {
-    const newNode = parseNode(node["parentNode"], html);
-    if (newNode["childNodes"].length > 0) {
-      newNode["childNodes"][0]["parentNode"] = node["parentNode"];
-      Object.assign(node, newNode["childNodes"][0]);
+  const parentNode = node["parentNode"];
+  if (parentNode != null && html != null) {
+    const newNode = parseNode(html);
+    if (newNode["childNodes"] != null && newNode["childNodes"].length > 0) {
+      const index = parentNode["childNodes"].indexOf(node);
+      parentNode["childNodes"].splice(
+        index,
+        1,
+        ...newNode["childNodes"].map((childNode) => {
+          childNode["parentNode"] = parentNode;
+          return childNode;
+        })
+      );
     }
   }
 };
@@ -744,16 +799,15 @@ const getNodeText = (node) => {
  * @param {String} html
  */
 const setNodeText = (node, html) => {
-  // Add HTML to childNodes via parsing and replacing
-  // to keep tree reference, and skip the parse5-generated
-  // `#document-fragment` node.
+  // Add HTML to childNodes via parsing and replacing to keep tree reference,
+  // and skip the parse5-generated `#document-fragment` node.
   // Text nodes have no childNode.
   // Only append to nodes that already have childNodes.
   if (node["childNodes"] != null) {
     // Don't forget to replace childNode's parentNode.
-    node["childNodes"] = parseNode(node, html)["childNodes"].map((c) => {
-      c["parentNode"] = node;
-      return c;
+    node["childNodes"] = parseNode(html)["childNodes"].map((childNode) => {
+      childNode["parentNode"] = node;
+      return childNode;
     });
   }
 };
@@ -800,16 +854,16 @@ const setNodeAttr = (node, attrName, attrValue) => {
 };
 
 /**
- * @description Update headers' ID for bootstrap scrollspy.
+ * @description Update headings' ID for bootstrap scrollspy.
  * @param {Object} node parse5 Node.
  */
 const resolveHeadingIDs = (node) => {
-  const headerNames = ["h1", "h2", "h3", "h4", "h5", "h6"];
-  const headerIDs = {};
-  const headerNodes = nodesFilter(node, (node) => {
-    return headerNames.includes(node["tagName"]);
+  const headingNames = ["h1", "h2", "h3", "h4", "h5", "h6"];
+  const headingIDs = {};
+  const headingNodes = nodesFilter(node, (node) => {
+    return headingNames.includes(node["tagName"]);
   });
-  for (const node of headerNodes) {
+  for (const node of headingNodes) {
     const text = getNodeText(node);
     if (text != null) {
       // Remove some chars in escaped ID because
@@ -817,15 +871,15 @@ const resolveHeadingIDs = (node) => {
       const encoded = encodeURI(
         text.trim().replace(/[\s()[\]{}<>.,!@#$%^&*=|`'/?~]+/g, "")
       );
-      const id = headerIDs[encoded] == null
+      const id = headingIDs[encoded] == null
         ? encoded
-        : `${encoded}-${headerIDs[encoded]++}`;
+        : `${encoded}-${headingIDs[encoded]++}`;
       // If we have `abc`, `abc` and `abc-1`,
       // we must save the `abc-1` generated by the second `abc`,
       // to prevent 2 `abc-1` for the last `abc-1`.
-      headerIDs[id] = 1;
+      headingIDs[id] = 1;
       setNodeAttr(node, "id", id);
-      setNodeText(node, `<a class="header-link" href="#${id}"></a>${text}`);
+      setNodeText(node, `<a class="heading-link header-link" href="#${id}"></a>${text}`);
     }
   }
 };
@@ -833,22 +887,22 @@ const resolveHeadingIDs = (node) => {
 const resolveHeaderIDs = resolveHeadingIDs;
 
 /**
- * @description Generate TOC from HTML headers.
+ * @description Generate TOC from HTML headings.
  * @param {Object} node parse5 Node.
  */
 const genTOC = (node) => {
-  const headerNames = ["h1", "h2", "h3", "h4", "h5", "h6"];
+  const headingNames = ["h1", "h2", "h3", "h4", "h5", "h6"];
   const toc = [];
-  const headerNodes = nodesFilter(node, (node) => {
-    return headerNames.includes(node["tagName"]);
+  const headingNodes = nodesFilter(node, (node) => {
+    return headingNames.includes(node["tagName"]);
   });
-  for (const node of headerNodes) {
+  for (const node of headingNodes) {
     let level = toc;
     while (
       level.length > 0 &&
-      headerNames.indexOf(
+      headingNames.indexOf(
         level[level.length - 1]["name"]
-      ) < headerNames.indexOf(node["tagName"])
+      ) < headingNames.indexOf(node["tagName"])
     ) {
       level = level[level.length - 1]["subs"];
     }
@@ -903,7 +957,7 @@ const resolveAnchors = (node, baseURL, rootDir, docPath) => {
       if (!(path.posix.isAbsolute(href) || getURLProtocol(href) != null)) {
         /**
          * marked.js and CommonMark tends to do URL encode by themselves.
-         * I should skip `encodeURI()` here and do it for header ID only.
+         * I should skip `encodeURI()` here and do it for heading ID only.
          * See <https://github.com/markedjs/marked/issues/1285>.
          */
         setNodeAttr(
@@ -961,11 +1015,8 @@ const hljsLoadAliases = () => {
   for (const lang of languages) {
     // First add language itself.
     hljsAliases.set(lang, lang);
-    // Then register it.
-    const hljsModule = require(`highlight.js/lib/languages/${lang}`);
-    hljs.registerLanguage(lang, hljsModule);
-    // And add its aliases.
-    const aliases = hljsModule(hljs)["aliases"];
+    // Then add its aliases.
+    const aliases = hljs.getLanguage(lang)["aliases"];
     if (aliases != null) {
       for (const alias of aliases) {
         hljsAliases.set(alias, lang);
@@ -979,8 +1030,9 @@ const hljsLoadAliases = () => {
  * @description Format and highlight code block.
  * @param {Object} node parse5 Node.
  * @param {Object} [hlOpts] Highlight options.
+ * @return {Promise<null>} Importing hljs is async.
  */
-const resolveCodeBlocks = (node, hlOpts = {}) => {
+const resolveCodeBlocks = async (node, hlOpts = {}) => {
   // Enable hljs prefix and gutter by default.
   hlOpts = Object.assign({"hljs": true, "gutter": true}, hlOpts);
   // Only load hljs if enabled.
@@ -989,7 +1041,9 @@ const resolveCodeBlocks = (node, hlOpts = {}) => {
       hlOpts["classPrefix"] = "hljs-";
     }
     if (hljs == null) {
-      hljs = require("highlight.js");
+      // import is a keyword, not a function.
+      const module = await import("highlight.js");
+      hljs = module["default"];
     }
     hljs.configure(hlOpts);
     if (hljsAliases == null) {
@@ -1093,7 +1147,7 @@ const resolveCodeBlocks = (node, hlOpts = {}) => {
  * @return {String}
  */
 const getVersion = () => {
-  return pkg["version"];
+  return pkgJSON["version"];
 };
 
 /**
@@ -1117,7 +1171,13 @@ const default404 = [
   ""
 ].join("\n");
 
-module.exports = {
+export {
+  hikaruDir,
+  loadJSON,
+  loadJSONSync,
+  loadYAML,
+  loadYAMLSync,
+  pkgJSON,
   isString,
   isArray,
   isFunction,

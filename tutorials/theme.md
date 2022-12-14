@@ -29,7 +29,7 @@ This is a file that contains file dependency relationship, Hikaru uses this file
 
 ## `scripts`
 
-This is theme's scripts. If you want to regist some functions, write it here.
+This is theme's scripts. If you want to register some functions, write it here.
 
 ## `languages`
 
@@ -123,20 +123,6 @@ and set `site-config.yaml` to `language: en`, you can use `__()` in template lik
 ```
 
 **Each page can have their own language property**, `Translator` will load language automatically.
-
-# Scripts
-
-Scripts are just JavaScript files that export a function, which receives a `Hikaru` object as argument:
-
-```javascript
-module.exports = (hikaru) => {
-  hikaru.processor.register("description", (site) => {
-    // Do something...
-  })
-}
-```
-
-Plugins are the same but they work as npm packages.
 
 # File Dependencies Handling
 

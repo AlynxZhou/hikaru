@@ -1,13 +1,12 @@
-"use strict";
-
 /**
  * @module router
  */
 
-const fse = require("fs-extra");
-const http = require("http");
-const {Site, File} = require("./types");
-const {
+import fse from "fs-extra";
+
+import * as http from "node:http";
+import {Site, File} from "./types.js";
+import {
   isArray,
   isString,
   isFunction,
@@ -26,7 +25,7 @@ const {
   getFullSrcPath,
   getFullDocPath,
   parseFrontMatter
-} = require("./utils");
+} from "./utils.js";
 
 /**
  * @description Core module that handling file routing.
@@ -392,4 +391,4 @@ class Router {
   }
 }
 
-module.exports = Router;
+export default Router;

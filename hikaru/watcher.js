@@ -1,16 +1,14 @@
-"use strict";
-
 /**
  * @module watcher
  */
 
-const path = require("path");
+import * as path from "node:path";
 
-const isGlob = require("is-glob");
-const chokidar = require("chokidar");
-const picomatch = require("picomatch");
+import isGlob from "is-glob";
+import chokidar from "chokidar";
+import picomatch from "picomatch";
 
-const {isArray, isString} = require("./utils");
+import {isArray, isString} from "./utils.js";
 
 /**
  * @description File watcher with dependency handling.
@@ -265,4 +263,4 @@ class Watcher {
   }
 }
 
-module.exports = Watcher;
+export default Watcher;

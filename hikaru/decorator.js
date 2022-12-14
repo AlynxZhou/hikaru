@@ -1,11 +1,9 @@
-"use strict";
-
 /**
  * @module decorator
  */
 
-const {File} = require("./types");
-const {isFunction, isString, getFullDocPath} = require("./utils");
+import {File} from "./types.js";
+import {isFunction, isString, getFullDocPath} from "./utils.js";
 
 /**
  * @description Layout decorator.
@@ -103,4 +101,4 @@ class Decorator {
   }
 }
 
-module.exports = Decorator;
+export default Decorator;

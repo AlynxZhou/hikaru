@@ -6,7 +6,7 @@ A static site generator that generates routes based on directories naturally.
 
 # What is Hikaru?
 
-As the subtitle, it's a static site generator, based on Markdown, CSS preprocessor and HTML template, to generate routes based on you directories.
+It's a static site generator, based on Markdown, CSS preprocessor and HTML template, to generate routes based on you directories.
 
 # Why Hikaru?
 
@@ -84,6 +84,7 @@ hikura-site/
     |   |   |- theme-config.yaml # Example file.
     |   |   |- file-dependencies.yaml
     |   |   |- README.md
+    |- node_modules/
     |- package.json # Store site plugin list.
     |- site-config.yaml
     |- theme-config.yaml

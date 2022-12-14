@@ -1,10 +1,8 @@
-"use strict";
-
 /**
  * @module generator
  */
 
-const {isArray, isFunction} = require("./utils");
+import {isArray, isFunction} from "./utils.js";
 
 /**
  * @description File generator.
@@ -58,4 +56,4 @@ class Generator {
   }
 }
 
-module.exports = Generator;
+export default Generator;

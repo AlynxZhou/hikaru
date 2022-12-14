@@ -11,9 +11,9 @@ A page usually is a Markdown file which has a YAML front matter and a Markdown c
 ---
 title: Your page title
 # Should in ISO 8601 date time format, local timezone will be used if timezone is omitted.
-createdDate: 2018-08-08T09:27:00
+created: 2018-08-08T09:27:00
 # If you updated your content, you can use this key.
-#updatedDate: 2019-01-01T19:07:00
+#updated: 2019-01-01T19:07:00
 layout: post
 ---
 Text before more will become excerpt.

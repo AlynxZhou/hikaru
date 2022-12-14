@@ -1,19 +1,18 @@
-"use strict";
-
 /**
  * @module index
  */
 
-const {Command} = require("commander");
-const pkg = require("../package.json");
-const Hikaru = require("./hikaru");
+import {Command} from "commander";
+
+import Hikaru from "./hikaru.js";
+import {pkgJSON, getVersion} from "./utils.js";
 
 const command = new Command();
 
 command
-  .version(pkg["version"], "-v, --version", "Print version number.")
+  .version(getVersion(), "-v, --version", "Print version number.")
   .usage("<subcommand> [options] [dir]")
-  .description(pkg["description"])
+  .description(pkgJSON["description"])
   // Overwrite default help option description.
   .helpOption("-h, --help", "Print help infomation.")
   // Overwrite default help command description.
@@ -88,6 +87,8 @@ command.on("command:*", () => {
  * @method
  * @param {String[]} [argv]
  */
-module.exports = (argv = process.argv) => {
+const hikaru = (argv = process.argv) => {
   command.parse(argv);
 };
+
+export default hikaru;

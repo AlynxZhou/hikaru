@@ -1,11 +1,10 @@
-"use strict";
-
 /**
  * @module compiler
  */
 
-const path = require("path");
-const {isFunction} = require("./utils");
+import * as path from "node:path";
+
+import {isFunction} from "./utils.js";
 
 /**
  * @description Template compiler.
@@ -56,4 +55,4 @@ class Compiler {
   }
 }
 
-module.exports = Compiler;
+export default Compiler;

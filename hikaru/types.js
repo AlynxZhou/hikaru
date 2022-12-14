@@ -1,5 +1,3 @@
-"use strict";
-
 /**
  * @module types
  * @description Types here are only data containers and prototypes,
@@ -187,7 +185,7 @@ class TOC {
   }
 }
 
-module.exports = {
+export {
   Site,
   File,
   Category,

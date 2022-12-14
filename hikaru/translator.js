@@ -1,11 +1,9 @@
-"use strict";
-
 /**
  * @module translator
  */
 
-const {format} = require("util");
-const {isObject, isArray, isString} = require("./utils");
+import {format} from "node:util";
+import {isObject, isArray, isString} from "./utils.js";
 
 /**
  * @description String translator.
@@ -104,4 +102,4 @@ class Translator {
   }
 }
 
-module.exports = Translator;
+export default Translator;

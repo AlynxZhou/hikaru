@@ -6,8 +6,7 @@ Init Site
 After installing Hikaru, you can use following command to setup a site directory:
 
 ```
-$ hikaru init hikaru-site
-$ cd hikaru-site
+$ npx hikaru init --debug
 ```
 
 The directory looks like:
@@ -17,16 +16,18 @@ hikura-site/
     |- srcs/
     |- docs/
     |- themes/
-    |- site-config.yaml
+    |- node_modules/
     |- package.json
+    |- site-config.yaml
+    |- theme-config.yaml
 ```
 
 # Install plugins
 
-Just run one command.
+If you forget to install plugins together with Hikaru, you can also install them with NPM:
 
 ```
-$ npm install
+$ npm install --save hikaru-generator-feed hikaru-generator-sitemap hikaru-generator-search
 ```
 
 # Install theme
@@ -47,7 +48,7 @@ Or if you want commit the whole site you can use submodule:
 $ git submodule add https://github.com/AlynxZhou/hikaru-theme-aria.git themes/aria
 ```
 
-## Edit site config
+## Edit config
 
 ```
 $ $EDITOR site-config.yaml
@@ -59,7 +60,12 @@ Set `themeDir` to `themes/aria`
 themeDir: themes/aria
 ```
 
-**Don't forget to copy your theme config to site's dir and edit it as its README file.**
+Copy theme config to site dir and edit it:
+
+```
+$ cp themes/aria/theme-config.yaml theme-config.yaml
+$ $EDITOR site-config.yaml
+```
 
 # File info
 
@@ -67,13 +73,17 @@ themeDir: themes/aria
 
 This contains most site config.
 
+## `theme-config.yaml`
+
+This contains most theme config.
+
 ## `srcs/`
 
 This contains your site's source files.
 
 ## `docs/`
 
-Your source files will be built to this directory.
+Output files will be built to this directory.
 
 ## `themes/`
 
