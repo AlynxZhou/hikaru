@@ -50,14 +50,14 @@
 <a href="https://www.npmjs.com/package/hikarujs"><img src="https://img.shields.io/node/v/hikarujs?style=for-the-badge" alt="node-version"></a>
 <a href="https://github.com/AlynxZhou/hikaru/blob/master/LICENSE"><img src="https://img.shields.io/github/license/AlynxZhou/hikaru?style=for-the-badge" alt="github-license"></a></p>
 <h1>Install</h1>
-<p>Hikaru is a command line program (not a module) and you can install it from NPM:</p>
-<pre class="prettyprint source"><code># npm i -g hikarujs
+<p>Hikaru is a command line program (not a module) and you can install it from NPM, since Hikaru v1.14.0, it is recommended to install it locally in your site dir and run it with <code>npx</code>:</p>
+<pre class="prettyprint source"><code>$ npm i -s hikarujs && npx hikaru i
 </code></pre>
-<p>If you are an Arch Linux user, you can also install package <code>hikarujs</code> from <a href="https://aur.archlinux.org/packages/hikarujs/">AUR</a>.</p>
-<p><strong>Hikaru works on Node.js v12.20.0 LTS or later.</strong></p>
+<p><strong>Hikaru works on Node.js v14.16.0 LTS or later.</strong></p>
 <h1>Setup site</h1>
 <pre class="prettyprint source"><code>$ mkdir hikaru-site && cd hikaru-site
-$ hikaru init && npm install
+$ npm install --save hikarujs hikaru-generator-feed hikaru-generator-sitemap hikaru-generator-search
+$ npx hikaru init --debug
 </code></pre>
 <h1>Install theme</h1>
 <h2>Clone theme</h2>
@@ -67,13 +67,16 @@ $ hikaru init && npm install
 <p>Or if you want commit the whole site you can use submodule:</p>
 <pre class="prettyprint source"><code>$ git submodule add https://github.com/AlynxZhou/hikaru-theme-aria.git themes/aria
 </code></pre>
-<h2>Edit site config</h2>
+<h2>Edit config</h2>
 <pre class="prettyprint source"><code>$ $EDITOR site-config.yaml
 </code></pre>
-<p>Set <code>themeDir</code> to <code>themes/aria</code></p>
+<p>Set <code>themeDir</code> to <code>themes/aria</code>:</p>
 <pre class="prettyprint source lang-yaml"><code>themeDir: themes/aria
 </code></pre>
-<p><strong>Don't forget to copy your theme config to site's dir and edit it as its README file.</strong></p>
+<p>Copy theme config to site dir and edit it:</p>
+<pre class="prettyprint source"><code>$ cp themes/aria/theme-config.yaml theme-config.yaml
+$ $EDITOR site-config.yaml
+</code></pre>
 <h1>Create src file</h1>
 <h2>Edit file</h2>
 <pre class="prettyprint source"><code>$ $EDITOR srcs/my-first-post.md
@@ -93,10 +96,10 @@ layout: post
 # This is my first post!
 </code></pre>
 <h1>Start live server</h1>
-<pre class="prettyprint source"><code>$ hikaru serve
+<pre class="prettyprint source"><code>$ npx hikaru serve --debug
 </code></pre>
 <h1>Build static files</h1>
-<pre class="prettyprint source"><code>$ hikaru build
+<pre class="prettyprint source"><code>$ npx hikaru build --debug
 </code></pre>
 <h1>Contribute</h1>
 <p>If you want to contribute, please follow my coding style.</p>
@@ -115,17 +118,15 @@ layout: post
 <p>Never use <code>.forEach()</code> unless you cannot use <code>for...of</code>, they are almost the same and we learn <code>for</code> in the first coding lesson so why not <code>for</code>?</p>
 <h2><code>class</code> or <code>.prototype</code></h2>
 <p>I just prefer <code>class</code>.</p>
+<h2>Common JS or ES Module</h2>
+<p>I personally like Common JS, but more and more libraries uses ES module, so use ES module.</p>
 <h1>More</h1>
 <p>Docs: <a href="https:%5C/%5C/hikaru.alynx.one/">https://hikaru.alynx.one/</a></p>
 <p>Repo: <a href="https://github.com/AlynxZhou/hikaru/">GitHub</a></p>
 <p>Default theme ARIA: <a href="https://github.com/AlynxZhou/hikaru-theme-aria/">hikaru-theme-aria</a></p>
 <p>My blog built with Hikaru and ARIA: <a href="https://sh.alynx.one/">喵's StackHarbor</a></p>
 <h1>License</h1>
-<p><a href="LICENSE">Apache-2.0</a></p>
-<h1>For Stylus and nib</h1>
-<p>Since Hikaru v1.2.11, nib was dropped because <a href="https://github.com/stylus/nib/issues/347">its the only dependency has NodeJS 14 warnings</a>, and many nib features can be done in newer CSS. So it was splitted into a single plugin.</p>
-<p>Since Hikaru v1.10.0, Stylus was also dropped, now Hikaru does not contain any CSS preprocessors.</p>
-<p>If you need Stylus and nib for your theme, please install <a href="https://github.com/AlynxZhou/hikaru-renderer-stylus-nib/">hikaru-renderer-stylus-nib</a> to your site.</p></article>
+<p><a href="LICENSE">Apache-2.0</a></p></article>
     </section>
 
 
@@ -136,13 +137,13 @@ layout: post
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-compiler.html">compiler</a></li><li><a href="module-decorator.html">decorator</a></li><li><a href="module-generator.html">generator</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li><li><a href="module-watcher.html">watcher</a></li></ul><h3>Classes</h3><ul><li><a href="module-compiler-Compiler.html">Compiler</a></li><li><a href="module-decorator-Decorator.html">Decorator</a></li><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-types-TOC.html">TOC</a></li><li><a href="module-watcher-Watcher.html">Watcher</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-compiler.html">compiler</a></li><li><a href="module-decorator.html">decorator</a></li><li><a href="module-generator.html">generator</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li><li><a href="module-watcher.html">watcher</a></li></ul><h3>Classes</h3><ul><li><a href="module-compiler-Compiler.html">Compiler</a></li><li><a href="module-decorator-Decorator.html">Decorator</a></li><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-TOC.html">TOC</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-watcher-Watcher.html">Watcher</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Sun Dec 11 2022 20:39:16 GMT+0800 (China Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.0</a> on Wed Dec 14 2022 21:57:59 GMT+0800 (China Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

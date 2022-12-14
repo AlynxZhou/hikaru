@@ -31,20 +31,21 @@
     <h1>Init Site</h1>
 <h1>Init site</h1>
 <p>After installing Hikaru, you can use following command to setup a site directory:</p>
-<pre class="prettyprint source"><code>$ hikaru init hikaru-site
-$ cd hikaru-site
+<pre class="prettyprint source"><code>$ npx hikaru init --debug
 </code></pre>
 <p>The directory looks like:</p>
 <pre class="source"><code>hikura-site/
     |- srcs/
     |- docs/
     |- themes/
-    |- site-config.yaml
+    |- node_modules/
     |- package.json
+    |- site-config.yaml
+    |- theme-config.yaml
 </code></pre>
 <h1>Install plugins</h1>
-<p>Just run one command.</p>
-<pre class="prettyprint source"><code>$ npm install
+<p>If you forget to install plugins together with Hikaru, you can also install them with NPM:</p>
+<pre class="prettyprint source"><code>$ npm install --save hikaru-generator-feed hikaru-generator-sitemap hikaru-generator-search
 </code></pre>
 <h1>Install theme</h1>
 <p>Before rendering, you need a theme as a template.</p>
@@ -55,20 +56,25 @@ $ cd hikaru-site
 <p>Or if you want commit the whole site you can use submodule:</p>
 <pre class="prettyprint source"><code>$ git submodule add https://github.com/AlynxZhou/hikaru-theme-aria.git themes/aria
 </code></pre>
-<h2>Edit site config</h2>
+<h2>Edit config</h2>
 <pre class="prettyprint source"><code>$ $EDITOR site-config.yaml
 </code></pre>
 <p>Set <code>themeDir</code> to <code>themes/aria</code></p>
 <pre class="prettyprint source lang-yaml"><code>themeDir: themes/aria
 </code></pre>
-<p><strong>Don't forget to copy your theme config to site's dir and edit it as its README file.</strong></p>
+<p>Copy theme config to site dir and edit it:</p>
+<pre class="prettyprint source"><code>$ cp themes/aria/theme-config.yaml theme-config.yaml
+$ $EDITOR site-config.yaml
+</code></pre>
 <h1>File info</h1>
 <h2><code>site-config.yaml</code></h2>
 <p>This contains most site config.</p>
+<h2><code>theme-config.yaml</code></h2>
+<p>This contains most theme config.</p>
 <h2><code>srcs/</code></h2>
 <p>This contains your site's source files.</p>
 <h2><code>docs/</code></h2>
-<p>Your source files will be built to this directory.</p>
+<p>Output files will be built to this directory.</p>
 <h2><code>themes/</code></h2>
 <p>This contains your site's themes.</p>
 <p><strong>Most of those dirs can be changed in <code>site-config.yaml</code>.</strong></p>
@@ -79,13 +85,13 @@ $ cd hikaru-site
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-compiler.html">compiler</a></li><li><a href="module-decorator.html">decorator</a></li><li><a href="module-generator.html">generator</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li><li><a href="module-watcher.html">watcher</a></li></ul><h3>Classes</h3><ul><li><a href="module-compiler-Compiler.html">Compiler</a></li><li><a href="module-decorator-Decorator.html">Decorator</a></li><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-types-TOC.html">TOC</a></li><li><a href="module-watcher-Watcher.html">Watcher</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-compiler.html">compiler</a></li><li><a href="module-decorator.html">decorator</a></li><li><a href="module-generator.html">generator</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li><li><a href="module-watcher.html">watcher</a></li></ul><h3>Classes</h3><ul><li><a href="module-compiler-Compiler.html">Compiler</a></li><li><a href="module-decorator-Decorator.html">Decorator</a></li><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-TOC.html">TOC</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-watcher-Watcher.html">Watcher</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Sun Dec 11 2022 20:39:16 GMT+0800 (China Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.0</a> on Wed Dec 14 2022 21:57:59 GMT+0800 (China Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

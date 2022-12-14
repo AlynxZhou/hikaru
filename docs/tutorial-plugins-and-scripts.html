@@ -30,44 +30,59 @@
 <article>
     <h1>Plugins and Scripts</h1>
 <p>For some users and developers, they may need some custom functions for their sites or themes, however we cannot add all those to Hikaru, so we support plugins and scripts for them.</p>
+<p>Since Hikaru v1.14.0, ES module is supported and recommended.</p>
 <h1>Scripts</h1>
-<p>For users or devs who just wants some small or theme-specific functions, they can create JavaScript files in site or theme's <code>scripts/</code> dir, a script is a Node module which exports a function with a parameter for a Hikaru object like this. Hikaru can load them before dealing with site files.</p>
-<pre class="prettyprint source lang-javascript"><code>module.exports = (hikaru) => {
+<p>For users or devs who just wants some small or theme-specific functions, they can create JavaScript files in site or theme's <code>scripts/</code> dir, a script is a Node module which exports a function as default, a Hikaru object is past as parameter. Hikaru can load them before dealing with site files.</p>
+<pre class="prettyprint source lang-javascript"><code>const fn = (hikaru) => {
   hikaru.logger.log(&quot;Loading custom script!&quot;)
-}
+};
+
+export default fn;
 </code></pre>
 <p>You can access Hikaru's <code>renderer</code>, <code>compiler</code>, <code>processor</code>, <code>generator</code>, <code>decorator</code>, <code>logger</code>, <code>translator</code>, <code>watcher</code>, <code>types</code>, <code>utils</code>, <code>opts</code> and <code>site</code> object through the Hikaru object.</p>
 <h1>Plugins</h1>
 <p>For users or devs who wants some independent functions to release, they can create plugins. Plugins are npm packages that starts with <code>hikaru-</code> in their name and installed in site's <code>node_modules</code> dir, Hikaru can load dependencies in site's <code>package.json</code> before dealing with site files.</p>
-<p>They must export a main function like scripts, this will be the entry of a plugin when Hikaru is loading them.</p>
+<p>They must export a default function like scripts, this will be the entry of a plugin when Hikaru is loading them.</p>
 <p>You are supposed to hint the plugin type with words like <code>renderer</code>, <code>compiler</code>, <code>processor</code>, <code>generator</code>, <code>decorator</code>, <code>logger</code>, <code>translator</code>, <code>types</code>, <code>utils</code>.</p>
 <h2>If You Add Custom Template in Plugins and Want to Use Include...</h2>
 <p>If you want to add custom template via <code>decorator</code>, please notice that most templating engines has a base dir, from which they look up templates in include statement. Typically this is set to theme's <code>layouts/</code> dir. And when you use <code>include</code> in your plugin's template, it will also try to load file in theme's <code>layouts/</code> dir, which is notwhat you want.</p>
 <p>To load from your plugin dir, since Hikaru v1.12.0, you can pass custom ctx while registering a decorator. You can pass plugin's dir using it and join paths when calling include in template.</p>
 <p>For example, you can write those in <code>index.js</code>:</p>
-<pre class="prettyprint source lang-javascript"><code>const fs = require(&quot;fs/promises&quot;);
-const path = require(&quot;path&quot;);
+<pre class="prettyprint source lang-javascript"><code>import * as fs from &quot;node:fs/promises&quot;;
+import * as path from &quot;node:path&quot;;
 
-module.exports = async (hikaru) => {
+const pluginDir = path.dirname(new URL(import.meta.url).pathname);
+
+const generateFeed = async (hikaru) => {
+  if (!hikaru.site[&quot;siteConfig&quot;][&quot;feed&quot;][&quot;enable&quot;]) {
+    return;
+  }
+  const {escapeHTML, loadJSON} = hikaru.utils;
   const {File} = hikaru.types;
-  const filepath = path.join(__dirname, &quot;a.njk&quot;);
+  const pkgJSON = loadJSON(path.join(pluginDir, &quot;package.json&quot;));
+  const filepath = path.join(pluginDir, &quot;atom.njk&quot;);
   const content = await fs.readFile(filepath, &quot;utf8&quot;);
   const fn = await hikaru.compiler.compile(filepath, content);
-  // Here is important!
-  hikaru.decorator.register(&quot;a&quot;, fn, {
-    &quot;dirname&quot;: __dirname, &quot;pathSep&quot;: path.sep
+  hikaru.decorator.register(&quot;atom&quot;, fn, {
+    &quot;dirname&quot;: pluginDir, &quot;pathSep&quot;: path.sep
   });
-  hikaru.generator.register(&quot;a&quot;, (site) => {
+  hikaru.generator.register(&quot;atom feed&quot;, (site) => {
     return new File({
       &quot;docDir&quot;: site[&quot;siteConfig&quot;][&quot;docDir&quot;],
-      &quot;docPath&quot;: &quot;a.xml&quot;,
-      &quot;layout&quot;: &quot;a&quot;
+      &quot;docPath&quot;: site[&quot;siteConfig&quot;][&quot;feed&quot;][&quot;path&quot;] || &quot;atom.xml&quot;,
+      &quot;layout&quot;: &quot;atom&quot;,
+      &quot;escapeHTML&quot;: escapeHTML,
+      &quot;getFeedGeneratorVersion&quot;: () => {
+        return pkgJSON[&quot;version&quot;];
+      }
     });
   });
 };
+
+export default generateFeed;
 </code></pre>
 <p>and if you wants to include <code>b.njk</code> in <code>a.njk</code>, don't write <code>{% include &quot;b.njk&quot; %}</code>, instead use <code>{% include dirname + pathSep + &quot;b.njk&quot; %}</code>.</p>
-<p>For more example, you can read the code of <a href="https://github.com/AlynxZhou/hikaru-generator-feed/">hikaru-generator-feed</a>.</p>
+<p>For complete example, you can read the code of <a href="https://github.com/AlynxZhou/hikaru-generator-feed/">hikaru-generator-feed</a>.</p>
 </article>
 
 </section>
@@ -75,13 +90,13 @@ module.exports = async (hikaru) => {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-compiler.html">compiler</a></li><li><a href="module-decorator.html">decorator</a></li><li><a href="module-generator.html">generator</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li><li><a href="module-watcher.html">watcher</a></li></ul><h3>Classes</h3><ul><li><a href="module-compiler-Compiler.html">Compiler</a></li><li><a href="module-decorator-Decorator.html">Decorator</a></li><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-types-TOC.html">TOC</a></li><li><a href="module-watcher-Watcher.html">Watcher</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-compiler.html">compiler</a></li><li><a href="module-decorator.html">decorator</a></li><li><a href="module-generator.html">generator</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li><li><a href="module-watcher.html">watcher</a></li></ul><h3>Classes</h3><ul><li><a href="module-compiler-Compiler.html">Compiler</a></li><li><a href="module-decorator-Decorator.html">Decorator</a></li><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-TOC.html">TOC</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-watcher-Watcher.html">Watcher</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Sun Dec 11 2022 20:39:16 GMT+0800 (China Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.0</a> on Wed Dec 14 2022 21:57:59 GMT+0800 (China Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

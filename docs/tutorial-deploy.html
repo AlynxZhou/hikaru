@@ -49,8 +49,8 @@ $ git push -u origin master
 </code></pre>
 <p>You can write a shell script to do this every time.</p>
 <p>Don't forget to go to your GitHub Repo settings and choose <code>master branch</code> to host pages.</p>
-<h1>Commit whole site (Recommanded if available)</h1>
-<p>Some host, like <a href="https://pages.github.com/">GitHub Pages</a>, allows you to commit whole site and host files in <code>docs/</code> dir only, so you can just commit your whole site, and use git to control your sources, too.</p>
+<h1>Commit whole site (Recommended if available)</h1>
+<p>Some host, like <a href="https://pages.github.com/">GitHub Pages</a>, allows you to commit the whole site and host files in <code>docs/</code> dir only, so you can just commit your whole site, and use git to control your sources, too.</p>
 <h2>Init repo before clone theme</h2>
 <p>As we all know, you cannot set a git repo when you already has a sub dir that already a git repo. It is very likely you choose to manage your theme with git, so you'd better move it away before creating a git repo for your site.</p>
 <p>(Suppose that you are inside site dir.)</p>
@@ -70,10 +70,15 @@ $ git push -u origin master
 <p>You can write a shell script to do this every time like:</p>
 <pre class="prettyprint source"><code>#!/bin/bash
 
-hikaru clean --debug
-hikaru build --debug
+npx hikaru clean --debug
+npx hikaru build --debug
+
 git add --all
-git commit --message &quot;Updated site.&quot;
+if [[ -n &quot;${*}&quot; ]]; then
+    git commit --message &quot;${*}&quot;
+else
+    git commit --message &quot;Updated site.&quot;
+fi
 git push --set-upstream origin master
 </code></pre>
 <p>Don't forget to go to your GitHub Repo settings and choose <code>master branch /docs folder</code> to host pages.</p>
@@ -84,13 +89,13 @@ git push --set-upstream origin master
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-compiler.html">compiler</a></li><li><a href="module-decorator.html">decorator</a></li><li><a href="module-generator.html">generator</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li><li><a href="module-watcher.html">watcher</a></li></ul><h3>Classes</h3><ul><li><a href="module-compiler-Compiler.html">Compiler</a></li><li><a href="module-decorator-Decorator.html">Decorator</a></li><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-types-TOC.html">TOC</a></li><li><a href="module-watcher-Watcher.html">Watcher</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-compiler.html">compiler</a></li><li><a href="module-decorator.html">decorator</a></li><li><a href="module-generator.html">generator</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li><li><a href="module-watcher.html">watcher</a></li></ul><h3>Classes</h3><ul><li><a href="module-compiler-Compiler.html">Compiler</a></li><li><a href="module-decorator-Decorator.html">Decorator</a></li><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-TOC.html">TOC</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-watcher-Watcher.html">Watcher</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Sun Dec 11 2022 20:39:16 GMT+0800 (China Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.0</a> on Wed Dec 14 2022 21:57:59 GMT+0800 (China Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
