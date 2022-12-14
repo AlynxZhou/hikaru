@@ -6,6 +6,7 @@
 
 const path = require("path");
 
+const fse = require("fs-extra");
 const YAML = require("yaml");
 const parse5 = require("parse5");
 const readdirp = require("readdirp");
@@ -68,6 +69,23 @@ const isBuffer = (o) => {
  */
 const isBinary = (b) => {
   return isBuffer(b) && !b.equals(Buffer.from(b.toString("utf8"), "utf8"));
+};
+
+/**
+ * @description Node.js marks `fs.exists()` deprecated and suggest to use
+ * `fs.access()`, but it throws error instead of return a boolean, this is a
+ * wrapper for it.
+ * @see https://nodejs.org/api/fs.html#fsaccesssyncpath-mode
+ * @param {String} path
+ * @return {Boolean}
+ */
+const isReadableSync = (path) => {
+  try {
+    fse.accessSync(path, fse.constants.R_OK);
+    return true;
+  } catch (error) {
+    return false;
+  }
 };
 
 /**
@@ -1108,6 +1126,7 @@ module.exports = {
   isBinary,
   isBinaryFile,
   isBinaryFileSync,
+  isReadableSync,
   escapeHTML,
   matchFiles,
   removeControlChars,

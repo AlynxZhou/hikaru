@@ -25,6 +25,7 @@ const {Site, File} = types;
 const utils = require("./utils");
 const {
   isObject,
+  isReadableSync,
   matchFiles,
   paginate,
   sortCategories,
@@ -254,7 +255,7 @@ class Hikaru {
   loadSiteConfig(siteDir, siteConfigPath) {
     if (siteConfigPath == null) {
       let defaultSiteConfigPath = path.join(siteDir, "site-config.yaml");
-      if (!fse.existsSync(defaultSiteConfigPath)) {
+      if (!isReadableSync(defaultSiteConfigPath)) {
         this.logger.warn(`Hikaru suggests you to rename \`${
           this.logger.cyan(path.join(siteDir, "site-config.yaml"))
         }\` to \`${
@@ -319,7 +320,7 @@ class Hikaru {
   loadThemeConfig(siteDir, themeConfigPath) {
     if (themeConfigPath == null) {
       let defaultThemeConfigPath = path.join(siteDir, "theme-config.yaml");
-      if (!fse.existsSync(defaultThemeConfigPath)) {
+      if (!isReadableSync(defaultThemeConfigPath)) {
         this.logger.warn(`Hikaru suggests you to rename \`${
           this.logger.cyan(path.join(siteDir, "theme-config.yaml"))
         }\` to \`${
@@ -423,7 +424,7 @@ class Hikaru {
    */
   async loadPlugins() {
     const sitePkgPath = path.join(this.site["siteDir"], "package.json");
-    if (!fse.existsSync(sitePkgPath)) {
+    if (!isReadableSync(sitePkgPath)) {
       return null;
     }
     const plugins = JSON.parse(
@@ -695,7 +696,7 @@ class Hikaru {
         if (!this.layouts.has(srcPath)) {
           // Layouts not in theme's layout dir, for example plugin's template,
           // fallback to read from disk.
-          if (!fse.existsSync(srcPath)) {
+          if (!isReadableSync(srcPath)) {
             return null;
           }
           // Load such files sync to prevent include in for loop problem.
