@@ -59,7 +59,7 @@ Copy theme config to site dir and edit it:
 
 ```
 $ cp themes/aria/theme-config.yaml theme-config.yaml
-$ $EDITOR site-config.yaml
+$ $EDITOR theme-config.yaml
 ```
 
 # Create src file
