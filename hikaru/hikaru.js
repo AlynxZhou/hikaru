@@ -257,9 +257,9 @@ class Hikaru {
       let defaultSiteConfigPath = path.join(siteDir, "site-config.yaml");
       if (!isReadableSync(defaultSiteConfigPath)) {
         this.logger.warn(`Hikaru suggests you to rename \`${
-          this.logger.cyan(path.join(siteDir, "site-config.yaml"))
-        }\` to \`${
           this.logger.cyan(path.join(siteDir, "siteConfig.yml"))
+        }\` to \`${
+          this.logger.cyan(path.join(siteDir, "site-config.yaml"))
         }\` because it's deprecated!`);
         defaultSiteConfigPath = path.join(siteDir, "siteConfig.yml");
       }
@@ -322,9 +322,9 @@ class Hikaru {
       let defaultThemeConfigPath = path.join(siteDir, "theme-config.yaml");
       if (!isReadableSync(defaultThemeConfigPath)) {
         this.logger.warn(`Hikaru suggests you to rename \`${
-          this.logger.cyan(path.join(siteDir, "theme-config.yaml"))
-        }\` to \`${
           this.logger.cyan(path.join(siteDir, "themeConfig.yml"))
+        }\` to \`${
+          this.logger.cyan(path.join(siteDir, "theme-config.yaml"))
         }\` because it's deprecated!`);
         defaultThemeConfigPath = path.join(siteDir, "themeConfig.yml");
       }
