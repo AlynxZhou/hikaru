@@ -16,7 +16,7 @@ themeDir: themes/aria
 
 # Those paths are relative to `docDir`.
 # Set to `null` if you don't want them.
-indexDir: .
+homeDir: .
 archiveDir: archives
 categoryDir: categories
 tagDir: tags
@@ -26,7 +26,7 @@ skipRender:
   - README.md
 
 perPage:
-  index: 10
+  home: 10
   archives: 15
   category: 15
   tag: 15

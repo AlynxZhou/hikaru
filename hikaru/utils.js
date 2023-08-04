@@ -236,7 +236,7 @@ const getFrontMatter = (str) => {
     return {"attributes": {}, "body": str};
   }
   // Matched result looks like
-  // `["---\n", "index": 0, "input": "---\n", "groups": undefined]`.
+  // `{"---\n", "index": 0, "input": "---\n", "groups": undefined}`.
   // It is a mix of Array and Object. We use it to split string manually.
   const result = {
     "body": str.substring(fmEnd.index + fmEnd[0].length),
@@ -315,15 +315,15 @@ const paginate = (p, posts = [], perPage = 10) => {
   }
   results.push(Object.assign(new File(), p, {"posts": perPagePosts}));
   results[0]["pages"] = results;
-  // Don't break themes.
   results[0]["index"] = 0;
+  // Keep compatible and don't break themes.
   results[0]["pageIndex"] = results[0]["index"];
   results[0]["pageArray"] = results[0]["pages"];
   results[0]["docPath"] = p["docPath"];
   for (let i = 1; i < results.length; ++i) {
     results[i]["pages"] = results;
     results[i]["index"] = i;
-    // Don't break themes.
+    // Keep compatible and don't break themes.
     results[i]["pageArray"] = results[i]["pages"];
     results[i]["pageIndex"] = results[i]["index"];
     results[i]["docPath"] = path.join(

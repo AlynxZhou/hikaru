@@ -599,6 +599,14 @@ class Hikaru {
       const content = this.site["layouts"].get(srcPath);
       const fn = await this.compiler.compile(srcPath, content);
       this.decorator.register(layout, fn);
+      // Keep compatible and don't break themes. The only possible problem is
+      // using new Hikaru with an old theme (Hikaru generates `home` but the
+      // theme only contains `index`). If using new theme with old Hikaru, it
+      // should be easy for theme to keep compatible (for example, link `index`
+      // to `home`), don't do too much here.
+      if (layout === "index" && !this.decorator.list().includes("home")) {
+        this.decorator.register("home", fn);
+      }
     };
     const all = Promise.all(filenames.map((filename) => {
       return load(this.site["siteConfig"]["themeLayoutDir"], filename);
@@ -822,19 +830,25 @@ class Hikaru {
    * @private
    */
   registerInternalGenerators() {
-    if (this.site["siteConfig"]["indexDir"] != null) {
-      this.generator.register("index pages", (site) => {
+    // Keep compatible and don't break themes.
+    if (this.site["siteConfig"]["homeDir"] != null ||
+        this.site["siteConfig"]["indexDir"] != null) {
+      this.generator.register("home pages", (site) => {
         let perPage;
         if (isObject(site["siteConfig"]["perPage"])) {
-          perPage = site["siteConfig"]["perPage"]["index"] || 10;
+          perPage = site["siteConfig"]["perPage"]["home"] ||
+            site["siteConfig"]["perPage"]["index"] || 10;
         } else {
           perPage = site["siteConfig"]["perPage"] || 10;
         }
         return paginate(new File({
-          "layout": "index",
+          "layout": "home",
           "docDir": site["siteConfig"]["docDir"],
-          "docPath": path.join(site["siteConfig"]["indexDir"], "index.html"),
-          "title": "index",
+          "docPath": path.join(
+            site["siteConfig"]["homeDir"] || site["siteConfig"]["indexDir"],
+            "index.html"
+          ),
+          "title": "home",
           "comment": false,
           "reward": false
         }), site["posts"], perPage);
