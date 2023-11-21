@@ -65,7 +65,7 @@ const loadYAMLSync = (path) => {
  * @return {Boolean}
  */
 const isString = (o) => {
-  return typeof o === "string";
+  return typeof o === "string" || o instanceof String;
 };
 
 /**
@@ -412,10 +412,10 @@ const getPathFn = (rootDir = path.posix.sep) => {
     // Use assertion to prevent `?` and `#` to be removed.
     const array = docPath.split(/(?=[?#])/);
     array[0] = array[0].replace(winSepRegExp, path.posix.sep);
-    if (array[0].endsWith("index.html")) {
-      array[0] = array[0].substring(0, array[0].length - "index.html".length);
-    } else if (array[0].endsWith("index.htm")) {
-      array[0] = array[0].substring(0, array[0].length - "index.htm".length);
+    const baseName = path.posix.basename(array[0]);
+    const dirName = path.posix.dirname(array[0]);
+    if (baseName === "index.html" || baseName === "index.htm") {
+      array[0] = path.posix.join(dirName, path.posix.sep);
     }
     /**
      * marked.js and CommonMark tends to do URL encode by themselevs.
@@ -854,7 +854,7 @@ const setNodeAttr = (node, attrName, attrValue) => {
 };
 
 /**
- * @description Update headings' ID for bootstrap scrollspy.
+ * @description Update headings' IDs for bootstrap scrollspy.
  * @param {Object} node parse5 Node.
  */
 const resolveHeadingIDs = (node) => {
