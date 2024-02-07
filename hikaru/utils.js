@@ -343,12 +343,12 @@ const paginate = (p, posts = [], perPage = 10) => {
   let perPagePosts = [];
   for (const post of posts) {
     if (perPagePosts.length === perPage) {
-      results.push(Object.assign(new File(), p, {"posts": perPagePosts}));
+      results.push(new File(p, {"posts": perPagePosts}));
       perPagePosts = [];
     }
     perPagePosts.push(post);
   }
-  results.push(Object.assign(new File(), p, {"posts": perPagePosts}));
+  results.push(new File(p, {"posts": perPagePosts}));
   results[0]["pages"] = results;
   results[0]["index"] = 0;
   // Keep compatible and don't break themes.

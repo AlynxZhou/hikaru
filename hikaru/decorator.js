@@ -67,11 +67,9 @@ class Decorator {
       }
       if (isString(handler["fn"])) {
         const fn = await this.compiler.compile(handler["fn"]);
-        return fn(Object.assign(new File(), file, ctx));
+        return fn(new File(file, ctx));
       }
-      return handler["fn"](Object.assign(
-        new File(), file, ctx, handler["ctx"]
-      ));
+      return handler["fn"](new File(file, ctx, handler["ctx"]));
     }
     return file["content"];
   }

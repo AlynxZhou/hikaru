@@ -155,6 +155,7 @@ class Router {
    */
   loadContext(file) {
     const lang = file["language"] || this.site["siteConfig"]["language"];
+    const decorated = new Date();
     return {
       "site": this.site,
       "siteConfig": this.site["siteConfig"],
@@ -170,10 +171,10 @@ class Router {
       "isString": isString,
       "isFunction": isFunction,
       "isObject": isObject,
-      // Damn it, you cannot use `new` in Nunjucks.
-      // Every time a decorator starts, context will be loaded,
-      // and we can get decorate date here.
-      "decorateDate": new Date(),
+      // Damn it, we cannot use `new` in Nunjucks. But every time a decorator
+      // starts, context will be loaded, so we can pass decorate date and time.
+      "decorated": decorated,
+      "decorateDate": decorated,
       "__": this.translator.getTranslateFn(lang)
     };
   }
@@ -189,20 +190,20 @@ class Router {
       "ignoreHidden": false,
       "workDir": this.site["siteConfig"]["themeSrcDir"]
     })).map((srcPath) => {
-      return new File(
-        this.site["siteConfig"]["docDir"],
-        this.site["siteConfig"]["themeSrcDir"],
-        srcPath
-      );
+      return new File({
+        "docDir": this.site["siteConfig"]["docDir"],
+        "srcDir": this.site["siteConfig"]["themeSrcDir"],
+        "srcPath": srcPath
+      });
     }).concat((await matchFiles("**/*", {
       "ignoreHidden": false,
       "workDir": this.site["siteConfig"]["srcDir"]
     })).map((srcPath) => {
-      return new File(
-        this.site["siteConfig"]["docDir"],
-        this.site["siteConfig"]["srcDir"],
-        srcPath
-      );
+      return new File({
+        "docDir": this.site["siteConfig"]["docDir"],
+        "srcDir": this.site["siteConfig"]["srcDir"],
+        "srcPath": srcPath
+      });
     }));
   }
 
@@ -256,17 +257,21 @@ class Router {
       async (srcDir, srcPaths) => {
         const {added, changed, removed} = srcPaths;
         for (const srcPath of removed) {
-          const file = new File(
-            this.site["siteConfig"]["docDir"], srcDir, srcPath
-          );
+          const file = new File({
+            "docDir": this.site["siteConfig"]["docDir"],
+            "srcDir": srcDir,
+            "srcPath": srcPath
+          });
           for (const key of Site.arrayKeys) {
             delSite(this.site, key, file);
           }
         }
         await Promise.all(added.concat(changed).map((srcPath) => {
-          const newFile = new File(
-            this.site["siteConfig"]["docDir"], srcDir, srcPath
-          );
+          const newFile = new File({
+            "docDir": this.site["siteConfig"]["docDir"],
+            "srcDir": srcDir,
+            "srcPath": srcPath
+          });
           return this.loadFile(newFile);
         }));
         this.flush();
@@ -297,15 +302,16 @@ class Router {
   listen(ip, port) {
     this.ip = ip;
     this.port = port;
-    // Use custom 404 file if available.
-    const real404File = this._.get(this.getPath("404.html")) || new File({
-      "content": default404,
-      "docPath": this.getPath("404.html")
-    });
     this.server = http.createServer(async (request, response) => {
       // Remove query string.
       const pathname = request["url"].split(/[?#]/)[0];
       const code = this._.has(pathname) ? 200 : 404;
+      // Use custom 404 file if available.
+      const real404File = this._.get(this.getPath("404.html")) || new File({
+        "docDir": "docs",
+        "docPath": this.getPath("404.html"),
+        "content": default404
+      });
       const file = this._.get(pathname) || real404File;
       this.logger.log(`${
         code === 200 ? this.logger.blue(code) : this.logger.yellow(code)
