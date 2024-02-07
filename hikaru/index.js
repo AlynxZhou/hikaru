@@ -16,7 +16,7 @@ command
   // Overwrite default help option description.
   .helpOption("-h, --help", "Print help information.")
   // Overwrite default help command description.
-  .addHelpCommand("help [subcommand]", "Print help information.");
+  .helpCommand("help [subcommand]", "Print help information.");
 
 command.command("init").alias("i")
   .argument("[dir]", "Site dir.")
