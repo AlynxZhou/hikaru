@@ -9,8 +9,6 @@ import YAML from "yaml";
 import * as parse5 from "parse5";
 import readdirp from "readdirp";
 import picomatch from "picomatch";
-// This works better than what I wrote and it has no dependency.
-import {isBinaryFile, isBinaryFileSync} from "isbinaryfile";
 
 import {Site, File, Category, Tag, TOC} from "./types.js";
 
@@ -101,9 +99,10 @@ const isBuffer = (o) => {
 };
 
 /**
- * @description You should use `isBinaryFile(filepath)` because it does not
- * read full file into memory so you can get a better performance.
- * @see https://github.com/gjtorikian/isBinaryFile#isbinaryfilefilepath
+ * @description Check whether a buffer is a binary. You should use
+ * `isBinaryPath(p)` because this is costly and mostly a false positive is
+ * harmless so we don't need an exact check. For non-costly exact check, add
+ * `isbinaryfile` dependency for your project.
  * @param {Buffer} b
  * @return {Boolean}
  */
@@ -112,16 +111,50 @@ const isBinary = (b) => {
 };
 
 /**
+ * @private
+ */
+const binExt = loadJSONSync(path.join(hikaruDir, "hikaru", "bin-ext.json"));
+/**
+ * @description Check whether a path is a binary via ext name. For non-costly
+ * exact check, add `isbinaryfile` dependency for your project.
+ * @param {String} p
+ * @return {Boolean}
+ */
+const isBinaryPath = (p) => {
+  return binExt.includes(path.extname(p).toLowerCase());
+};
+
+/**
+ * @deprecated
+ * @description You should use `isBinaryPath(p)` mostly. This is only for
+ * compatibility because `isbinaryfile` dependency is dropped.
+ * @param {String|Buffer} o
+ * @return {Boolean}
+ */
+const isBinaryFile = (o) => {
+  return isBuffer(o) ? isBinary(o) : isBinaryPath(o);
+};
+
+/**
+ * @deprecated
+ * @description You should use `isBinaryPath(p)` mostly. This is only for
+ * compatibility because `isbinaryfile` dependency is dropped.
+ * @param {String|Buffer} o
+ * @return {Boolean}
+ */
+const isBinaryFileSync = isBinaryFile;
+
+/**
  * @description Node.js marks `fs.exists()` deprecated and suggest to use
  * `fs.access()`, but it throws error instead of return a boolean, this is a
  * wrapper for it.
  * @see https://nodejs.org/api/fs.html#fsaccesssyncpath-mode
- * @param {String} path
+ * @param {String} p
  * @return {Boolean}
  */
-const isReadableSync = (path) => {
+const isReadableSync = (p) => {
   try {
-    fse.accessSync(path, fse.constants.R_OK);
+    fse.accessSync(p, fse.constants.R_OK);
     return true;
   } catch (error) {
     return false;
@@ -281,7 +314,8 @@ const parseFrontMatter = (file) => {
 
 /**
  * @private
- * @description This is only used for serve.
+ * @description This is only used for serving, so we lazy load it to save time
+ * on building.
  */
 let extMIME = null;
 /**
@@ -293,7 +327,8 @@ const getContentType = (docPath) => {
   if (extMIME == null) {
     extMIME = loadJSONSync(path.join(hikaruDir, "hikaru", "ext-mime.json"));
   }
-  return extMIME[path.extname(docPath)] || "application/octet-stream";
+  const ext = path.extname(docPath).toLowerCase();
+  return extMIME[ext] || "application/octet-stream";
 };
 
 /**
@@ -1184,6 +1219,7 @@ export {
   isObject,
   isBuffer,
   isBinary,
+  isBinaryPath,
   isBinaryFile,
   isBinaryFileSync,
   isReadableSync,

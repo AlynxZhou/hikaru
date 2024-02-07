@@ -11,7 +11,7 @@ import {
   isString,
   isFunction,
   isObject,
-  isBinaryFile,
+  isBinaryPath,
   default404,
   matchFiles,
   getVersion,
@@ -89,14 +89,14 @@ class Router {
    * @private
    * @description Write or copy file to docDir.
    * @param {File} file
-   * @param {(Buffer|String)} content
+   * @param {(Buffer|String)} content This is for decorated content, if the file
+   * is not decorated, leave this empty and file's content property is used.
    */
   write(file, content) {
     content = content || file["content"];
-    if (!file["binary"]) {
-      return fse.outputFile(getFullDocPath(file), content);
-    }
-    return fse.copy(getFullSrcPath(file), getFullDocPath(file));
+    return file["binary"]
+      ? fse.copy(getFullSrcPath(file), getFullDocPath(file))
+      : fse.outputFile(getFullDocPath(file), content);
   }
 
   /**
@@ -108,9 +108,9 @@ class Router {
     this.logger.debug(`Hikaru is reading \`${
       this.logger.cyan(getFullSrcPath(file))
     }\`...`);
-    // Binary files are not supposed to handle by SSGs.
-    // We can copy or pipe it to save memory.
-    file["binary"] = await isBinaryFile(getFullSrcPath(file));
+    // Binary files are not supposed to be handled by SSGs. We can copy or pipe
+    // it to save memory.
+    file["binary"] = isBinaryPath(getFullSrcPath(file));
     if (!file["binary"]) {
       file["raw"] = await this.read(getFullSrcPath(file));
       file["text"] = file["raw"].toString("utf8");
@@ -314,12 +314,19 @@ class Router {
         "Content-Type": getContentType(file["docPath"])
       });
       if (!file["binary"]) {
-        response.write(
-          await this.decorator.decorate(file, this.loadContext(file))
+        const content = await this.decorator.decorate(
+          file, this.loadContext(file)
         );
+        this.logger.debug(
+          `Hikaru is sending \`${this.logger.cyan(getFullDocPath(file))}\`...`
+        );
+        response.write(content);
         response.end();
       } else {
-        // Pipe a binary instead of read.
+        // Pipe a binary instead of send.
+        this.logger.debug(
+          `Hikaru is piping \`${this.logger.cyan(getFullDocPath(file))}\`...`
+        );
         fse.createReadStream(getFullSrcPath(file)).pipe(response);
       }
     });

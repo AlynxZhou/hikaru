@@ -118,7 +118,7 @@ If we want a dictionary to store keys and values, and keys are not fixed, just u
 
 Otherwise, use Arrays and Objects, for example lists, queues or dictionaries that have fixed keys.
 
-If we got parsed Objects, for example options from YAML files, don't convert them into Maps except we need to do other operations on them.
+If we got parsed Objects and Arrays, for example options from YAML files or data from JSON files, don't convert them into Maps and Sets except we need to do other operations on them.
 
 ## `for...of`, `for...in`, `.forEach()`, `.map()`
 
