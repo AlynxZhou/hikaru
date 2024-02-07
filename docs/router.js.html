@@ -39,7 +39,7 @@ import {
   isString,
   isFunction,
   isObject,
-  isBinaryFile,
+  isBinaryPath,
   default404,
   matchFiles,
   getVersion,
@@ -117,14 +117,14 @@ class Router {
    * @private
    * @description Write or copy file to docDir.
    * @param {File} file
-   * @param {(Buffer|String)} content
+   * @param {(Buffer|String)} content This is for decorated content, if the file
+   * is not decorated, leave this empty and file's content property is used.
    */
   write(file, content) {
     content = content || file["content"];
-    if (!file["binary"]) {
-      return fse.outputFile(getFullDocPath(file), content);
-    }
-    return fse.copy(getFullSrcPath(file), getFullDocPath(file));
+    return file["binary"]
+      ? fse.copy(getFullSrcPath(file), getFullDocPath(file))
+      : fse.outputFile(getFullDocPath(file), content);
   }
 
   /**
@@ -136,9 +136,9 @@ class Router {
     this.logger.debug(`Hikaru is reading \`${
       this.logger.cyan(getFullSrcPath(file))
     }\`...`);
-    // Binary files are not supposed to handle by SSGs.
-    // We can copy or pipe it to save memory.
-    file["binary"] = await isBinaryFile(getFullSrcPath(file));
+    // Binary files are not supposed to be handled by SSGs. We can copy or pipe
+    // it to save memory.
+    file["binary"] = isBinaryPath(getFullSrcPath(file));
     if (!file["binary"]) {
       file["raw"] = await this.read(getFullSrcPath(file));
       file["text"] = file["raw"].toString("utf8");
@@ -183,6 +183,7 @@ class Router {
    */
   loadContext(file) {
     const lang = file["language"] || this.site["siteConfig"]["language"];
+    const decorated = new Date();
     return {
       "site": this.site,
       "siteConfig": this.site["siteConfig"],
@@ -198,10 +199,10 @@ class Router {
       "isString": isString,
       "isFunction": isFunction,
       "isObject": isObject,
-      // Damn it, you cannot use `new` in Nunjucks.
-      // Every time a decorator starts, context will be loaded,
-      // and we can get decorate date here.
-      "decorateDate": new Date(),
+      // Damn it, we cannot use `new` in Nunjucks. But every time a decorator
+      // starts, context will be loaded, so we can pass decorate date and time.
+      "decorated": decorated,
+      "decorateDate": decorated,
       "__": this.translator.getTranslateFn(lang)
     };
   }
@@ -217,20 +218,20 @@ class Router {
       "ignoreHidden": false,
       "workDir": this.site["siteConfig"]["themeSrcDir"]
     })).map((srcPath) => {
-      return new File(
-        this.site["siteConfig"]["docDir"],
-        this.site["siteConfig"]["themeSrcDir"],
-        srcPath
-      );
+      return new File({
+        "docDir": this.site["siteConfig"]["docDir"],
+        "srcDir": this.site["siteConfig"]["themeSrcDir"],
+        "srcPath": srcPath
+      });
     }).concat((await matchFiles("**/*", {
       "ignoreHidden": false,
       "workDir": this.site["siteConfig"]["srcDir"]
     })).map((srcPath) => {
-      return new File(
-        this.site["siteConfig"]["docDir"],
-        this.site["siteConfig"]["srcDir"],
-        srcPath
-      );
+      return new File({
+        "docDir": this.site["siteConfig"]["docDir"],
+        "srcDir": this.site["siteConfig"]["srcDir"],
+        "srcPath": srcPath
+      });
     }));
   }
 
@@ -284,17 +285,21 @@ class Router {
       async (srcDir, srcPaths) => {
         const {added, changed, removed} = srcPaths;
         for (const srcPath of removed) {
-          const file = new File(
-            this.site["siteConfig"]["docDir"], srcDir, srcPath
-          );
+          const file = new File({
+            "docDir": this.site["siteConfig"]["docDir"],
+            "srcDir": srcDir,
+            "srcPath": srcPath
+          });
           for (const key of Site.arrayKeys) {
             delSite(this.site, key, file);
           }
         }
         await Promise.all(added.concat(changed).map((srcPath) => {
-          const newFile = new File(
-            this.site["siteConfig"]["docDir"], srcDir, srcPath
-          );
+          const newFile = new File({
+            "docDir": this.site["siteConfig"]["docDir"],
+            "srcDir": srcDir,
+            "srcPath": srcPath
+          });
           return this.loadFile(newFile);
         }));
         this.flush();
@@ -325,15 +330,16 @@ class Router {
   listen(ip, port) {
     this.ip = ip;
     this.port = port;
-    // Use custom 404 file if available.
-    const real404File = this._.get(this.getPath("404.html")) || new File({
-      "content": default404,
-      "docPath": this.getPath("404.html")
-    });
     this.server = http.createServer(async (request, response) => {
       // Remove query string.
       const pathname = request["url"].split(/[?#]/)[0];
       const code = this._.has(pathname) ? 200 : 404;
+      // Use custom 404 file if available.
+      const real404File = this._.get(this.getPath("404.html")) || new File({
+        "docDir": "docs",
+        "docPath": this.getPath("404.html"),
+        "content": default404
+      });
       const file = this._.get(pathname) || real404File;
       this.logger.log(`${
         code === 200 ? this.logger.blue(code) : this.logger.yellow(code)
@@ -342,12 +348,19 @@ class Router {
         "Content-Type": getContentType(file["docPath"])
       });
       if (!file["binary"]) {
-        response.write(
-          await this.decorator.decorate(file, this.loadContext(file))
+        const content = await this.decorator.decorate(
+          file, this.loadContext(file)
         );
+        this.logger.debug(
+          `Hikaru is sending \`${this.logger.cyan(getFullDocPath(file))}\`...`
+        );
+        response.write(content);
         response.end();
       } else {
-        // Pipe a binary instead of read.
+        // Pipe a binary instead of send.
+        this.logger.debug(
+          `Hikaru is piping \`${this.logger.cyan(getFullDocPath(file))}\`...`
+        );
         fse.createReadStream(getFullSrcPath(file)).pipe(response);
       }
     });
@@ -436,7 +449,7 @@ export default Router;
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.0</a> on Tue Nov 21 2023 17:21:57 GMT+0800 (China Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Wed Feb 07 2024 18:32:54 GMT+0800 (China Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
