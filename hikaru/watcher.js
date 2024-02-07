@@ -4,7 +4,6 @@
 
 import * as path from "node:path";
 
-import isGlob from "is-glob";
 import chokidar from "chokidar";
 import picomatch from "picomatch";
 
@@ -25,7 +24,7 @@ class Watcher {
     this.fileDependencies = null;
     // We cache compiled globs here
     // so we don't need to recompile them again and again.
-    this.dependencyGlobs = null;
+    this.dependencyMatchers = null;
     this.updateFileDependencies(rawFileDependencies);
     this.queue = [];
     this.handling = false;
@@ -59,16 +58,17 @@ class Watcher {
    * @description Compile globs in dependency tree.
    * @return {Map} Key is glob pattern string, value is compiled function.
    */
-  compileDependenyGlobs() {
-    const dependencyGlobs = new Map();
+  compileDependencyMatchers() {
+    const dependencyMatchers = new Map();
     for (const srcDir of this.fileDependencies.keys()) {
       for (const dep of this.fileDependencies.get(srcDir).keys()) {
-        if (isGlob(dep) && !dependencyGlobs.has(dep)) {
-          dependencyGlobs.set(dep, picomatch(dep));
+        // There is no need to use `isGlob`, just let picomatch handle paths.
+        if (!dependencyMatchers.has(dep)) {
+          dependencyMatchers.set(dep, picomatch(dep));
         }
       }
     }
-    return dependencyGlobs;
+    return dependencyMatchers;
   }
 
   /**
@@ -77,7 +77,7 @@ class Watcher {
    */
   updateFileDependencies(rawFileDependencies) {
     this.fileDependencies = this.reverseFileDependencies(rawFileDependencies);
-    this.dependencyGlobs = this.compileDependenyGlobs();
+    this.dependencyMatchers = this.compileDependencyMatchers();
   }
 
   /**
@@ -170,11 +170,9 @@ class Watcher {
     const res = new Set();
     if (this.fileDependencies.has(srcDir)) {
       for (const dep of this.fileDependencies.get(srcDir).keys()) {
-        if (
-          srcPath === dep ||
-          (this.dependencyGlobs.has(dep) &&
-          this.dependencyGlobs.get(dep)(srcPath))
-        ) {
+        // Check exact match first to save time. All deps are compiled so it is
+        // safe to get matchers without checking.
+        if (srcPath === dep || this.dependencyMatchers.get(dep)(srcPath)) {
           checkedPaths.add(srcPath);
           const subset = this.fileDependencies.get(srcDir).get(dep);
           for (const e of subset) {
