@@ -14,6 +14,8 @@ class Processor {
    */
   constructor(logger) {
     this.logger = logger;
+    // Using Array because they need to be called in sequence, so user's custom
+    // handlers will be called after internal handlers.
     this._ = [];
   }
 

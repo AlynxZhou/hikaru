@@ -16,6 +16,7 @@ import Compiler from "./compiler.js";
 import Processor from "./processor.js";
 import Generator from "./generator.js";
 import Decorator from "./decorator.js";
+import Helper from "./helper.js";
 import Translator from "./translator.js";
 import Router from "./router.js";
 import * as types from "./types.js";
@@ -26,10 +27,17 @@ const {
   loadJSON,
   loadYAML,
   loadYAMLSync,
+  isArray,
   isString,
+  isFunction,
   isObject,
   isReadableSync,
   matchFiles,
+  getVersion,
+  getPathFn,
+  getURLFn,
+  isCurrentHostFn,
+  isCurrentPathFn,
   paginate,
   sortCategories,
   paginateCategories,
@@ -181,6 +189,7 @@ class Hikaru {
         this.processor,
         this.generator,
         this.decorator,
+        this.helper,
         this.translator,
         this.site
       );
@@ -223,6 +232,7 @@ class Hikaru {
         this.processor,
         this.generator,
         this.decorator,
+        this.helper,
         this.translator,
         this.site,
         this.watcher
@@ -393,11 +403,13 @@ class Hikaru {
     this.processor = new Processor(this.logger);
     this.generator = new Generator(this.logger);
     this.decorator = new Decorator(this.logger, this.compiler);
+    this.helper = new Helper(this.logger);
     this.translator = new Translator(this.logger);
     this.registerInternalRenderers();
     this.registerInternalCompilers();
     this.registerInternalProcessors();
     this.registerInternalGenerators();
+    this.registerInternalHelpers();
   }
 
   /**
@@ -454,6 +466,7 @@ class Hikaru {
         "processor": this.processor,
         "generator": this.generator,
         "decorator": this.decorator,
+        "helper": this.helper,
         "translator": this.translator,
         "types": this.types,
         "utils": this.utils,
@@ -496,6 +509,7 @@ class Hikaru {
         "processor": this.processor,
         "generator": this.generator,
         "decorator": this.decorator,
+        "helper": this.helper,
         "translator": this.translator,
         "types": this.types,
         "utils": this.utils,
@@ -939,6 +953,44 @@ class Hikaru {
         return results;
       });
     }
+  }
+
+  /**
+   * @private
+   */
+  registerInternalHelpers() {
+    const getPath = getPathFn(this.site["siteConfig"]["rootDir"]);
+    const getURL = getURLFn(
+      this.site["siteConfig"]["baseURL"], this.site["siteConfig"]["rootDir"]
+    );
+    const isCurrentHost = isCurrentHostFn(
+      this.site["siteConfig"]["baseURL"], this.site["siteConfig"]["rootDir"]
+    );
+    this.helper.register("base context", (site, file) => {
+      const lang = file["language"] || site["siteConfig"]["language"];
+      const decorated = new Date();
+      return {
+        "site": site,
+        "siteConfig": site["siteConfig"],
+        "themeConfig": site["themeConfig"],
+        "getVersion": getVersion,
+        "getPath": getPath,
+        "getURL": getURL,
+        "isCurrentHost": isCurrentHost,
+        "isCurrentPath": isCurrentPathFn(
+          this.site["siteConfig"]["rootDir"], file["docPath"]
+        ),
+        "isArray": isArray,
+        "isString": isString,
+        "isFunction": isFunction,
+        "isObject": isObject,
+        // Damn it, we cannot use `new` in Nunjucks. But every time a decorator
+        // starts, we will get context, so we can pass decorate date and time.
+        "decorated": decorated,
+        "decorateDate": decorated,
+        "__": this.translator.getTranslateFn(lang)
+      };
+    });
   }
 }
 

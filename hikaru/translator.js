@@ -8,7 +8,6 @@ import {isObject, isArray, isString} from "./utils.js";
 /**
  * @description String translator.
  */
-
 class Translator {
   /**
    * @param {Logger} logger

@@ -30,8 +30,8 @@ class Decorator {
    * @param {String} layout
    * @param {decorateCallback|String} fn If string,
    * will call Compiler while decorating.
-   * @param {Object} ctx Custom context if you want to pass something
-   * to this decorator.
+   * @param {Object} ctx Custom context if you want to pass something to this
+   * decorator. Use helper to register properties to context of all files.
    */
   register(layout, fn, ctx = {}) {
     if (!(isFunction(fn) || isString(fn))) {
@@ -67,9 +67,9 @@ class Decorator {
       }
       if (isString(handler["fn"])) {
         const fn = await this.compiler.compile(handler["fn"]);
-        return fn(new File(file, ctx));
+        return fn(new File(file, handler["ctx"], ctx));
       }
-      return handler["fn"](new File(file, ctx, handler["ctx"]));
+      return handler["fn"](new File(file, handler["ctx"], ctx));
     }
     return file["content"];
   }

@@ -1,7 +1,7 @@
 Extend
 ======
 
-Hikaru supports plugins and scripts, but not all part of Hikaru is designed for them. There are some parts that you can add your code. Please read API reference for detailed parameter type.
+Hikaru supports plugins and scripts, but not all parts of Hikaru are designed for them. There are some parts that you can add your code. Please read API reference for detailed parameter type.
 
 # `Compiler`
 
@@ -48,6 +48,14 @@ Each file will be rendered first, and return an array of rendered files with a n
 ## `register(name, fn)`
 
 `name` should be a short description. You can return one file or an Array of files. `fn` will be run in registration sequence.
+
+# `Helper`
+
+`Helper` is used to add custom properties to the decorating context of templates, for example you want to use a custom JavaScript function in templates.
+
+## `register(name, fn)`
+
+`name` should be a short description. `fn` accepts site and current file as arguments, and the returned object will be merged with other handlers to create a context.
 
 # `Watcher`
 

@@ -14,6 +14,7 @@ class Generator {
    */
   constructor(logger) {
     this.logger = logger;
+    // Using Array because they need to be called in sequence.
     this._ = [];
   }
 
@@ -37,7 +38,7 @@ class Generator {
   /**
    * @description Generator files for site.
    * @param {Site} site
-   * @return {File[]} Generated files.
+   * @return {Promise<File[]>} Generated files.
    */
   async generate(site) {
     const all = await Promise.all(this._.map(({name, fn}) => {

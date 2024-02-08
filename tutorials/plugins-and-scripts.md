@@ -17,7 +17,7 @@ const fn = (hikaru) => {
 export default fn;
 ```
 
-You can access Hikaru's `renderer`, `compiler`, `processor`, `generator`, `decorator`, `logger`, `translator`, `watcher`, `types`, `utils`, `opts` and `site` object through the Hikaru object.
+You can access Hikaru's `renderer`, `compiler`, `processor`, `generator`, `decorator`, `helper`, `logger`, `translator`, `watcher`, `types`, `utils`, `opts` and `site` object through the Hikaru object.
 
 # Plugins
 
@@ -25,7 +25,7 @@ For users or devs who wants some independent functions to release, they can crea
 
 They must export a default function like scripts, this will be the entry of a plugin when Hikaru is loading them.
 
-You are supposed to hint the plugin type with words like `renderer`, `compiler`, `processor`, `generator`, `decorator`, `logger`, `translator`, `types`, `utils`.
+You are supposed to hint the plugin type with words like `renderer`, `compiler`, `processor`, `generator`, `decorator`, `helper`, `logger`, `translator`, `types`, `utils`.
 
 ## If You Add Custom Template in Plugins and Want to Use Include...
 
@@ -47,22 +47,23 @@ const generateFeed = async (hikaru) => {
   }
   const {escapeHTML, loadJSON} = hikaru.utils;
   const {File} = hikaru.types;
-  const pkgJSON = loadJSON(path.join(pluginDir, "package.json"));
+  const pkgJSON = await loadJSON(path.join(pluginDir, "package.json"));
   const filepath = path.join(pluginDir, "atom.njk");
   const content = await fs.readFile(filepath, "utf8");
   const fn = await hikaru.compiler.compile(filepath, content);
   hikaru.decorator.register("atom", fn, {
-    "dirname": pluginDir, "pathSep": path.sep
+    "dirname": pluginDir,
+    "pathSep": path.sep,
+    "escapeHTML": escapeHTML,
+    "getFeedGeneratorVersion": () => {
+      return pkgJSON["version"];
+    }
   });
   hikaru.generator.register("atom feed", (site) => {
     return new File({
       "docDir": site["siteConfig"]["docDir"],
       "docPath": site["siteConfig"]["feed"]["path"] || "atom.xml",
-      "layout": "atom",
-      "escapeHTML": escapeHTML,
-      "getFeedGeneratorVersion": () => {
-        return pkgJSON["version"];
-      }
+      "layout": "atom"
     });
   });
 };

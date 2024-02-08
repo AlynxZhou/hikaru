@@ -7,18 +7,10 @@ import fse from "fs-extra";
 import * as http from "node:http";
 import {Site, File} from "./types.js";
 import {
-  isArray,
-  isString,
-  isFunction,
-  isObject,
   isBinaryPath,
   default404,
   matchFiles,
-  getVersion,
   getPathFn,
-  getURLFn,
-  isCurrentHostFn,
-  isCurrentPathFn,
   getContentType,
   putSite,
   delSite,
@@ -37,6 +29,7 @@ class Router {
    * @param {Processor} processor
    * @param {Generator} generator
    * @param {Decorator} decorator
+   * @param {Helper} helper
    * @param {Translator} translator
    * @param {Site} site
    * @param {Watcher} [watcher]
@@ -48,6 +41,7 @@ class Router {
     processor,
     generator,
     decorator,
+    helper,
     translator,
     site,
     watcher = null
@@ -57,6 +51,7 @@ class Router {
     this.processor = processor;
     this.generator = generator;
     this.decorator = decorator;
+    this.helper = helper;
     this.translator = translator;
     this.site = site;
     this._ = new Map();
@@ -67,12 +62,6 @@ class Router {
     this.watcher = watcher;
     this.queuedFlush = false;
     this.getPath = getPathFn(this.site["siteConfig"]["rootDir"]);
-    this.getURL = getURLFn(
-      this.site["siteConfig"]["baseURL"], this.site["siteConfig"]["rootDir"]
-    );
-    this.isCurrentHost = isCurrentHostFn(
-      this.site["siteConfig"]["baseURL"], this.site["siteConfig"]["rootDir"]
-    );
   }
 
   /**
@@ -139,44 +128,14 @@ class Router {
   async saveFile(file) {
     let content = null;
     if (!file["binary"]) {
-      content = await this.decorator.decorate(file, this.loadContext(file));
+      content = await this.decorator.decorate(
+        file, await this.helper.getContext(this.site, file)
+      );
     }
     this.logger.debug(`Hikaru is writing \`${
       this.logger.cyan(getFullDocPath(file))
     }\`...`);
     this.write(file, content);
-  }
-
-  /**
-   * @private
-   * @description Load context for template rendering.
-   * @param {File} file
-   * @return {File} File with context that can be used by template.
-   */
-  loadContext(file) {
-    const lang = file["language"] || this.site["siteConfig"]["language"];
-    const decorated = new Date();
-    return {
-      "site": this.site,
-      "siteConfig": this.site["siteConfig"],
-      "themeConfig": this.site["themeConfig"],
-      "getVersion": getVersion,
-      "getPath": this.getPath,
-      "getURL": this.getURL,
-      "isCurrentHost": this.isCurrentHost,
-      "isCurrentPath": isCurrentPathFn(
-        this.site["siteConfig"]["rootDir"], file["docPath"]
-      ),
-      "isArray": isArray,
-      "isString": isString,
-      "isFunction": isFunction,
-      "isObject": isObject,
-      // Damn it, we cannot use `new` in Nunjucks. But every time a decorator
-      // starts, context will be loaded, so we can pass decorate date and time.
-      "decorated": decorated,
-      "decorateDate": decorated,
-      "__": this.translator.getTranslateFn(lang)
-    };
   }
 
   /**
@@ -321,7 +280,7 @@ class Router {
       });
       if (!file["binary"]) {
         const content = await this.decorator.decorate(
-          file, this.loadContext(file)
+          file, await this.helper.getContext(this.site, file)
         );
         this.logger.debug(
           `Hikaru is sending \`${this.logger.cyan(getFullDocPath(file))}\`...`
