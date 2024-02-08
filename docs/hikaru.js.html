@@ -44,6 +44,7 @@ import Compiler from "./compiler.js";
 import Processor from "./processor.js";
 import Generator from "./generator.js";
 import Decorator from "./decorator.js";
+import Helper from "./helper.js";
 import Translator from "./translator.js";
 import Router from "./router.js";
 import * as types from "./types.js";
@@ -54,10 +55,17 @@ const {
   loadJSON,
   loadYAML,
   loadYAMLSync,
+  isArray,
   isString,
+  isFunction,
   isObject,
   isReadableSync,
   matchFiles,
+  getVersion,
+  getPathFn,
+  getURLFn,
+  isCurrentHostFn,
+  isCurrentPathFn,
   paginate,
   sortCategories,
   paginateCategories,
@@ -209,6 +217,7 @@ class Hikaru {
         this.processor,
         this.generator,
         this.decorator,
+        this.helper,
         this.translator,
         this.site
       );
@@ -251,6 +260,7 @@ class Hikaru {
         this.processor,
         this.generator,
         this.decorator,
+        this.helper,
         this.translator,
         this.site,
         this.watcher
@@ -421,11 +431,13 @@ class Hikaru {
     this.processor = new Processor(this.logger);
     this.generator = new Generator(this.logger);
     this.decorator = new Decorator(this.logger, this.compiler);
+    this.helper = new Helper(this.logger);
     this.translator = new Translator(this.logger);
     this.registerInternalRenderers();
     this.registerInternalCompilers();
     this.registerInternalProcessors();
     this.registerInternalGenerators();
+    this.registerInternalHelpers();
   }
 
   /**
@@ -482,6 +494,7 @@ class Hikaru {
         "processor": this.processor,
         "generator": this.generator,
         "decorator": this.decorator,
+        "helper": this.helper,
         "translator": this.translator,
         "types": this.types,
         "utils": this.utils,
@@ -524,6 +537,7 @@ class Hikaru {
         "processor": this.processor,
         "generator": this.generator,
         "decorator": this.decorator,
+        "helper": this.helper,
         "translator": this.translator,
         "types": this.types,
         "utils": this.utils,
@@ -968,6 +982,44 @@ class Hikaru {
       });
     }
   }
+
+  /**
+   * @private
+   */
+  registerInternalHelpers() {
+    const getPath = getPathFn(this.site["siteConfig"]["rootDir"]);
+    const getURL = getURLFn(
+      this.site["siteConfig"]["baseURL"], this.site["siteConfig"]["rootDir"]
+    );
+    const isCurrentHost = isCurrentHostFn(
+      this.site["siteConfig"]["baseURL"], this.site["siteConfig"]["rootDir"]
+    );
+    this.helper.register("base context", (site, file) => {
+      const lang = file["language"] || site["siteConfig"]["language"];
+      const decorated = new Date();
+      return {
+        "site": site,
+        "siteConfig": site["siteConfig"],
+        "themeConfig": site["themeConfig"],
+        "getVersion": getVersion,
+        "getPath": getPath,
+        "getURL": getURL,
+        "isCurrentHost": isCurrentHost,
+        "isCurrentPath": isCurrentPathFn(
+          this.site["siteConfig"]["rootDir"], file["docPath"]
+        ),
+        "isArray": isArray,
+        "isString": isString,
+        "isFunction": isFunction,
+        "isObject": isObject,
+        // Damn it, we cannot use `new` in Nunjucks. But every time a decorator
+        // starts, we will get context, so we can pass decorate date and time.
+        "decorated": decorated,
+        "decorateDate": decorated,
+        "__": this.translator.getTranslateFn(lang)
+      };
+    });
+  }
 }
 
 export default Hikaru;
@@ -981,13 +1033,13 @@ export default Hikaru;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-compiler.html">compiler</a></li><li><a href="module-decorator.html">decorator</a></li><li><a href="module-generator.html">generator</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li><li><a href="module-watcher.html">watcher</a></li></ul><h3>Classes</h3><ul><li><a href="module-compiler-Compiler.html">Compiler</a></li><li><a href="module-decorator-Decorator.html">Decorator</a></li><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-TOC.html">TOC</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-watcher-Watcher.html">Watcher</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-compiler.html">compiler</a></li><li><a href="module-decorator.html">decorator</a></li><li><a href="module-generator.html">generator</a></li><li><a href="module-helper.html">helper</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li><li><a href="module-watcher.html">watcher</a></li></ul><h3>Classes</h3><ul><li><a href="module-compiler-Compiler.html">Compiler</a></li><li><a href="module-decorator-Decorator.html">Decorator</a></li><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-helper-Helper.html">Helper</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-TOC.html">TOC</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-watcher-Watcher.html">Watcher</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Wed Feb 07 2024 18:32:54 GMT+0800 (China Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Thu Feb 08 2024 20:59:20 GMT+0800 (China Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

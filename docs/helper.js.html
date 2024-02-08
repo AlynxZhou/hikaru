@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Module: processor</title>
+    <title>JSDoc: Source: helper.js</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,256 +17,84 @@
 
 <div id="main">
 
-    <h1 class="page-title">Module: processor</h1>
+    <h1 class="page-title">Source: helper.js</h1>
 
     
 
 
 
-
-<section>
-
-<header>
     
-</header>
-
-<article>
-    <div class="container-overview">
-    
-        
-
-        
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="processor.js.html">processor.js</a>, <a href="processor.js.html#line1">line 1</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-        
-    
-    </div>
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Classes</h3>
-
-        <dl>
-            <dt><a href="module-processor-Processor.html">Processor</a></dt>
-            <dd></dd>
-        </dl>
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-        <h3 class="subsection-title">Type Definitions</h3>
-
-        
-                
-
-    
-
-    
-    <h4 class="name" id="~processCallback"><span class="type-signature"></span>processCallback<span class="signature">(site)</span><span class="type-signature"> &rarr; {Site}</span></h4>
-    
-
-    
-
-
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>site</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Site</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="processor.js.html">processor.js</a>, <a href="processor.js.html#line22">line 22</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<h5>Returns:</h5>
-
-        
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Site</span>
-
-
-    </dd>
-</dl>
-
-    
-
-
-
-
-
-            
-    
-
-    
-</article>
-
-</section>
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * @module helper
+ */
+
+import {isFunction, isObject} from "./utils.js";
+
+/**
+ * @description Context helper.
+ * This is used to register properties to context of all decorated files, if you
+ * only need to register properties to context of a specific layout, you could
+ * do that while registering decorator.
+ */
+class Helper {
+  /**
+   * @param {Logger} logger
+   * @return {Helper}
+   */
+  constructor(logger) {
+    this.logger = logger;
+    // Using Array because they need to be called in sequence, so user's custom
+    // handlers will be called after internal handlers.
+    this._ = [];
+  }
+
+  /**
+   * @callback helpCallback
+   * @description The returned object will be merged with context while
+   * decorating with templates.
+   * @param {Site} site
+   * @param {File} file
+   * @return {Object}
+   */
+  /**
+   * @description Register a helper function.
+   * @param {String} name
+   * @param {helpCallback} fn
+   */
+  register(name, fn) {
+    if (!isFunction(fn)) {
+      throw new TypeError("fn must be a Function");
+    }
+    this._.push({name, fn});
+  }
+
+  /**
+   * @description Run all helper functions and gather context.
+   * @param {Site} site
+   * @param {File} file
+   * @return {Promise&lt;Object>}
+   */
+  async getContext(site, file) {
+    const all = await Promise.all(this._.map(({name, fn}) => {
+      this.logger.debug(`Hikaru is running helper of \`${
+        this.logger.blue(name)
+      }\`...`);
+      return fn(site, file);
+    }));
+    return all.filter((cur) => {
+      return cur != null &amp;&amp; isObject(cur);
+    }).reduce((acc, cur, idx, src) => {
+      return Object.assign(acc, cur);
+    }, {});
+  }
+}
+
+export default Helper;
+</code></pre>
+        </article>
+    </section>
 
 
 

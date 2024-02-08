@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>JSDoc: Module: processor</title>
+    <title>JSDoc: Class: Helper</title>
 
     <script src="scripts/prettify/prettify.js"> </script>
     <script src="scripts/prettify/lang-css.js"> </script>
@@ -17,7 +17,7 @@
 
 <div id="main">
 
-    <h1 class="page-title">Module: processor</h1>
+    <h1 class="page-title">Class: Helper</h1>
 
     
 
@@ -28,6 +28,10 @@
 
 <header>
     
+        <h2><span class="attribs"><span class="type-signature"></span></span>
+            <span class="ancestors"><a href="module-helper.html">helper</a>~</span>Helper<span class="signature">(logger)</span><span class="type-signature"> &rarr; {Helper}</span></h2>
+        
+    
 </header>
 
 <article>
@@ -35,7 +39,82 @@
     
         
 
+    
+
+    
+    <h4 class="name" id="Helper"><span class="type-signature"></span>new Helper<span class="signature">(logger)</span><span class="type-signature"> &rarr; {Helper}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Context helper.
+This is used to register properties to context of all decorated files, if you
+only need to register properties to context of a specific layout, you could
+do that while registering decorator.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
         
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>logger</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Logger</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
 
 
 <dl class="details">
@@ -67,7 +146,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="processor.js.html">processor.js</a>, <a href="processor.js.html#line1">line 1</a>
+        <a href="helper.js.html">helper.js</a>, <a href="helper.js.html#line13">line 13</a>
     </li></ul></dd>
     
 
@@ -79,7 +158,42 @@
 </dl>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
         
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Helper</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
     
     </div>
 
@@ -88,13 +202,6 @@
     
 
     
-        <h3 class="subsection-title">Classes</h3>
-
-        <dl>
-            <dt><a href="module-processor-Processor.html">Processor</a></dt>
-            <dd></dd>
-        </dl>
-    
 
     
 
@@ -105,22 +212,24 @@
     
 
     
-
-    
-        <h3 class="subsection-title">Type Definitions</h3>
+        <h3 class="subsection-title">Methods</h3>
 
         
-                
+            
 
     
 
     
-    <h4 class="name" id="~processCallback"><span class="type-signature"></span>processCallback<span class="signature">(site)</span><span class="type-signature"> &rarr; {Site}</span></h4>
+    <h4 class="name" id="getContext"><span class="type-signature">(async) </span>getContext<span class="signature">(site, file)</span><span class="type-signature"> &rarr; {Promise.&lt;Object>}</span></h4>
     
 
     
 
 
+
+<div class="description">
+    <p>Run all helper functions and gather context.</p>
+</div>
 
 
 
@@ -175,6 +284,29 @@
         </tr>
 
     
+
+        <tr>
+            
+                <td class="name"><code>file</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">File</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
     </tbody>
 </table>
 
@@ -212,7 +344,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="processor.js.html">processor.js</a>, <a href="processor.js.html#line22">line 22</a>
+        <a href="helper.js.html">helper.js</a>, <a href="helper.js.html#line51">line 51</a>
     </li></ul></dd>
     
 
@@ -248,7 +380,7 @@
     </dt>
     <dd>
         
-<span class="param-type">Site</span>
+<span class="param-type">Promise.&lt;Object></span>
 
 
     </dd>
@@ -260,7 +392,169 @@
 
 
 
+        
             
+
+    
+
+    
+    <h4 class="name" id="register"><span class="type-signature"></span>register<span class="signature">(name, fn)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Register a helper function.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>fn</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">helpCallback</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="helper.js.html">helper.js</a>, <a href="helper.js.html#line38">line 38</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+
     
 
     
