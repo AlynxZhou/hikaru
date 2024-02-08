@@ -66,6 +66,23 @@ class Router {
 
   /**
    * @private
+   * @description Get decorated content with context.
+   * @param {File} file
+   * @return {Promise<String>}
+   */
+  async getDecoratedContent(file) {
+    // Running helper and decorator for file without layout is meaningless,
+    // because layout is used for decorator to select template.
+    if (!file["binary"] && file["layout"] != null) {
+      return this.decorator.decorate(
+        file, await this.helper.getContext(this.site, file)
+      );
+    }
+    return file["content"];
+  }
+
+  /**
+   * @private
    * @description Read file content.
    * @param {String} filepath
    * @return {Promise<Buffer>}
@@ -82,10 +99,9 @@ class Router {
    * is not decorated, leave this empty and file's content property is used.
    */
   write(file, content) {
-    content = content || file["content"];
     return file["binary"]
       ? fse.copy(getFullSrcPath(file), getFullDocPath(file))
-      : fse.outputFile(getFullDocPath(file), content);
+      : fse.outputFile(getFullDocPath(file), content || file["content"]);
   }
 
   /**
@@ -126,12 +142,7 @@ class Router {
    * @param {File} file
    */
   async saveFile(file) {
-    let content = null;
-    if (!file["binary"]) {
-      content = await this.decorator.decorate(
-        file, await this.helper.getContext(this.site, file)
-      );
-    }
+    const content = await this.getDecoratedContent(file);
     this.logger.debug(`Hikaru is writing \`${
       this.logger.cyan(getFullDocPath(file))
     }\`...`);
@@ -279,9 +290,7 @@ class Router {
         "Content-Type": getContentType(file["docPath"])
       });
       if (!file["binary"]) {
-        const content = await this.decorator.decorate(
-          file, await this.helper.getContext(this.site, file)
-        );
+        const content = await this.getDecoratedContent(file);
         this.logger.debug(
           `Hikaru is sending \`${this.logger.cyan(getFullDocPath(file))}\`...`
         );

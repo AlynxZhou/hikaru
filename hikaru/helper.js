@@ -2,7 +2,7 @@
  * @module helper
  */
 
-import {isFunction, isObject} from "./utils.js";
+import {isFunction, isObject, getFullDocPath} from "./utils.js";
 
 /**
  * @description Context helper.
@@ -52,6 +52,8 @@ class Helper {
     const all = await Promise.all(this._.map(({name, fn}) => {
       this.logger.debug(`Hikaru is running helper of \`${
         this.logger.blue(name)
+      }\` for \`${
+        this.logger.cyan(getFullDocPath(file))
       }\`...`);
       return fn(site, file);
     }));
