@@ -5,7 +5,12 @@
 import * as path from "node:path";
 
 import {File} from "./types.js";
-import {getFullSrcPath, getFullDocPath, isFunction} from "./utils.js";
+import {
+  isFunction,
+  checkType,
+  getFullSrcPath,
+  getFullDocPath
+} from "./utils.js";
 
 /**
  * @description File renderer.
@@ -38,9 +43,10 @@ class Renderer {
       // This renderer does not change extname.
       fn = docExt;
       docExt = srcExt;
-    } else if (!isFunction(fn)) {
-      throw new TypeError("fn must be a Function");
     }
+    checkType(srcExt, "srcExt", "String");
+    checkType(docExt, "docExt", "String");
+    checkType(fn, "fn", "Function");
     if (!this._.has(srcExt)) {
       this._.set(srcExt, new Map());
     }

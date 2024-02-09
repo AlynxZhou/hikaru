@@ -1,6 +1,7 @@
 import {expect} from "chai";
 import {Site, File} from "../hikaru/types.js";
 import {
+  checkType,
   escapeHTML,
   getFrontMatter,
   getContentType,
@@ -32,6 +33,22 @@ import {
 
 const main = () => {
   describe("utils", () => {
+    describe("checkType", () => {
+      it("should throw error if provided types are not supported", () => {
+        expect(() => {
+          const variable = "variable";
+          checkType(variable, "variable", ["String", "Null"]);
+        }).to.throw(TypeError);
+      });
+
+      it("should throw error if variable is not one of provided types", () => {
+        expect(() => {
+          const variable = "variable";
+          checkType(variable, "variable", "Array");
+        }).to.throw(TypeError);
+      });
+    });
+
     describe("escapeHTML", () => {
       it("should escape special chars in HTML strings", () => {
         expect(escapeHTML("<>&\"'")).to.equal("&lt;&gt;&amp;&quot;&#039;");
@@ -39,11 +56,14 @@ const main = () => {
     });
 
     describe("getFrontMatter", () => {
-      it("should return no attribute if not start with `/^---+\\r?\\n/`", () => {
-        expect(
-          getFrontMatter("--\nsome strings")["attributes"]
-        ).to.deep.equal({});
-      });
+      it(
+        "should return no attribute if not start with `/^---+\\r?\\n/`",
+        () => {
+          expect(
+            getFrontMatter("--\nsome strings")["attributes"]
+          ).to.deep.equal({});
+        }
+      );
 
       it("should return no attribute if only one `/^---+\\r?\\n/gm`", () => {
         expect(

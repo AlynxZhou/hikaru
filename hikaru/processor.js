@@ -2,7 +2,7 @@
  * @module processor
  */
 
-import {isFunction} from "./utils.js";
+import {checkType} from "./utils.js";
 
 /**
  * @description Site processor.
@@ -30,9 +30,8 @@ class Processor {
    * @param {processCallback} fn
    */
   register(name, fn) {
-    if (!isFunction(fn)) {
-      throw new TypeError("fn must be a Function");
-    }
+    checkType(name, "name", "String");
+    checkType(fn, "fn", "Function");
     this._.push({name, fn});
   }
 

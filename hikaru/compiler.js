@@ -4,7 +4,7 @@
 
 import * as path from "node:path";
 
-import {isFunction} from "./utils.js";
+import {checkType} from "./utils.js";
 
 /**
  * @description Template compiler.
@@ -33,9 +33,8 @@ class Compiler {
    * @param {compileCallback}
    */
   register(ext, fn) {
-    if (!isFunction(fn)) {
-      throw new TypeError("fn must be a Function");
-    }
+    checkType(ext, "ext", "String");
+    checkType(fn, "fn", "Function");
     this._.set(ext, {ext, fn});
   }
 
@@ -48,7 +47,7 @@ class Compiler {
   async compile(srcPath, content) {
     const ext = path.extname(srcPath);
     if (!this._.has(ext)) {
-      throw new Error(`No avaliable compiler for ${ext}`);
+      throw new Error(`No avaliable compiler for \`${ext}\`.`);
     }
     const handler = this._.get(ext);
     return handler["fn"](srcPath, content);

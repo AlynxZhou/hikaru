@@ -17,22 +17,17 @@ const main = () => {
         });
         expect(translator._).to.have.all.keys("zh-Hans");
       });
+    });
 
-      it("should register the same language with an array", () => {
-        translator.register(["default", "en"], {
+    describe("list", () => {
+      it("should have 2 languages", () => {
+        translator.register("default", {
           "toadCount": {
             "one": "%d toad has %d mouse.",
             "more": "%d toads have %d mouses."
           }
         });
-        expect(translator._).to.include.all.keys("en", "default");
-        expect(translator._.get("default")).to.equal(translator._.get("en"));
-      });
-    });
-
-    describe("list", () => {
-      it("should have 3 languages", () => {
-        expect(translator.list()).to.have.lengthOf(3);
+        expect(translator.list()).to.have.lengthOf(2);
       });
     });
 

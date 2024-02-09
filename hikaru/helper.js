@@ -2,7 +2,7 @@
  * @module helper
  */
 
-import {isFunction, isObject, getFullDocPath} from "./utils.js";
+import {isObject, checkType, getFullDocPath} from "./utils.js";
 
 /**
  * @description Context helper.
@@ -34,12 +34,14 @@ class Helper {
    * @description Register a helper function.
    * @param {String} name
    * @param {helpCallback} fn
+   * @param {String} [layout=null] If you want to run this helper
+   * function on a specific layout, pass it here as a filter.
    */
-  register(name, fn) {
-    if (!isFunction(fn)) {
-      throw new TypeError("fn must be a Function");
-    }
-    this._.push({name, fn});
+  register(name, fn, layout = null) {
+    checkType(name, "name", "String");
+    checkType(fn, "fn", "Function");
+    checkType(layout, "layout", ["String", "null"]);
+    this._.push({name, fn, layout});
   }
 
   /**
@@ -49,7 +51,14 @@ class Helper {
    * @return {Promise<Object>}
    */
   async getContext(site, file) {
-    const all = await Promise.all(this._.map(({name, fn}) => {
+    // Decorator uses layout to select template, so files without layout cannot
+    // be decorated and have no context.
+    if (file["layout"] == null) {
+      return {};
+    }
+    const all = await Promise.all(this._.filter(({name, fn, layout}) => {
+      return layout == null || layout === file["layout"];
+    }).map(({name, fn, layout}) => {
       this.logger.debug(`Hikaru is running helper of \`${
         this.logger.blue(name)
       }\` for \`${

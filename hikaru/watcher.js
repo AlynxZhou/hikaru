@@ -7,7 +7,7 @@ import * as path from "node:path";
 import chokidar from "chokidar";
 import picomatch from "picomatch";
 
-import {isArray, isString} from "./utils.js";
+import {isString, isArray, checkType} from "./utils.js";
 
 /**
  * @description File watcher with dependency handling.
@@ -108,6 +108,8 @@ class Watcher {
     if (fn == null) {
       return;
     }
+    checkType(dirs, "dirs", ["Array", "String"]);
+    checkType(fn, "fn", "Function");
     if (!isArray(dirs) && isString(dirs)) {
       dirs = [dirs];
     }
@@ -239,6 +241,7 @@ class Watcher {
     if (dirs == null) {
       return;
     }
+    checkType(dirs, "dirs", ["Array", "String"]);
     if (!isArray(dirs) && isString(dirs)) {
       dirs = [dirs];
     }

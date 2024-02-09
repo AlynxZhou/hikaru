@@ -2,7 +2,7 @@
  * @module generator
  */
 
-import {isArray, isFunction} from "./utils.js";
+import {isArray, checkType} from "./utils.js";
 
 /**
  * @description File generator.
@@ -14,7 +14,8 @@ class Generator {
    */
   constructor(logger) {
     this.logger = logger;
-    // Using Array because they need to be called in sequence.
+    // Using Array because they need to be called in sequence, so user's custom
+    // handlers will be called after internal handlers.
     this._ = [];
   }
 
@@ -29,9 +30,8 @@ class Generator {
    * @param {generateCallback} fn
    */
   register(name, fn) {
-    if (!isFunction(fn)) {
-      throw new TypeError("fn must be a Function");
-    }
+    checkType(name, "name", "String");
+    checkType(fn, "fn", "Function");
     this._.push({name, fn});
   }
 

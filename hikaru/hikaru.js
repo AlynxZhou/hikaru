@@ -27,10 +27,12 @@ const {
   loadJSON,
   loadYAML,
   loadYAMLSync,
-  isArray,
+  isNumber,
   isString,
+  isArray,
   isFunction,
   isObject,
+  checkType,
   isReadableSync,
   matchFiles,
   getVersion,
@@ -198,6 +200,7 @@ class Hikaru {
       this.logger.warn("Hikaru catched some error during building!");
       this.logger.error(error);
       this.logger.warn("Hikaru suggests you to check built files!");
+      process.exit(-2);
     }
   }
 
@@ -241,6 +244,7 @@ class Hikaru {
     } catch (error) {
       this.logger.warn("Hikaru catched some error during serving!");
       this.logger.error(error);
+      process.exit(-2);
     }
   }
 
@@ -980,10 +984,12 @@ class Hikaru {
         "isCurrentPath": isCurrentPathFn(
           this.site["siteConfig"]["rootDir"], file["docPath"]
         ),
-        "isArray": isArray,
+        "isNumber": isNumber,
         "isString": isString,
+        "isArray": isArray,
         "isFunction": isFunction,
         "isObject": isObject,
+        "checkType": checkType,
         // Damn it, we cannot use `new` in Nunjucks. But every time a decorator
         // starts, we will get context, so we can pass decorate date and time.
         "decorated": decorated,

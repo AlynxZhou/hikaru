@@ -62,6 +62,14 @@ const loadYAMLSync = (path) => {
  * @param {*} o
  * @return {Boolean}
  */
+const isNumber = (o) => {
+  return typeof o === "number" || o instanceof Number;
+};
+
+/**
+ * @param {*} o
+ * @return {Boolean}
+ */
 const isString = (o) => {
   return typeof o === "string" || o instanceof String;
 };
@@ -96,6 +104,47 @@ const isObject = (o) => {
  */
 const isBuffer = (o) => {
   return Buffer.isBuffer(o);
+};
+
+/**
+ * @private
+ */
+const typeCheckers = {
+  "Number": isNumber,
+  "String": isString,
+  "Array": isArray,
+  "Function": isFunction,
+  "Buffer": isBuffer,
+  "Object": isObject,
+  "null": (o) => {
+    return o == null;
+  }
+};
+/**
+ * @description Check whether a variable is one of give types.
+ * @param {*} var
+ * @param {String} name Variable name.
+ * @param {String[]|String} types
+ */
+const checkType = (variable, name, types = []) => {
+  if (isString(types)) {
+    types = [types];
+  }
+  for (const type of types) {
+    if (typeCheckers[type] == null) {
+      throw new TypeError(`\`types\` should only contain following types: ${
+        Object.keys(typeCheckers).join(", ")
+      }.`);
+    }
+  }
+  const ok = types.some((type) => {
+    return typeCheckers[type](variable);
+  });
+  if (!ok) {
+    throw new TypeError(`\`${name}\` should only be one of following types: ${
+      types.join(", ")
+    }.`);
+  }
 };
 
 /**
@@ -1213,11 +1262,13 @@ export {
   loadYAML,
   loadYAMLSync,
   pkgJSON,
+  isNumber,
   isString,
   isArray,
   isFunction,
   isObject,
   isBuffer,
+  checkType,
   isBinary,
   isBinaryPath,
   isBinaryFile,

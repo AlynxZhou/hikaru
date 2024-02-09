@@ -3,7 +3,7 @@
  */
 
 import {format} from "node:util";
-import {isObject, isArray, isString} from "./utils.js";
+import {isString, checkType} from "./utils.js";
 
 /**
  * @description String translator.
@@ -20,36 +20,22 @@ class Translator {
 
   /**
    * @description Register a kind of language.
-   * @param {(String|String[])} lang Language names.
+   * @param {String} lang Language name.
    * @param {Object} obj Language dict from yaml file.
    */
   register(lang, obj) {
-    if (!isObject(obj)) {
-      throw new TypeError(
-        "obj must be a Object generated from yaml language file"
-      );
-    }
-    if (isArray(lang)) {
-      for (const l of lang) {
-        this._.set(l, obj);
-      }
-    } else {
-      this._.set(lang, obj);
-    }
+    checkType(lang, "lang", "String");
+    checkType(obj, "obj", "Object");
+    this._.set(lang, obj);
   }
 
   /**
    * @description Unregister a kind of language.
-   * @param {(String|String[])} lang Language names.
+   * @param {String} lang Language name.
    */
   unregister(lang) {
-    if (isArray(lang)) {
-      for (const l of lang) {
-        this._.delete(l);
-      }
-    } else {
-      this._.delete(lang);
-    }
+    checkType(lang, "lang", "String");
+    this._.delete(lang);
   }
 
   /**

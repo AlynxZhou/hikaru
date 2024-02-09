@@ -3,7 +3,7 @@
  */
 
 import {File} from "./types.js";
-import {isFunction, isString, getFullDocPath} from "./utils.js";
+import {isString, checkType, getFullDocPath} from "./utils.js";
 
 /**
  * @description Layout decorator.
@@ -30,12 +30,15 @@ class Decorator {
    * @param {String} layout
    * @param {decorateCallback|String} fn If string,
    * will call Compiler while decorating.
-   * @param {Object} ctx Custom context if you want to pass something to this
-   * decorator. Use helper to register properties to context of all files.
+   * @param {Object} [ctx=null] Custom context if you want to pass something to
+   * this decorator. This is deprecated and you should use helper function with
+   * layout filter.
    */
-  register(layout, fn, ctx = {}) {
-    if (!(isFunction(fn) || isString(fn))) {
-      throw new TypeError("fn must be a Function or filepath");
+  register(layout, fn, ctx = null) {
+    checkType(layout, "layout", "String");
+    checkType(fn, "fn", ["Function", "String"]);
+    if (ctx != null) {
+      this.logger.warn("Hikaru suggests you to pass context for specific layouts by using helper function with layout filter because passing context while registering decorator function is deprecated!");
     }
     this._.set(layout, {layout, fn, ctx});
   }
@@ -45,6 +48,7 @@ class Decorator {
    * @param {String} layout
    */
   unregister(layout) {
+    checkType(layout, "layout", "String");
     this._.delete(layout);
   }
 
@@ -63,7 +67,7 @@ class Decorator {
       }\`...`);
       const handler = this._.get(layout);
       if (handler == null) {
-        throw new Error(`Decorator for \`${layout}\` is not registered!`);
+        throw new Error(`Decorator for \`${layout}\` is not registered.`);
       }
       if (isString(handler["fn"])) {
         const fn = await this.compiler.compile(handler["fn"]);

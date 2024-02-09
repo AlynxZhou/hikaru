@@ -17,7 +17,7 @@ Decorator will be called before writing pages or posts to disk, it will get corr
 
 # `register(layout, fn, ctx = {})`
 
-Register a layout, `fn` should be a render function compiled from a template by compiler. If you want to pass some custom variables to this layout, you can use `ctx`, it will be append to the ctx that is used when render function is called.
+Register a layout, `fn` should be a decorator function compiled from a template by compiler. If you want to pass some custom variables to this layout, you can use `ctx`, it will be add to the content that is used when decorator function is called.
 
 # `unregister(layout)`
 
@@ -53,9 +53,9 @@ Each file will be rendered first, and return an array of rendered files with a n
 
 `Helper` is used to add custom properties to the decorating context of templates, for example you want to use a custom JavaScript function in templates.
 
-## `register(name, fn)`
+## `register(name, fn, layout = null)`
 
-`name` should be a short description. `fn` accepts site and current file as arguments, and the returned object will be merged with other handlers to create a context.
+`name` should be a short description. `fn` accepts site and current file as arguments, and the returned object will be merged with other handlers to create a context. If you only want to run the helper function on a specific layout, pass it via `layout` as a filter.
 
 # `Watcher`
 
