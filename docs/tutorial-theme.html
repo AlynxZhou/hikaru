@@ -54,21 +54,21 @@
 <h2><code>layouts</code></h2>
 <p>This dir stores html templates.</p>
 <h1>Layouts</h1>
-<p>Hikaru works with templates, it supports Nunjucks, and can support others by registing compilers.</p>
+<p>Hikaru works with templates, it supports Nunjucks, and can support others by registering compilers.</p>
 <p><strong>The base name of first level template files will be used as layouts</strong>. So you must have files of following:</p>
-<p>Templates in subdir won't be treat as layouts so you can use them as modules.</p>
-<p>Some templating engines have a root dir that all include commands is relative to this path, typically Hikaru will set it to <code>layouts/</code> dir.</p>
 <ul>
 <li><code>index</code>: Site index page.</li>
 <li><code>archives</code>: Site archive page.</li>
 <li><code>tags</code>: This page shows all tags of this site.</li>
-<li><code>tag</code>: This pages shows <strong>all posts that has a tag</strong>.</li>
+<li><code>tag</code>: This pages shows <strong>all posts that belongs to a specific tag</strong>.</li>
 <li><code>categories</code>: This page shows all categories of this site.</li>
-<li><code>category</code>: This pages shows <strong>all posts that has a category</strong>.</li>
+<li><code>category</code>: This pages shows <strong>all posts that belongs to a specific category</strong>.</li>
 <li><code>post</code>: A post.</li>
 <li><code>page</code>: Fallback layout.</li>
 </ul>
-<p>You can use following helpers in template:</p>
+<p>Templates in subdir won't be treat as layouts so you can use them as modules.</p>
+<p>Some templating engines have a root dir that all include commands is relative to this path, typically Hikaru will set it to <code>layouts/</code> dir.</p>
+<p>You can access the following context properties in template:</p>
 <ul>
 <li><code>site</code>: A raw site object.</li>
 <li><code>siteConfig</code>: Just <code>site[&quot;siteConfig&quot;]</code>.</li>
@@ -76,13 +76,22 @@
 <li><code>getVersion()</code>: Hikaru version.</li>
 <li><code>getURL(docPath)</code>: Convert a path to a full URL.</li>
 <li><code>getPath(docPath)</code>: Convert a path to a full path.</li>
-<li><code>isCurrentPath(testPath, strict)</code>: Whether test path is current path, if <code>strict</code> is <code>false</code>, it return <code>true</code> when current path is a sub dir of test path.</li>
-<li><code>decorateDate</code>: A Date object contains the time when this template is used to render a page.</li>
+<li><code>isCurrentHost(testURL)</code>： Whether test URL has the same host with current site.</li>
+<li><code>isCurrentPath(testPath, strict = false)</code>: Whether test path is current path, if <code>strict</code> is <code>false</code>, it return <code>true</code> when current path is a sub dir of test path.</li>
+<li><code>isNumber(o)</code>.</li>
+<li><code>isString(o)</code>.</li>
+<li><code>isArray(o)</code>.</li>
+<li><code>isFunction(o)</code>.</li>
+<li><code>isObject(o)</code>.</li>
+<li><code>checkType(variable, name, types = [])</code>: Check whether the type of given <code>variable</code> is one of <code>types</code>, elements of <code>types</code> should be one of <code>&quot;Number&quot;</code>, <code>&quot;String&quot;</code>, <code>&quot;Array&quot;</code>, <code>&quot;Function&quot;</code>, <code>&quot;Buffer&quot;</code>, <code>&quot;Object&quot;</code> or <code>&quot;null&quot;</code>.</li>
+<li><code>decorated</code>: A <code>Date</code> object contains the time when this template is used to render a page.</li>
 <li><code>__()</code>: Language translator via <a href="https://nodejs.org/api/util.html#util_util_format_format_args"><code>util.format</code></a>.</li>
+<li><code>file</code>: Current file object, available since Hikaru v1.18.0.</li>
 </ul>
+<p>You could directly access file properties via their names, but this is not reliable, because some user installed plugins may add the same property names to context via helpers. Since Hikaru v1.18.0, you could always access file object via <code>file</code> properties of the context, this is recommended.</p>
+<p>For example, if you want to use the title of file, you could use <code>title</code> or <code>file.title</code>, <code>file.title</code> is recommended.</p>
 <h1>Assets</h1>
 <p>Assets may be CSS or JavaScript files, Hikaru internally supports no CSS preprocessors but you can install some renderer plugins to support them.</p>
-<p>You can use <code>getThemeConfig(key)</code> or <code>getSiteConfig(key)</code> in CSS preprocessors to get config. Use <code>getPath(docPath)</code> or <code>getURL(docPath)</code> if you want to get generated path or URL. You can also get file's <code>docPath</code>, <code>docDir</code>, <code>srcPath</code> and <code>srcDir</code>.</p>
 <p>If you want to use Hikaru's builtin highlight processor, you need to add highlight.js theme CSS to your theme assets. But you can also tell user to disable builtin highlight processor and use a browser-side highlight library. Hikaru will generate elements like</p>
 <pre class="prettyprint source lang-html"><code>&lt;figure data-raw=&quot;Raw code content&quot; data-info=&quot;language-xxxx&quot; data-lang=&quot;xxxx&quot;>
   &lt;pre class=&quot;gutter&quot;>
@@ -150,7 +159,7 @@ dir2:
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Fri Feb 09 2024 11:37:47 GMT+0800 (China Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Thu Feb 15 2024 10:36:19 GMT+0800 (China Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
