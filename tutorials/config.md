@@ -89,7 +89,7 @@ perPage:
 
 ## `skipRender`
 
-A list for files that won't be rendered, for example:
+A list for files that won't be rendered, paths are relative to `srcDir`, for example:
 
 ```yaml
 skipRender:

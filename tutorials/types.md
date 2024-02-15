@@ -81,7 +81,7 @@ Typically content after `<!--more-->` tag in post.
 
 ## `toc`
 
-Toc for page content.
+TOC for page content.
 
 ## `posts`
 
@@ -131,9 +131,9 @@ Tag's name to display.
 
 All posts belong to this Tag.
 
-# `Toc`
+# `TOC`
 
-`Toc` is a recursive data structure typecially because a header may have sub haeders.
+`TOC` is a recursive data structure typecially because a header may have sub haeders.
 
 ## `text`
 
@@ -149,7 +149,7 @@ HTML anchor for this header.
 
 ## `subs`
 
-An array of `Toc`, which contains sub header.
+An array of `TOC`, which contains sub header.
 
 # `Site`
 

@@ -5,7 +5,7 @@ This page contains what hikaru do when you run a command.
 
 # `init`
 
-It's really simple because it is just a function that make directories and copy files ... and I don't think you need to extend this function.
+It's really simple because it is just a function that make directories and copy files... and I don't think you need to extend this function.
 
 # `clean`
 

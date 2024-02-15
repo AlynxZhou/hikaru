@@ -45,24 +45,24 @@ This dir stores html templates.
 
 # Layouts
 
-Hikaru works with templates, it supports Nunjucks, and can support others by registing compilers.
+Hikaru works with templates, it supports Nunjucks, and can support others by registering compilers.
 
 **The base name of first level template files will be used as layouts**. So you must have files of following:
+
+- `index`: Site index page.
+- `archives`: Site archive page.
+- `tags`: This page shows all tags of this site.
+- `tag`: This pages shows **all posts that belongs to a specific tag**.
+- `categories`: This page shows all categories of this site.
+- `category`: This pages shows **all posts that belongs to a specific category**.
+- `post`: A post.
+- `page`: Fallback layout.
 
 Templates in subdir won't be treat as layouts so you can use them as modules.
 
 Some templating engines have a root dir that all include commands is relative to this path, typically Hikaru will set it to `layouts/` dir.
 
-- `index`: Site index page.
-- `archives`: Site archive page.
-- `tags`: This page shows all tags of this site.
-- `tag`: This pages shows **all posts that has a tag**.
-- `categories`: This page shows all categories of this site.
-- `category`: This pages shows **all posts that has a category**.
-- `post`: A post.
-- `page`: Fallback layout.
-
-You can use following helpers in template:
+You can access the following context properties in template:
 
 - `site`: A raw site object.
 - `siteConfig`: Just `site["siteConfig"]`.
@@ -70,15 +70,25 @@ You can use following helpers in template:
 - `getVersion()`: Hikaru version.
 - `getURL(docPath)`: Convert a path to a full URL.
 - `getPath(docPath)`: Convert a path to a full path.
-- `isCurrentPath(testPath, strict)`: Whether test path is current path, if `strict` is `false`, it return `true` when current path is a sub dir of test path.
-- `decorateDate`: A Date object contains the time when this template is used to render a page.
+- `isCurrentHost(testURL)`： Whether test URL has the same host with current site.
+- `isCurrentPath(testPath, strict = false)`: Whether test path is current path, if `strict` is `false`, it return `true` when current path is a sub dir of test path.
+- `isNumber(o)`.
+- `isString(o)`.
+- `isArray(o)`.
+- `isFunction(o)`.
+- `isObject(o)`.
+- `checkType(variable, name, types = [])`: Check whether the type of given `variable` is one of `types`, elements of `types` should be one of `"Number"`, `"String"`, `"Array"`, `"Function"`, `"Buffer"`, `"Object"` or `"null"`.
+- `decorated`: A `Date` object contains the time when this template is used to render a page.
 - `__()`: Language translator via [`util.format`](https://nodejs.org/api/util.html#util_util_format_format_args).
+- `file`: Current file object, available since Hikaru v1.18.0.
+
+You could directly access file properties via their names, but this is not reliable, because some user installed plugins may add the same property names to context via helpers. Since Hikaru v1.18.0, you could always access file object via `file` properties of the context, this is recommended.
+
+For example, if you want to use the title of file, you could use `title` or `file.title`, `file.title` is recommended.
 
 # Assets
 
 Assets may be CSS or JavaScript files, Hikaru internally supports no CSS preprocessors but you can install some renderer plugins to support them.
-
-You can use `getThemeConfig(key)` or `getSiteConfig(key)` in CSS preprocessors to get config. Use `getPath(docPath)` or `getURL(docPath)` if you want to get generated path or URL. You can also get file's `docPath`, `docDir`, `srcPath` and `srcDir`.
 
 If you want to use Hikaru's builtin highlight processor, you need to add highlight.js theme CSS to your theme assets. But you can also tell user to disable builtin highlight processor and use a browser-side highlight library. Hikaru will generate elements like
 

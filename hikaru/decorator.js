@@ -2,7 +2,6 @@
  * @module decorator
  */
 
-import {File} from "./types.js";
 import {isString, checkType, getFullDocPath} from "./utils.js";
 
 /**
@@ -69,11 +68,17 @@ class Decorator {
       if (handler == null) {
         throw new Error(`Decorator for \`${layout}\` is not registered.`);
       }
-      if (isString(handler["fn"])) {
-        const fn = await this.compiler.compile(handler["fn"]);
-        return fn(new File(file, handler["ctx"], ctx));
+      let fn = handler["fn"];
+      if (isString(fn)) {
+        fn = await this.compiler.compile(handler["fn"]);
       }
-      return handler["fn"](new File(file, handler["ctx"], ctx));
+      // We support two methods to access file properties, first the file
+      // properties will be merged with context properties, so you could
+      // directly access them via property names, and then you could also access
+      // file properties via `file` object, this is recommended because it is
+      // easier to prevent the single `file` property name from conflicting and
+      // it is always accessible.
+      return fn(Object.assign(file, handler["ctx"], ctx, {"file": file}));
     }
     return file["content"];
   }

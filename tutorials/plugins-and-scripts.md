@@ -51,14 +51,17 @@ const generateFeed = async (hikaru) => {
   const filepath = path.join(pluginDir, "atom.njk");
   const content = await fs.readFile(filepath, "utf8");
   const fn = await hikaru.compiler.compile(filepath, content);
-  hikaru.decorator.register("atom", fn, {
-    "dirname": pluginDir,
-    "pathSep": path.sep,
-    "escapeHTML": escapeHTML,
-    "getFeedGeneratorVersion": () => {
-      return pkgJSON["version"];
-    }
-  });
+  hikaru.decorator.register("atom", fn);
+  hikaru.helper.register("atom feed context", (site, file) => {
+    return {
+      "dirname": pluginDir,
+      "pathSep": path.sep,
+      "escapeHTML": escapeHTML,
+      "getFeedGeneratorVersion": () => {
+	return pkgJSON["version"];
+      }
+    };
+  }, "atom");
   hikaru.generator.register("atom feed", (site) => {
     return new File({
       "docDir": site["siteConfig"]["docDir"],

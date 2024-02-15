@@ -75,7 +75,7 @@ Hikaru will resolve anchors (`<a>`) and images (`<img>`) in your posts and try t
 
 Links match the following rules will be considered as already full path and won't be resolved:
 
-- Already has an origin that differs from your site, will add `target="_black"` for them.
+- Already has an origin that differs from your site.
 - Starts with `/` or `//`.
 - Have URL protocol, like `https:` or `data:`.
 
