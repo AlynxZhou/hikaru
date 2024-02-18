@@ -3,6 +3,7 @@ import {Site, File} from "../hikaru/types.js";
 import {
   checkType,
   escapeHTML,
+  removeHTMLTags,
   getFrontMatter,
   getContentType,
   paginate,
@@ -52,6 +53,14 @@ const main = () => {
     describe("escapeHTML", () => {
       it("should escape special chars in HTML strings", () => {
         expect(escapeHTML("<>&\"'")).to.equal("&lt;&gt;&amp;&quot;&#039;");
+      });
+    });
+
+    describe("removeHTMLTags", () => {
+      it("should remove all tags in HTML strings", () => {
+        expect(removeHTMLTags(
+          "<a href=\"https://gallery.alynx.one/\">Gallery</a>"
+        )).to.equal("Gallery");
       });
     });
 

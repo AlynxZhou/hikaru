@@ -224,6 +224,15 @@ const escapeHTML = (str) => {
 };
 
 /**
+ * @description Remove all HTML tags.
+ * @param {String} str
+ * @return {String} String without HTML tags.
+ */
+const removeHTMLTags = (str) => {
+  return str.replace(/<\/?[^>]+>/gi, "");
+};
+
+/**
  * @description A Promised glob.
  * @param {String} pattern
  * @param {Objects} [opts] Optional match opts.
@@ -1275,6 +1284,7 @@ export {
   isBinaryFileSync,
   isReadableSync,
   escapeHTML,
+  removeHTMLTags,
   matchFiles,
   removeControlChars,
   getFrontMatter,
