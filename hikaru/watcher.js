@@ -37,7 +37,7 @@ class Watcher {
    * @return {Map} Reversed file dependency tree.
    */
   reverseFileDependencies(rawFileDependencies) {
-    // Let's revert dependency tree for fast look up.
+    // Let's reverse dependency tree for fast look up.
     const fileDependencies = new Map();
     for (const srcDir in rawFileDependencies) {
       fileDependencies.set(srcDir, new Map());
@@ -135,7 +135,8 @@ class Watcher {
       handler["fns"].add(fn);
       this._.set(srcDir, handler);
       const watcher = chokidar.watch(
-        glob, {"cwd": srcDir, "ignoreInitial": true}
+        // See <https://github.com/paulmillr/chokidar/issues/464>.
+        glob, {"cwd": path.resolve(srcDir), "ignoreInitial": true}
       );
       this._.get(srcDir)["watcher"] = watcher;
       for (const event of ["add", "change", "unlink"]) {

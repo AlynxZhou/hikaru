@@ -51,7 +51,7 @@ const {
   resolveImages,
   resolveCodeBlocks,
   genTOC,
-  SiteLayoutLoader
+  NjkLoader
 } = utils;
 
 /**
@@ -460,7 +460,7 @@ class Hikaru {
       } else {
         pluginPath = path.resolve(pluginDir, "index.js");
       }
-      // import is a keyword, not a function.
+      // `import` is a keyword, not a function.
       const module = await import(pluginPath);
       return module["default"]({
         "logger": this.logger,
@@ -503,7 +503,8 @@ class Hikaru {
         this.logger.cyan(filepath)
       }\`...`);
       // Use absolute path to load from siteDir instead of program dir.
-      // import is a keyword, not a function.
+      //
+      // `import` is a keyword, not a function.
       const module = await import(path.resolve(filepath));
       return module["default"]({
         "logger": this.logger,
@@ -600,6 +601,8 @@ class Hikaru {
    * @private
    */
   async loadLayouts() {
+    // Load and watch all template files so we could update related layouts if
+    // included template files are changed.
     const filenames = await matchFiles("**/*", {
       "workDir": this.site["siteConfig"]["themeLayoutDir"]
     });
@@ -656,8 +659,8 @@ class Hikaru {
           await Promise.all(updated.map((srcPath) => {
             return load(srcDir, srcPath);
           }));
-          // We only register top level template files as decorate functions.
           await Promise.all(updated.filter((srcPath) => {
+            // We only register top level template files as decorate functions.
             return path.dirname(srcPath) === ".";
           }).map((srcPath) => {
             return compile(srcPath);
@@ -692,33 +695,17 @@ class Hikaru {
    * @private
    */
   registerInternalCompilers() {
-    // Nunjucks uses runtime including instead of compiled including,
-    // and it will cache included templates internally.
-    // The only way to update cache is emit update from a watcher.
     const njkOpts = Object.assign(
-      {"autoescape": false, "watch": false, "noCache": false},
-      this.site["siteConfig"]["nunjucks"]
+      {"autoescape": false}, this.site["siteConfig"]["nunjucks"]
     );
-    const njkEnv = new nunjucks.Environment(
-      new SiteLayoutLoader(this), njkOpts
-    );
+    // See the comment of `NjkLoader` in `utils.js` for why we need it.
+    const njkEnv = new nunjucks.Environment(new NjkLoader(this), njkOpts);
     const njkCompiler = (srcPath, content) => {
-      // Only srcPath provided, but no content, load them via loader.
-      if (content == null) {
-        return (ctx) => {
-          return new Promise((resolve, reject) => {
-            njkEnv.render(srcPath, ctx, (error, result) => {
-              if (error != null) {
-                return reject(error);
-              }
-              return resolve(result);
-            });
-          });
-        };
-      }
-      // The last argument is eagerCompile, which means we compile now
-      // instead of delaying compile to rendering.
-      const template = new nunjucks.Template(content, njkEnv, srcPath, true);
+      // If content is not provided, ask environment to load it via loader.
+      // Otherwise create a new template and pass it to environment.
+      const template = content == null
+        ? njkEnv.getTemplate(srcPath, true)
+        : new nunjucks.Template(content, njkEnv, srcPath, true);
       return (ctx) => {
         return new Promise((resolve, reject) => {
           template.render(ctx, (error, result) => {
@@ -786,8 +773,6 @@ class Hikaru {
 
     this.processor.register("content resolving", async (site) => {
       const all = site["posts"].concat(site["pages"]);
-      // It turns out that single threaded resolving works faster,
-      // and takes less memory, because Node.js Workers needs to copy messages.
       for (const p of all) {
         const node = parseNode(p["content"]);
         resolveHeadingIDs(node);

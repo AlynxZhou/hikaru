@@ -27,8 +27,8 @@ class Decorator {
   /**
    * @description Register a decorate function.
    * @param {String} layout
-   * @param {decorateCallback|String} fn If string,
-   * will call Compiler while decorating.
+   * @param {decorateCallback|String} fn If string, will call Compiler on this
+   * filename while decorating.
    * @param {Object} [ctx=null] Custom context if you want to pass something to
    * this decorator. This is deprecated and you should use helper function with
    * layout filter.

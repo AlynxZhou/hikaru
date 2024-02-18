@@ -24,7 +24,7 @@ class Compiler {
    * @description Typically you should configure your templating engines to load
    * template from your theme's layout dir.
    * @param {String} srcPath File path relative to your theme's layout dir.
-   * @param {String} [content] If this is null, you need to compile file.
+   * @param {String} [content] If this is null, you need to manually load file.
    * @return {Function}
    */
   /**

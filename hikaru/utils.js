@@ -240,8 +240,8 @@ const removeHTMLTags = (str) => {
  * @param {String} [opts.workDir=.] Working dir for this match.
  * @param {Boolean} [opts.ignoreDir=true] Ignore directories or not.
  * @param {Boolean} [opts.ignoreHidden=true] Ignore hidden files or not.
- * @param {Boolean} [opts.recursive=true] Set to false if you don't need
- * subdirs, will help on performance.
+ * @param {Boolean} [opts.recursive=true] Set to false if you don't care about
+ * subdirs to get better performance.
  * @return {Promise<String[]>}
  */
 const matchFiles = (pattern, opts = {}) => {
@@ -296,34 +296,32 @@ const removeControlChars = (str) => {
  * @property {String} frontMatter Front-matter string.
  */
 /**
- * @description Get front-matter from string,
- * front-matter here is defined at the head of string (so don't use UTF-8 BOM),
- * begins with one line that contains only `---`,
- * and write properties in YAML after this line,
- * then also ends with such a line.
+ * @description Get front-matter from string, front-matter here should be at the
+ * beginning of string (so UTF-8 BOM is not supported), and should begin with
+ * `---` in the first line, and should have valid YAML in lines after that, and
+ * should end with `---` in the next line.
  * @param {String} str
  * @return {FrontMatter}
  */
 const getFrontMatter = (str) => {
-  // Return if not start with /^---+\r?\n/.
-  // This only matches once so `g` is not required.
+  // Return if no front matter. Only check once so `g` is not required.
   if (!/^---+\r?\n/.test(str)) {
     return {"attributes": {}, "body": str};
   }
-  // We split string manually instead of using `str.split(regexp, 3)`,
-  // this function will split the whole string first
-  // and then return the first 3 result.
-  // But we want to only split twice.
-  // Flag `m` can be used for per line test.
-  // `exec()`, `matchAll()` requires `g`.
-  // We need to use /\r?\n/ here instead of /$/,
-  // because we need to calculate `\r` and `\n` when splitting.
+  // We split string manually instead of using `str.split(regexp, 3)`, this
+  // function will split the whole string first and then return the first 3
+  // results, but we want to only split twice.
+  //
+  // Flag `m` can be used for per line test, and `exec()`, `matchAll()` requires
+  // flag `g`.
+  //
+  // We need to use /\r?\n/ here instead of /$/, so `\r` and `\n` will be part
+  // of the match results so we could exclude them from front-matter and body.
   const regexp = /^---+\r?\n/gm;
   // RegExp is stateful so `exec()` will start after last matched result.
   const fmBegin = regexp.exec(str);
   const fmEnd = regexp.exec(str);
-  // `null` is returned if not match.
-  // No front-matter at all.
+  // `null` is returned if not match, which means no front-matter at all.
   if (fmBegin == null || fmEnd == null) {
     return {"attributes": {}, "body": str};
   }
@@ -355,9 +353,10 @@ const parseFrontMatter = (file) => {
   file["text"] = parsed["body"];
   file["frontMatter"] = parsed["attributes"];
   file = Object.assign(file, parsed["attributes"]);
-  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse
-  // ISO 8601 date time format is expected,
-  // and by default a string with date and time will be parsed as local time.
+  // See <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse>.
+  //
+  // ISO 8601 date time format is expected, and by default a string with date
+  // and time will be parsed as local time.
   file["updated"] = file["updated"] || file["updatedDate"];
   if (file["updated"] != null) {
     file["updated"] = new Date(file["updated"]);
@@ -464,8 +463,8 @@ const paginateCategoriesPosts = (
 
 /**
  * @callback getPath
- * @description Get full website path starts from `/` after domain.
- * This function can only handle site internal path.
+ * @description Get full website path starts from `/` after domain. This
+ * function can only handle site internal path.
  * @param {String} [docPath]
  * @param {Boolean} [skipEncode=false] If true, skip `encodeURI()`.
  * @return {String} Full path that starts with site rootDir.
@@ -495,11 +494,10 @@ const getPathFn = (rootDir = path.posix.sep) => {
     if (baseName === "index.html" || baseName === "index.htm") {
       array[0] = path.posix.join(dirName, path.posix.sep);
     }
-    /**
-     * marked.js and CommonMark tends to do URL encode by themselevs.
-     * Maybe I should not do `encodeURL()` here.
-     * See <https://github.com/markedjs/marked/issues/1285>.
-     */
+    // marked.js and CommonMark tends to do URL encode by themselves. Maybe I
+    // should not do `encodeURL()` here.
+    //
+    // See <https://github.com/markedjs/marked/issues/1285>.
     return skipEncode
       ? path.posix.join(rootDir, ...array)
       : encodeURI(path.posix.join(rootDir, ...array));
@@ -508,8 +506,8 @@ const getPathFn = (rootDir = path.posix.sep) => {
 
 /**
  * @callback getURL
- * @description Get full website URL including the domain.
- * This function can only handle site internal path.
+ * @description Get full website URL including the domain. This function can
+ * only handle site internal path.
  * @param {String} [docPath]
  * @return {URL} Full website URL.
  */
@@ -528,8 +526,8 @@ const getURLFn = (baseURL, rootDir = path.posix.sep) => {
 
 /**
  * @callback isCurrentHost
- * @description Test if given URL is on current host.
- * This function does not care query string and hash.
+ * @description Test if given URL is on current host. This function does not
+ * care about query string and hash.
  * @param {String} [testURL] URL needed to test.
  * @return {Boolean}
  */
@@ -543,8 +541,8 @@ const isCurrentHostFn = (baseURL, rootDir = path.posix.sep) => {
   const getURL = getURLFn(baseURL, rootDir);
   const currentHost = getURL().host;
   return (testURL) => {
-    // If `testURL` is a valid URL, `baseURL` will be ignored.
-    // So we can compare host for all links here.
+    // If `testURL` is a valid URL, `baseURL` will be ignored, so we can compare
+    // host for all links here.
     const url = new URL(testURL, baseURL);
     // It returns `""` for data URL!
     return url.host === currentHost || url.host === "";
@@ -553,13 +551,12 @@ const isCurrentHostFn = (baseURL, rootDir = path.posix.sep) => {
 
 /**
  * @callback isCurrentPath
- * @description Test if given path is current path.
- * This function does not care query string and hash.
- * This function can only handle site internal path.
+ * @description Test if given path is current path. This function does not care
+ * about query string and hash. This function can only handle site internal
+ * path.
  * @param {String} [testPath] Path needed to test.
- * @param {Boolean} [strict=false] If not strict, true is also returned
- * if current path is under given path. This is useful to highlight
- * menu items if current path is under it.
+ * @param {Boolean} [strict=false] If not strict, true is also returned if given
+ * path is parent path of current path.
  * @return {Boolean}
  */
 /**
@@ -572,10 +569,8 @@ const isCurrentPathFn = (rootDir = path.posix.sep, currentPath = "") => {
   const getPath = getPathFn(rootDir);
   currentPath = getPath(currentPath).split(/[?#]/)[0];
   const currentToken = currentPath.split(path.posix.sep);
-  /**
-   * `"/a/b/"` will be `["", "a", "b", ""]`, and `"/a/b/c"` will be
-   * `["", "a", "b", "c"]`, so we always ignore the last empty string.
-   */
+  // `"/a/b/"` will be `["", "a", "b", ""]`, and `"/a/b/c"` will be
+  // `["", "a", "b", "c"]`, so we always ignore the last empty string.
   if (currentToken[currentToken.length - 1].length === 0) {
     currentToken.pop();
   }
@@ -595,7 +590,7 @@ const isCurrentPathFn = (rootDir = path.posix.sep, currentPath = "") => {
     if (strict && testToken.length !== currentToken.length) {
       return false;
     }
-    // testPath is shorter and usually be a menu link.
+    // `testPath` is shorter and usually be a menu link.
     for (let i = 0; i < testToken.length; ++i) {
       if (testToken[i] !== currentToken[i]) {
         return false;
@@ -682,8 +677,8 @@ const genTags = (posts) => {
 };
 
 /**
- * @description Put file into an array in site,
- * will replace file with the same doc path.
+ * @description Put file into an array in site, will replace file with the same
+ * destination.
  * @param {Site} site
  * @param {String} key
  * @param {File} file
@@ -706,8 +701,7 @@ const putSite = (site, key, file) => {
 };
 
 /**
- * @description Delete file from an array in site,
- * which have the same src path.
+ * @description Delete file from an array in site which have the same source.
  * @param {Site} site
  * @param {String} key
  * @param {File} file
@@ -721,8 +715,8 @@ const delSite = (site, key, file) => {
       site[key][i]["srcPath"] === file["srcPath"] &&
       site[key][i]["srcDir"] === file["srcDir"]
     ) {
-      // Don't use break here because we may have mutiply files
-      // created with the same source.
+      // Don't use break here because we may have many files created with the
+      // same source.
       site[key].splice(i, 1);
       // Don't forget this because we removed one element from array!
       --i;
@@ -758,8 +752,8 @@ const getFullDocPath = (file) => {
  * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/index.md#parsefragment
  * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/document-fragment.md
  * @description Parse HTML string into parse5 Node.
- * @param {Object} [node] If specified, given fragment will be parsed as if
- * it was set to the context element's `innerHTML` property.
+ * @param {Object} [node] If specified, given fragment will be parsed as it was
+ * set to the context element's `innerHTML` property.
  * @param {String} html HTML string to parse.
  * @param {Object} [options] parse5 options.
  * @return {Object}
@@ -780,7 +774,8 @@ const serializeNode = (node, options) => {
 };
 
 /**
- * @description Quick and not so dirty way to replace a Node with given HTML string.
+ * @description Quick and not so dirty way to replace a Node with given HTML
+ * string.
  * @param {Object} node parse5 Node to replace.
  * @param {String} html
  */
@@ -890,7 +885,7 @@ const setNodeText = (node, html) => {
  * @description Get an attribute value from parse5 Node.
  * @param {Object} node parse5 Node.
  * @param {String} attrName
- * @return {String} Value of the attribute, null if not available.
+ * @return {String} Value of the attribute, `null` if not available.
  */
 const getNodeAttr = (node, attrName) => {
   if (node["attrs"] != null) {
@@ -951,11 +946,17 @@ const resolveHeadingIDs = (node) => {
       // to prevent 2 `abc-1` for the last `abc-1`.
       headingIDs[id] = 1;
       setNodeAttr(node, "id", id);
-      setNodeText(node, `<a class="heading-link header-link" href="#${id}"></a>${text}`);
+      setNodeText(
+        node, `<a class="heading-link header-link" href="#${id}"></a>${text}`
+      );
     }
   }
 };
 
+/**
+ * @deprecated
+ * @description Use `resolveHeadingIDs(node)` instead.
+ */
 const resolveHeaderIDs = resolveHeadingIDs;
 
 /**
@@ -992,7 +993,7 @@ const genTOC = (node) => {
 /**
  * @description Get protocol of a URL.
  * @param {String} url
- * @return {String} If no protocol return null.
+ * @return {String} If no protocol return `null`.
  */
 const getURLProtocol = (url) => {
   try {
@@ -1004,8 +1005,8 @@ const getURLProtocol = (url) => {
 };
 
 /**
- * @description Update site's internal link to absolute path,
- * and add attributes for external link.
+ * @description Update site's internal link to absolute path, and add attributes
+ * for external link.
  * @param {Object} node parse5 Node.
  * @param {String} baseURL Site baseURL.
  * @param {String} rootDir Site rootDir.
@@ -1102,7 +1103,7 @@ const hljsLoadAliases = () => {
  * @description Format and highlight code block.
  * @param {Object} node parse5 Node.
  * @param {Object} [hlOpts] Highlight options.
- * @return {Promise<null>} Importing hljs is async.
+ * @return {Promise<null>} Importing hljs requires await.
  */
 const resolveCodeBlocks = async (node, hlOpts = {}) => {
   // Enable hljs prefix and gutter by default.
@@ -1243,25 +1244,36 @@ const default404 = [
   ""
 ].join("\n");
 
-// Nunjucks' default loader will read included templates sync, we create a
-// custom loader which will share loaded layouts.
-class SiteLayoutLoader extends nunjucks.Loader {
+// Nunjucks uses runtime including (we treat extending as another kind if
+// including), which means it will try to call included template everytime it
+// renders instead of call included template once during compiling. So if a
+// included template is updated, all templates that include it will be updated.
+// That means we don't need to handle file dependencies of nunjucks templates.
+//
+// By default, the FileSystemLoader of nunjucks could watch and reload files, so
+// we only needs to watch the toplevel layout files (because decorator manages
+// functions by itself, not nunjucks). However, FileSystemLoader refuses to load
+// files out of search paths, which is needed for plugins. And users may use
+// other templating engine that does not support watching and reloading, so it
+// is useful to control watching and reloading by ourselves, then we could
+// bypass nunjucks to load file contents from Hikaru via custom loader.
+/**
+ * @description Custom nunjucks loader that manage templates by ourselves.
+ */
+class NjkLoader extends nunjucks.Loader {
   constructor(hikaru) {
     super();
     this.watcher = hikaru.watcher;
     this.layouts = hikaru.site["layouts"];
     this.layoutDir = hikaru.site["siteConfig"]["themeLayoutDir"];
     if (this.watcher != null) {
-      // This will be called before our actuall read file async calls,
-      // but it's not a problem, nunjucks uses runtime including,
-      // so the actual loading happens when decorating (refreshing
-      // webpage), I don't believe a user can save file and refresh webpage
-      // at the same time.
       this.watcher.register(
         this.layoutDir, (srcDir, srcPaths) => {
           const {added, changed, removed} = srcPaths;
           const all = added.concat(changed).concat(removed);
           for (const srcPath of all) {
+            // Mark that template as dirty in the internal cache of nunjucks,
+            // so it will re-fetch content from this loader when including.
             this.emit("update", srcPath);
           }
         }
@@ -1270,22 +1282,32 @@ class SiteLayoutLoader extends nunjucks.Loader {
   }
 
   getSource(srcPath) {
+    // Layouts not in theme's layout dir, for example plugin's template,
+    // fallback to read from disk.
+    let result = null;
     if (!this.layouts.has(srcPath)) {
-      // Layouts not in theme's layout dir, for example plugin's template,
-      // fallback to read from disk.
+      // Ignore non-existing files.
       if (!isReadableSync(srcPath)) {
         return null;
       }
-      // Load such files sync to prevent include in for loop problem.
-      return {
+      // Async including in nunjucks for loops is hard to handle, so always read
+      // file sync.
+      result = {
         "src": fse.readFileSync(srcPath, "utf8"),
-        "path": srcPath
+        "path": srcPath,
+        // Our watcher is hard to watch plugin templates which are out of our
+        // src dirs, so just disable cache for them.
+        "noCache": true
+      };
+    } else {
+      result = {
+        "src": this.layouts.get(srcPath),
+        "path": srcPath,
+        "noCache": false
       };
     }
-    return {
-      "src": this.layouts.get(srcPath),
-      "path": srcPath
-    };
+    this.emit("load", srcPath, result);
+    return result;
   }
 }
 
@@ -1345,5 +1367,5 @@ export {
   resolveCodeBlocks,
   getVersion,
   default404,
-  SiteLayoutLoader
+  NjkLoader
 };

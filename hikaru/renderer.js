@@ -50,9 +50,8 @@ class Renderer {
     if (!this._.has(srcExt)) {
       this._.set(srcExt, new Map());
     }
-    // Use another Map for docExt,
-    // so renderer for the same src and doc in plugin
-    // can replace internal renderer.
+    // Use another Map for docExt, so renderer for the same src and doc in
+    // plugin can replace internal renderer.
     this._.get(srcExt).set(docExt, {srcExt, docExt, fn});
   }
 
@@ -93,11 +92,8 @@ class Renderer {
     }
     const output = new File(input);
     output["docPath"] = output["srcPath"];
-    // this.logger.debug(`Hikaru is rendering \`${
-    //   this.logger.cyan(output['srcPath'])
-    // }\`...`)
-    // For binary files, this is useless,
-    // but we have to keep this line for other text files without renderer.
+    // For binary files, this is useless, but we have to keep this line for
+    // other text files without renderer.
     output["content"] = output["text"];
     return [output];
   }
