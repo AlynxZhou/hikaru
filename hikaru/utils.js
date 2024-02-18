@@ -9,6 +9,7 @@ import YAML from "yaml";
 import * as parse5 from "parse5";
 import readdirp from "readdirp";
 import picomatch from "picomatch";
+import nunjucks from "nunjucks";
 
 import {Site, File, Category, Tag, TOC} from "./types.js";
 
@@ -430,49 +431,33 @@ const paginate = (p, posts = [], perPage = 10) => {
 };
 
 /**
- * @description Sort categories and their posts recursively.
- * @param {Category} category
- */
-const sortCategories = (category) => {
-  category["posts"].sort((a, b) => {
-    return -(a["date"] - b["date"]);
-  });
-  category["subs"].sort((a, b) => {
-    return a["name"].localeCompare(b["name"]);
-  });
-  for (const sub of category["subs"]) {
-    sortCategories(sub);
-  }
-};
-
-/**
- * @description Generate and paginate pages for category and its subs.
- * @param {Category} category
- * @param {String} parentPath Parent category's dir,
- * into which sub categories need to be put.
- * @param {Site} site
+ * @description Generate pages and paginate posts of categories.
+ * @param {Category[]} categories
+ * @param {String} parentPath Parent category's dir.
+ * @param {docDir} docDir
  * @param {Number} [perPage=10] How many posts per page.
  * @return {File[]} All category and it's subs pages.
  */
-const paginateCategories = (category, parentPath, site, perPage = 10) => {
+const paginateCategoriesPosts = (
+  categories, parentPath, docDir, perPage = 10
+) => {
   const results = [];
-  const sp = new File({
-    "layout": "category",
-    "docDir": site["siteConfig"]["docDir"],
-    "docPath": path.join(parentPath, category["name"], "index.html"),
-    "title": "category",
-    "name": category["name"],
-    "comment": false,
-    "reward": false
-  });
-  category["docPath"] = sp["docPath"];
-  results.push(...paginate(sp, category["posts"], perPage));
-  for (const sub of category["subs"]) {
-    results.push(
-      ...paginateCategories(sub, path.join(
-        parentPath, category["name"]
-      ), site, perPage)
-    );
+  for (const category of categories) {
+    category["docPath"] = path.join(parentPath, category["name"], "index.html");
+    const sp = new File({
+      "layout": "category",
+      "docDir": docDir,
+      "docPath": category["docPath"],
+      "title": "category",
+      "category": category,
+      "name": category["name"],
+      "comment": false,
+      "reward": false
+    });
+    results.push(...paginate(sp, category["posts"], perPage));
+    results.push(...paginateCategoriesPosts(category["subs"], path.join(
+      parentPath, category["name"]
+    ), docDir, perPage));
   }
   return results;
 };
@@ -656,15 +641,12 @@ const genCategories = (posts) => {
     }
     post["categories"] = postCategories;
   }
-  categories.sort((a, b) => {
-    return a["name"].localeCompare(b["name"]);
-  });
   return {categories, categoriesLength};
 };
 
 /**
  * @typedef {Object} TagsData
- * @property {Category[]} tags
+ * @property {Tag[]} tags
  * @property {Number} tagsLength
  */
 /**
@@ -696,9 +678,6 @@ const genTags = (posts) => {
     }
     post["tags"] = postTags;
   }
-  tags.sort((a, b) => {
-    return a["name"].localeCompare(b["name"]);
-  });
   return {tags, tagsLength};
 };
 
@@ -1264,6 +1243,52 @@ const default404 = [
   ""
 ].join("\n");
 
+// Nunjucks' default loader will read included templates sync, we create a
+// custom loader which will share loaded layouts.
+class SiteLayoutLoader extends nunjucks.Loader {
+  constructor(hikaru) {
+    super();
+    this.watcher = hikaru.watcher;
+    this.layouts = hikaru.site["layouts"];
+    this.layoutDir = hikaru.site["siteConfig"]["themeLayoutDir"];
+    if (this.watcher != null) {
+      // This will be called before our actuall read file async calls,
+      // but it's not a problem, nunjucks uses runtime including,
+      // so the actual loading happens when decorating (refreshing
+      // webpage), I don't believe a user can save file and refresh webpage
+      // at the same time.
+      this.watcher.register(
+        this.layoutDir, (srcDir, srcPaths) => {
+          const {added, changed, removed} = srcPaths;
+          const all = added.concat(changed).concat(removed);
+          for (const srcPath of all) {
+            this.emit("update", srcPath);
+          }
+        }
+      );
+    }
+  }
+
+  getSource(srcPath) {
+    if (!this.layouts.has(srcPath)) {
+      // Layouts not in theme's layout dir, for example plugin's template,
+      // fallback to read from disk.
+      if (!isReadableSync(srcPath)) {
+        return null;
+      }
+      // Load such files sync to prevent include in for loop problem.
+      return {
+        "src": fse.readFileSync(srcPath, "utf8"),
+        "path": srcPath
+      };
+    }
+    return {
+      "src": this.layouts.get(srcPath),
+      "path": srcPath
+    };
+  }
+}
+
 export {
   hikaruDir,
   loadJSON,
@@ -1291,8 +1316,7 @@ export {
   parseFrontMatter,
   getContentType,
   paginate,
-  sortCategories,
-  paginateCategories,
+  paginateCategoriesPosts,
   getPathFn,
   getURLFn,
   isCurrentHostFn,
@@ -1320,5 +1344,6 @@ export {
   resolveImages,
   resolveCodeBlocks,
   getVersion,
-  default404
+  default404,
+  SiteLayoutLoader
 };

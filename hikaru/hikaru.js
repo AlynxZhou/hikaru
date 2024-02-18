@@ -41,8 +41,7 @@ const {
   isCurrentHostFn,
   isCurrentPathFn,
   paginate,
-  sortCategories,
-  paginateCategories,
+  paginateCategoriesPosts,
   genCategories,
   genTags,
   parseNode,
@@ -51,7 +50,8 @@ const {
   resolveAnchors,
   resolveImages,
   resolveCodeBlocks,
-  genTOC
+  genTOC,
+  SiteLayoutLoader
 } = utils;
 
 /**
@@ -699,51 +699,6 @@ class Hikaru {
       {"autoescape": false, "watch": false, "noCache": false},
       this.site["siteConfig"]["nunjucks"]
     );
-    // Nunjucks' default loader will read included templates sync,
-    // we create a custom loader which will share loaded layouts.
-    class SiteLayoutLoader extends nunjucks.Loader {
-      constructor(hikaru) {
-        super();
-        this.watcher = hikaru.watcher;
-        this.layouts = hikaru.site["layouts"];
-        this.layoutDir = hikaru.site["siteConfig"]["themeLayoutDir"];
-        if (this.watcher != null) {
-          // This will be called before our actuall read file async calls,
-          // but it's not a problem, nunjucks uses runtime including,
-          // so the actual loading happens when decorating (refreshing
-          // webpage), I don't believe a user can save file and refresh webpage
-          // at the same time.
-          this.watcher.register(
-            this.layoutDir, (srcDir, srcPaths) => {
-              const {added, changed, removed} = srcPaths;
-              const all = added.concat(changed).concat(removed);
-              for (const srcPath of all) {
-                this.emit("update", srcPath);
-              }
-            }
-          );
-        }
-      }
-
-      getSource(srcPath) {
-        if (!this.layouts.has(srcPath)) {
-          // Layouts not in theme's layout dir, for example plugin's template,
-          // fallback to read from disk.
-          if (!isReadableSync(srcPath)) {
-            return null;
-          }
-          // Load such files sync to prevent include in for loop problem.
-          return {
-            "src": fse.readFileSync(srcPath, "utf8"),
-            "path": srcPath
-          };
-        }
-        return {
-          "src": this.layouts.get(srcPath),
-          "path": srcPath
-        };
-      }
-    }
     const njkEnv = new nunjucks.Environment(
       new SiteLayoutLoader(this), njkOpts
     );
@@ -809,12 +764,24 @@ class Hikaru {
       const result = genCategories(site["posts"]);
       site["categories"] = result["categories"];
       site["categoriesLength"] = result["categoriesLength"];
+      const sortCategories = (categories) => {
+        categories.sort((a, b) => {
+          return -(a["posts"].length - b["posts"].length);
+        });
+        for (const category of categories) {
+          sortCategories(category["subs"]);
+        }
+      };
+      sortCategories(site["categories"]);
     });
 
     this.processor.register("tags collection", (site) => {
       const result = genTags(site["posts"]);
       site["tags"] = result["tags"];
       site["tagsLength"] = result["tagsLength"];
+      site["tags"].sort((a, b) => {
+        return -(a["posts"].length - b["posts"].length);
+      });
     });
 
     this.processor.register("content resolving", async (site) => {
@@ -901,12 +868,21 @@ class Hikaru {
         } else {
           perPage = site["siteConfig"]["perPage"] || 10;
         }
-        for (const sub of site["categories"]) {
-          sortCategories(sub);
-          results.push(...paginateCategories(
-            sub, site["siteConfig"]["categoryDir"], site, perPage
-          ));
-        }
+        const sortCategoriesPosts = (categories) => {
+          for (const category of categories) {
+            category["posts"].sort((a, b) => {
+              return -(a["date"] - b["date"]);
+            });
+            sortCategoriesPosts(category["subs"]);
+          }
+        };
+        sortCategoriesPosts(site["categories"]);
+        results.push(...paginateCategoriesPosts(
+          site["categories"],
+          site["siteConfig"]["categoryDir"],
+          site["siteConfig"]["docDir"],
+          perPage
+        ));
         results.push(new File({
           "layout": "categories",
           "docDir": site["siteConfig"]["docDir"],
@@ -932,18 +908,19 @@ class Hikaru {
           tag["posts"].sort((a, b) => {
             return -(a["date"] - b["date"]);
           });
+          tag["docPath"] = path.join(
+            site["siteConfig"]["tagDir"], tag["name"], "index.html"
+          );
           const sp = new File({
             "layout": "tag",
             "docDir": site["siteConfig"]["docDir"],
-            "docPath": path.join(
-              site["siteConfig"]["tagDir"], tag["name"], "index.html"
-            ),
+            "docPath": tag["docPath"],
             "title": "tag",
+            "tag": tag,
             "name": tag["name"],
             "comment": false,
             "reward": false
           });
-          tag["docPath"] = sp["docPath"];
           results.push(...paginate(sp, tag["posts"], perPage));
         }
         results.push(new File({

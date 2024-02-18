@@ -71,8 +71,10 @@ class File {
    * @property {String} text File content after front-matter.
    * @property {String} content Rendered content that is wrote to disk.
    * @property {Object} frontMatter
-   * @property {Category[]} categories
-   * @property {Tag[]} tags
+   * @property {Category[]} categories Only available for posts.
+   * @property {Tag[]} tags Only available for posts.
+   * @property {Category} category Current category if this is a category page.
+   * @property {Tag} tag Current tag if this is a tag page.
    * @property {String} excerpt
    * @property {String} more Content after excerpt.
    * @property {TOC[]} toc Content TOC.
@@ -105,6 +107,8 @@ class File {
     this.frontMatter = null;
     this.categories = null;
     this.tags = null;
+    this.categroy = null;
+    this.tag = null;
     this.excerpt = null;
     this.more = null;
     this.toc = null;
