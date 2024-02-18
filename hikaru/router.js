@@ -124,13 +124,10 @@ class Router {
     const results = await this.renderer.render(file);
     for (const result of results) {
       if (result["layout"] === "post") {
-        result["type"] = "post";
         putSite(this.site, "posts", result);
       } else if (result["layout"] != null) {
-        result["type"] = "page";
         putSite(this.site, "pages", result);
       } else {
-        result["type"] = "asset";
         putSite(this.site, "assets", result);
       }
     }
