@@ -69,8 +69,7 @@ const {
   isCurrentHostFn,
   isCurrentPathFn,
   paginate,
-  sortCategories,
-  paginateCategories,
+  paginateCategoriesPosts,
   genCategories,
   genTags,
   parseNode,
@@ -79,7 +78,8 @@ const {
   resolveAnchors,
   resolveImages,
   resolveCodeBlocks,
-  genTOC
+  genTOC,
+  NjkLoader
 } = utils;
 
 /**
@@ -488,7 +488,7 @@ class Hikaru {
       } else {
         pluginPath = path.resolve(pluginDir, "index.js");
       }
-      // import is a keyword, not a function.
+      // `import` is a keyword, not a function.
       const module = await import(pluginPath);
       return module["default"]({
         "logger": this.logger,
@@ -531,7 +531,8 @@ class Hikaru {
         this.logger.cyan(filepath)
       }\`...`);
       // Use absolute path to load from siteDir instead of program dir.
-      // import is a keyword, not a function.
+      //
+      // `import` is a keyword, not a function.
       const module = await import(path.resolve(filepath));
       return module["default"]({
         "logger": this.logger,
@@ -628,6 +629,8 @@ class Hikaru {
    * @private
    */
   async loadLayouts() {
+    // Load and watch all template files so we could update related layouts if
+    // included template files are changed.
     const filenames = await matchFiles("**/*", {
       "workDir": this.site["siteConfig"]["themeLayoutDir"]
     });
@@ -684,8 +687,8 @@ class Hikaru {
           await Promise.all(updated.map((srcPath) => {
             return load(srcDir, srcPath);
           }));
-          // We only register top level template files as decorate functions.
           await Promise.all(updated.filter((srcPath) => {
+            // We only register top level template files as decorate functions.
             return path.dirname(srcPath) === ".";
           }).map((srcPath) => {
             return compile(srcPath);
@@ -720,78 +723,17 @@ class Hikaru {
    * @private
    */
   registerInternalCompilers() {
-    // Nunjucks uses runtime including instead of compiled including,
-    // and it will cache included templates internally.
-    // The only way to update cache is emit update from a watcher.
     const njkOpts = Object.assign(
-      {"autoescape": false, "watch": false, "noCache": false},
-      this.site["siteConfig"]["nunjucks"]
+      {"autoescape": false}, this.site["siteConfig"]["nunjucks"]
     );
-    // Nunjucks' default loader will read included templates sync,
-    // we create a custom loader which will share loaded layouts.
-    class SiteLayoutLoader extends nunjucks.Loader {
-      constructor(hikaru) {
-        super();
-        this.watcher = hikaru.watcher;
-        this.layouts = hikaru.site["layouts"];
-        this.layoutDir = hikaru.site["siteConfig"]["themeLayoutDir"];
-        if (this.watcher != null) {
-          // This will be called before our actuall read file async calls,
-          // but it's not a problem, nunjucks uses runtime including,
-          // so the actual loading happens when decorating (refreshing
-          // webpage), I don't believe a user can save file and refresh webpage
-          // at the same time.
-          this.watcher.register(
-            this.layoutDir, (srcDir, srcPaths) => {
-              const {added, changed, removed} = srcPaths;
-              const all = added.concat(changed).concat(removed);
-              for (const srcPath of all) {
-                this.emit("update", srcPath);
-              }
-            }
-          );
-        }
-      }
-
-      getSource(srcPath) {
-        if (!this.layouts.has(srcPath)) {
-          // Layouts not in theme's layout dir, for example plugin's template,
-          // fallback to read from disk.
-          if (!isReadableSync(srcPath)) {
-            return null;
-          }
-          // Load such files sync to prevent include in for loop problem.
-          return {
-            "src": fse.readFileSync(srcPath, "utf8"),
-            "path": srcPath
-          };
-        }
-        return {
-          "src": this.layouts.get(srcPath),
-          "path": srcPath
-        };
-      }
-    }
-    const njkEnv = new nunjucks.Environment(
-      new SiteLayoutLoader(this), njkOpts
-    );
+    // See the comment of `NjkLoader` in `utils.js` for why we need it.
+    const njkEnv = new nunjucks.Environment(new NjkLoader(this), njkOpts);
     const njkCompiler = (srcPath, content) => {
-      // Only srcPath provided, but no content, load them via loader.
-      if (content == null) {
-        return (ctx) => {
-          return new Promise((resolve, reject) => {
-            njkEnv.render(srcPath, ctx, (error, result) => {
-              if (error != null) {
-                return reject(error);
-              }
-              return resolve(result);
-            });
-          });
-        };
-      }
-      // The last argument is eagerCompile, which means we compile now
-      // instead of delaying compile to rendering.
-      const template = new nunjucks.Template(content, njkEnv, srcPath, true);
+      // If content is not provided, ask environment to load it via loader.
+      // Otherwise create a new template and pass it to environment.
+      const template = content == null
+        ? njkEnv.getTemplate(srcPath, true)
+        : new nunjucks.Template(content, njkEnv, srcPath, true);
       return (ctx) => {
         return new Promise((resolve, reject) => {
           template.render(ctx, (error, result) => {
@@ -837,18 +779,28 @@ class Hikaru {
       const result = genCategories(site["posts"]);
       site["categories"] = result["categories"];
       site["categoriesLength"] = result["categoriesLength"];
+      const sortCategories = (categories) => {
+        categories.sort((a, b) => {
+          return -(a["posts"].length - b["posts"].length);
+        });
+        for (const category of categories) {
+          sortCategories(category["subs"]);
+        }
+      };
+      sortCategories(site["categories"]);
     });
 
     this.processor.register("tags collection", (site) => {
       const result = genTags(site["posts"]);
       site["tags"] = result["tags"];
       site["tagsLength"] = result["tagsLength"];
+      site["tags"].sort((a, b) => {
+        return -(a["posts"].length - b["posts"].length);
+      });
     });
 
     this.processor.register("content resolving", async (site) => {
       const all = site["posts"].concat(site["pages"]);
-      // It turns out that single threaded resolving works faster,
-      // and takes less memory, because Node.js Workers needs to copy messages.
       for (const p of all) {
         const node = parseNode(p["content"]);
         resolveHeadingIDs(node);
@@ -929,12 +881,21 @@ class Hikaru {
         } else {
           perPage = site["siteConfig"]["perPage"] || 10;
         }
-        for (const sub of site["categories"]) {
-          sortCategories(sub);
-          results.push(...paginateCategories(
-            sub, site["siteConfig"]["categoryDir"], site, perPage
-          ));
-        }
+        const sortCategoriesPosts = (categories) => {
+          for (const category of categories) {
+            category["posts"].sort((a, b) => {
+              return -(a["date"] - b["date"]);
+            });
+            sortCategoriesPosts(category["subs"]);
+          }
+        };
+        sortCategoriesPosts(site["categories"]);
+        results.push(...paginateCategoriesPosts(
+          site["categories"],
+          site["siteConfig"]["categoryDir"],
+          site["siteConfig"]["docDir"],
+          perPage
+        ));
         results.push(new File({
           "layout": "categories",
           "docDir": site["siteConfig"]["docDir"],
@@ -960,18 +921,19 @@ class Hikaru {
           tag["posts"].sort((a, b) => {
             return -(a["date"] - b["date"]);
           });
+          tag["docPath"] = path.join(
+            site["siteConfig"]["tagDir"], tag["name"], "index.html"
+          );
           const sp = new File({
             "layout": "tag",
             "docDir": site["siteConfig"]["docDir"],
-            "docPath": path.join(
-              site["siteConfig"]["tagDir"], tag["name"], "index.html"
-            ),
+            "docPath": tag["docPath"],
             "title": "tag",
+            "tag": tag,
             "name": tag["name"],
             "comment": false,
             "reward": false
           });
-          tag["docPath"] = sp["docPath"];
           results.push(...paginate(sp, tag["posts"], perPage));
         }
         results.push(new File({
@@ -1039,13 +1001,13 @@ export default Hikaru;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-compiler.html">compiler</a></li><li><a href="module-decorator.html">decorator</a></li><li><a href="module-generator.html">generator</a></li><li><a href="module-helper.html">helper</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li><li><a href="module-watcher.html">watcher</a></li></ul><h3>Classes</h3><ul><li><a href="module-compiler-Compiler.html">Compiler</a></li><li><a href="module-decorator-Decorator.html">Decorator</a></li><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-helper-Helper.html">Helper</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-TOC.html">TOC</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-watcher-Watcher.html">Watcher</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-compiler.html">compiler</a></li><li><a href="module-decorator.html">decorator</a></li><li><a href="module-generator.html">generator</a></li><li><a href="module-helper.html">helper</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li><li><a href="module-watcher.html">watcher</a></li></ul><h3>Classes</h3><ul><li><a href="module-compiler-Compiler.html">Compiler</a></li><li><a href="module-decorator-Decorator.html">Decorator</a></li><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-helper-Helper.html">Helper</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-TOC.html">TOC</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-utils-NjkLoader.html">NjkLoader</a></li><li><a href="module-watcher-Watcher.html">Watcher</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Thu Feb 15 2024 10:36:19 GMT+0800 (China Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Sun Feb 18 2024 22:21:48 GMT+0800 (China Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

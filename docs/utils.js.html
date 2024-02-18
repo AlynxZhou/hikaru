@@ -37,6 +37,7 @@ import YAML from "yaml";
 import * as parse5 from "parse5";
 import readdirp from "readdirp";
 import picomatch from "picomatch";
+import nunjucks from "nunjucks";
 
 import {Site, File, Category, Tag, TOC} from "./types.js";
 
@@ -252,14 +253,23 @@ const escapeHTML = (str) => {
 };
 
 /**
+ * @description Remove all HTML tags.
+ * @param {String} str
+ * @return {String} String without HTML tags.
+ */
+const removeHTMLTags = (str) => {
+  return str.replace(/&lt;\/?[^>]+>/gi, "");
+};
+
+/**
  * @description A Promised glob.
  * @param {String} pattern
  * @param {Objects} [opts] Optional match opts.
  * @param {String} [opts.workDir=.] Working dir for this match.
  * @param {Boolean} [opts.ignoreDir=true] Ignore directories or not.
  * @param {Boolean} [opts.ignoreHidden=true] Ignore hidden files or not.
- * @param {Boolean} [opts.recursive=true] Set to false if you don't need
- * subdirs, will help on performance.
+ * @param {Boolean} [opts.recursive=true] Set to false if you don't care about
+ * subdirs to get better performance.
  * @return {Promise&lt;String[]>}
  */
 const matchFiles = (pattern, opts = {}) => {
@@ -314,34 +324,32 @@ const removeControlChars = (str) => {
  * @property {String} frontMatter Front-matter string.
  */
 /**
- * @description Get front-matter from string,
- * front-matter here is defined at the head of string (so don't use UTF-8 BOM),
- * begins with one line that contains only `---`,
- * and write properties in YAML after this line,
- * then also ends with such a line.
+ * @description Get front-matter from string, front-matter here should be at the
+ * beginning of string (so UTF-8 BOM is not supported), and should begin with
+ * `---` in the first line, and should have valid YAML in lines after that, and
+ * should end with `---` in the next line.
  * @param {String} str
  * @return {FrontMatter}
  */
 const getFrontMatter = (str) => {
-  // Return if not start with /^---+\r?\n/.
-  // This only matches once so `g` is not required.
+  // Return if no front matter. Only check once so `g` is not required.
   if (!/^---+\r?\n/.test(str)) {
     return {"attributes": {}, "body": str};
   }
-  // We split string manually instead of using `str.split(regexp, 3)`,
-  // this function will split the whole string first
-  // and then return the first 3 result.
-  // But we want to only split twice.
-  // Flag `m` can be used for per line test.
-  // `exec()`, `matchAll()` requires `g`.
-  // We need to use /\r?\n/ here instead of /$/,
-  // because we need to calculate `\r` and `\n` when splitting.
+  // We split string manually instead of using `str.split(regexp, 3)`, this
+  // function will split the whole string first and then return the first 3
+  // results, but we want to only split twice.
+  //
+  // Flag `m` can be used for per line test, and `exec()`, `matchAll()` requires
+  // flag `g`.
+  //
+  // We need to use /\r?\n/ here instead of /$/, so `\r` and `\n` will be part
+  // of the match results so we could exclude them from front-matter and body.
   const regexp = /^---+\r?\n/gm;
   // RegExp is stateful so `exec()` will start after last matched result.
   const fmBegin = regexp.exec(str);
   const fmEnd = regexp.exec(str);
-  // `null` is returned if not match.
-  // No front-matter at all.
+  // `null` is returned if not match, which means no front-matter at all.
   if (fmBegin == null || fmEnd == null) {
     return {"attributes": {}, "body": str};
   }
@@ -373,9 +381,10 @@ const parseFrontMatter = (file) => {
   file["text"] = parsed["body"];
   file["frontMatter"] = parsed["attributes"];
   file = Object.assign(file, parsed["attributes"]);
-  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse
-  // ISO 8601 date time format is expected,
-  // and by default a string with date and time will be parsed as local time.
+  // See &lt;https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/parse>.
+  //
+  // ISO 8601 date time format is expected, and by default a string with date
+  // and time will be parsed as local time.
   file["updated"] = file["updated"] || file["updatedDate"];
   if (file["updated"] != null) {
     file["updated"] = new Date(file["updated"]);
@@ -449,57 +458,41 @@ const paginate = (p, posts = [], perPage = 10) => {
 };
 
 /**
- * @description Sort categories and their posts recursively.
- * @param {Category} category
- */
-const sortCategories = (category) => {
-  category["posts"].sort((a, b) => {
-    return -(a["date"] - b["date"]);
-  });
-  category["subs"].sort((a, b) => {
-    return a["name"].localeCompare(b["name"]);
-  });
-  for (const sub of category["subs"]) {
-    sortCategories(sub);
-  }
-};
-
-/**
- * @description Generate and paginate pages for category and its subs.
- * @param {Category} category
- * @param {String} parentPath Parent category's dir,
- * into which sub categories need to be put.
- * @param {Site} site
+ * @description Generate pages and paginate posts of categories.
+ * @param {Category[]} categories
+ * @param {String} parentPath Parent category's dir.
+ * @param {docDir} docDir
  * @param {Number} [perPage=10] How many posts per page.
  * @return {File[]} All category and it's subs pages.
  */
-const paginateCategories = (category, parentPath, site, perPage = 10) => {
+const paginateCategoriesPosts = (
+  categories, parentPath, docDir, perPage = 10
+) => {
   const results = [];
-  const sp = new File({
-    "layout": "category",
-    "docDir": site["siteConfig"]["docDir"],
-    "docPath": path.join(parentPath, category["name"], "index.html"),
-    "title": "category",
-    "name": category["name"],
-    "comment": false,
-    "reward": false
-  });
-  category["docPath"] = sp["docPath"];
-  results.push(...paginate(sp, category["posts"], perPage));
-  for (const sub of category["subs"]) {
-    results.push(
-      ...paginateCategories(sub, path.join(
-        parentPath, category["name"]
-      ), site, perPage)
-    );
+  for (const category of categories) {
+    category["docPath"] = path.join(parentPath, category["name"], "index.html");
+    const sp = new File({
+      "layout": "category",
+      "docDir": docDir,
+      "docPath": category["docPath"],
+      "title": "category",
+      "category": category,
+      "name": category["name"],
+      "comment": false,
+      "reward": false
+    });
+    results.push(...paginate(sp, category["posts"], perPage));
+    results.push(...paginateCategoriesPosts(category["subs"], path.join(
+      parentPath, category["name"]
+    ), docDir, perPage));
   }
   return results;
 };
 
 /**
  * @callback getPath
- * @description Get full website path starts from `/` after domain.
- * This function can only handle site internal path.
+ * @description Get full website path starts from `/` after domain. This
+ * function can only handle site internal path.
  * @param {String} [docPath]
  * @param {Boolean} [skipEncode=false] If true, skip `encodeURI()`.
  * @return {String} Full path that starts with site rootDir.
@@ -529,11 +522,10 @@ const getPathFn = (rootDir = path.posix.sep) => {
     if (baseName === "index.html" || baseName === "index.htm") {
       array[0] = path.posix.join(dirName, path.posix.sep);
     }
-    /**
-     * marked.js and CommonMark tends to do URL encode by themselevs.
-     * Maybe I should not do `encodeURL()` here.
-     * See &lt;https://github.com/markedjs/marked/issues/1285>.
-     */
+    // marked.js and CommonMark tends to do URL encode by themselves. Maybe I
+    // should not do `encodeURL()` here.
+    //
+    // See &lt;https://github.com/markedjs/marked/issues/1285>.
     return skipEncode
       ? path.posix.join(rootDir, ...array)
       : encodeURI(path.posix.join(rootDir, ...array));
@@ -542,8 +534,8 @@ const getPathFn = (rootDir = path.posix.sep) => {
 
 /**
  * @callback getURL
- * @description Get full website URL including the domain.
- * This function can only handle site internal path.
+ * @description Get full website URL including the domain. This function can
+ * only handle site internal path.
  * @param {String} [docPath]
  * @return {URL} Full website URL.
  */
@@ -562,8 +554,8 @@ const getURLFn = (baseURL, rootDir = path.posix.sep) => {
 
 /**
  * @callback isCurrentHost
- * @description Test if given URL is on current host.
- * This function does not care query string and hash.
+ * @description Test if given URL is on current host. This function does not
+ * care about query string and hash.
  * @param {String} [testURL] URL needed to test.
  * @return {Boolean}
  */
@@ -577,8 +569,8 @@ const isCurrentHostFn = (baseURL, rootDir = path.posix.sep) => {
   const getURL = getURLFn(baseURL, rootDir);
   const currentHost = getURL().host;
   return (testURL) => {
-    // If `testURL` is a valid URL, `baseURL` will be ignored.
-    // So we can compare host for all links here.
+    // If `testURL` is a valid URL, `baseURL` will be ignored, so we can compare
+    // host for all links here.
     const url = new URL(testURL, baseURL);
     // It returns `""` for data URL!
     return url.host === currentHost || url.host === "";
@@ -587,13 +579,12 @@ const isCurrentHostFn = (baseURL, rootDir = path.posix.sep) => {
 
 /**
  * @callback isCurrentPath
- * @description Test if given path is current path.
- * This function does not care query string and hash.
- * This function can only handle site internal path.
+ * @description Test if given path is current path. This function does not care
+ * about query string and hash. This function can only handle site internal
+ * path.
  * @param {String} [testPath] Path needed to test.
- * @param {Boolean} [strict=false] If not strict, true is also returned
- * if current path is under given path. This is useful to highlight
- * menu items if current path is under it.
+ * @param {Boolean} [strict=false] If not strict, true is also returned if given
+ * path is parent path of current path.
  * @return {Boolean}
  */
 /**
@@ -606,10 +597,8 @@ const isCurrentPathFn = (rootDir = path.posix.sep, currentPath = "") => {
   const getPath = getPathFn(rootDir);
   currentPath = getPath(currentPath).split(/[?#]/)[0];
   const currentToken = currentPath.split(path.posix.sep);
-  /**
-   * `"/a/b/"` will be `["", "a", "b", ""]`, and `"/a/b/c"` will be
-   * `["", "a", "b", "c"]`, so we always ignore the last empty string.
-   */
+  // `"/a/b/"` will be `["", "a", "b", ""]`, and `"/a/b/c"` will be
+  // `["", "a", "b", "c"]`, so we always ignore the last empty string.
   if (currentToken[currentToken.length - 1].length === 0) {
     currentToken.pop();
   }
@@ -629,7 +618,7 @@ const isCurrentPathFn = (rootDir = path.posix.sep, currentPath = "") => {
     if (strict &amp;&amp; testToken.length !== currentToken.length) {
       return false;
     }
-    // testPath is shorter and usually be a menu link.
+    // `testPath` is shorter and usually be a menu link.
     for (let i = 0; i &lt; testToken.length; ++i) {
       if (testToken[i] !== currentToken[i]) {
         return false;
@@ -675,15 +664,12 @@ const genCategories = (posts) => {
     }
     post["categories"] = postCategories;
   }
-  categories.sort((a, b) => {
-    return a["name"].localeCompare(b["name"]);
-  });
   return {categories, categoriesLength};
 };
 
 /**
  * @typedef {Object} TagsData
- * @property {Category[]} tags
+ * @property {Tag[]} tags
  * @property {Number} tagsLength
  */
 /**
@@ -715,15 +701,12 @@ const genTags = (posts) => {
     }
     post["tags"] = postTags;
   }
-  tags.sort((a, b) => {
-    return a["name"].localeCompare(b["name"]);
-  });
   return {tags, tagsLength};
 };
 
 /**
- * @description Put file into an array in site,
- * will replace file with the same doc path.
+ * @description Put file into an array in site, will replace file with the same
+ * destination.
  * @param {Site} site
  * @param {String} key
  * @param {File} file
@@ -746,8 +729,7 @@ const putSite = (site, key, file) => {
 };
 
 /**
- * @description Delete file from an array in site,
- * which have the same src path.
+ * @description Delete file from an array in site which have the same source.
  * @param {Site} site
  * @param {String} key
  * @param {File} file
@@ -761,8 +743,8 @@ const delSite = (site, key, file) => {
       site[key][i]["srcPath"] === file["srcPath"] &amp;&amp;
       site[key][i]["srcDir"] === file["srcDir"]
     ) {
-      // Don't use break here because we may have mutiply files
-      // created with the same source.
+      // Don't use break here because we may have many files created with the
+      // same source.
       site[key].splice(i, 1);
       // Don't forget this because we removed one element from array!
       --i;
@@ -798,8 +780,8 @@ const getFullDocPath = (file) => {
  * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/index.md#parsefragment
  * @see https://github.com/inikulin/parse5/blob/master/packages/parse5/docs/tree-adapter/default/document-fragment.md
  * @description Parse HTML string into parse5 Node.
- * @param {Object} [node] If specified, given fragment will be parsed as if
- * it was set to the context element's `innerHTML` property.
+ * @param {Object} [node] If specified, given fragment will be parsed as it was
+ * set to the context element's `innerHTML` property.
  * @param {String} html HTML string to parse.
  * @param {Object} [options] parse5 options.
  * @return {Object}
@@ -820,7 +802,8 @@ const serializeNode = (node, options) => {
 };
 
 /**
- * @description Quick and not so dirty way to replace a Node with given HTML string.
+ * @description Quick and not so dirty way to replace a Node with given HTML
+ * string.
  * @param {Object} node parse5 Node to replace.
  * @param {String} html
  */
@@ -930,7 +913,7 @@ const setNodeText = (node, html) => {
  * @description Get an attribute value from parse5 Node.
  * @param {Object} node parse5 Node.
  * @param {String} attrName
- * @return {String} Value of the attribute, null if not available.
+ * @return {String} Value of the attribute, `null` if not available.
  */
 const getNodeAttr = (node, attrName) => {
   if (node["attrs"] != null) {
@@ -991,11 +974,17 @@ const resolveHeadingIDs = (node) => {
       // to prevent 2 `abc-1` for the last `abc-1`.
       headingIDs[id] = 1;
       setNodeAttr(node, "id", id);
-      setNodeText(node, `&lt;a class="heading-link header-link" href="#${id}">&lt;/a>${text}`);
+      setNodeText(
+        node, `&lt;a class="heading-link header-link" href="#${id}">&lt;/a>${text}`
+      );
     }
   }
 };
 
+/**
+ * @deprecated
+ * @description Use `resolveHeadingIDs(node)` instead.
+ */
 const resolveHeaderIDs = resolveHeadingIDs;
 
 /**
@@ -1032,7 +1021,7 @@ const genTOC = (node) => {
 /**
  * @description Get protocol of a URL.
  * @param {String} url
- * @return {String} If no protocol return null.
+ * @return {String} If no protocol return `null`.
  */
 const getURLProtocol = (url) => {
   try {
@@ -1044,8 +1033,8 @@ const getURLProtocol = (url) => {
 };
 
 /**
- * @description Update site's internal link to absolute path,
- * and add attributes for external link.
+ * @description Update site's internal link to absolute path, and add attributes
+ * for external link.
  * @param {Object} node parse5 Node.
  * @param {String} baseURL Site baseURL.
  * @param {String} rootDir Site rootDir.
@@ -1142,7 +1131,7 @@ const hljsLoadAliases = () => {
  * @description Format and highlight code block.
  * @param {Object} node parse5 Node.
  * @param {Object} [hlOpts] Highlight options.
- * @return {Promise&lt;null>} Importing hljs is async.
+ * @return {Promise&lt;null>} Importing hljs requires await.
  */
 const resolveCodeBlocks = async (node, hlOpts = {}) => {
   // Enable hljs prefix and gutter by default.
@@ -1283,6 +1272,73 @@ const default404 = [
   ""
 ].join("\n");
 
+// Nunjucks uses runtime including (we treat extending as another kind if
+// including), which means it will try to call included template everytime it
+// renders instead of call included template once during compiling. So if a
+// included template is updated, all templates that include it will be updated.
+// That means we don't need to handle file dependencies of nunjucks templates.
+//
+// By default, the FileSystemLoader of nunjucks could watch and reload files, so
+// we only needs to watch the toplevel layout files (because decorator manages
+// functions by itself, not nunjucks). However, FileSystemLoader refuses to load
+// files out of search paths, which is needed for plugins. And users may use
+// other templating engine that does not support watching and reloading, so it
+// is useful to control watching and reloading by ourselves, then we could
+// bypass nunjucks to load file contents from Hikaru via custom loader.
+/**
+ * @description Custom nunjucks loader that manage templates by ourselves.
+ */
+class NjkLoader extends nunjucks.Loader {
+  constructor(hikaru) {
+    super();
+    this.watcher = hikaru.watcher;
+    this.layouts = hikaru.site["layouts"];
+    this.layoutDir = hikaru.site["siteConfig"]["themeLayoutDir"];
+    if (this.watcher != null) {
+      this.watcher.register(
+        this.layoutDir, (srcDir, srcPaths) => {
+          const {added, changed, removed} = srcPaths;
+          const all = added.concat(changed).concat(removed);
+          for (const srcPath of all) {
+            // Mark that template as dirty in the internal cache of nunjucks,
+            // so it will re-fetch content from this loader when including.
+            this.emit("update", srcPath);
+          }
+        }
+      );
+    }
+  }
+
+  getSource(srcPath) {
+    // Layouts not in theme's layout dir, for example plugin's template,
+    // fallback to read from disk.
+    let result = null;
+    if (!this.layouts.has(srcPath)) {
+      // Ignore non-existing files.
+      if (!isReadableSync(srcPath)) {
+        return null;
+      }
+      // Async including in nunjucks for loops is hard to handle, so always read
+      // file sync.
+      result = {
+        "src": fse.readFileSync(srcPath, "utf8"),
+        "path": srcPath,
+        // Our watcher is hard to watch plugin templates which are out of our
+        // src dirs, so just disable cache for them.
+        "noCache": true
+      };
+    } else {
+      result = {
+        "src": this.layouts.get(srcPath),
+        "path": srcPath,
+        "noCache": false
+      };
+    }
+    this.emit("load", srcPath, result);
+    return result;
+  }
+}
+
 export {
   hikaruDir,
   loadJSON,
@@ -1303,14 +1359,14 @@ export {
   isBinaryFileSync,
   isReadableSync,
   escapeHTML,
+  removeHTMLTags,
   matchFiles,
   removeControlChars,
   getFrontMatter,
   parseFrontMatter,
   getContentType,
   paginate,
-  sortCategories,
-  paginateCategories,
+  paginateCategoriesPosts,
   getPathFn,
   getURLFn,
   isCurrentHostFn,
@@ -1338,7 +1394,8 @@ export {
   resolveImages,
   resolveCodeBlocks,
   getVersion,
-  default404
+  default404,
+  NjkLoader
 };
 </code></pre>
         </article>
@@ -1350,13 +1407,13 @@ export {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-compiler.html">compiler</a></li><li><a href="module-decorator.html">decorator</a></li><li><a href="module-generator.html">generator</a></li><li><a href="module-helper.html">helper</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li><li><a href="module-watcher.html">watcher</a></li></ul><h3>Classes</h3><ul><li><a href="module-compiler-Compiler.html">Compiler</a></li><li><a href="module-decorator-Decorator.html">Decorator</a></li><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-helper-Helper.html">Helper</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-TOC.html">TOC</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-watcher-Watcher.html">Watcher</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-compiler.html">compiler</a></li><li><a href="module-decorator.html">decorator</a></li><li><a href="module-generator.html">generator</a></li><li><a href="module-helper.html">helper</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li><li><a href="module-watcher.html">watcher</a></li></ul><h3>Classes</h3><ul><li><a href="module-compiler-Compiler.html">Compiler</a></li><li><a href="module-decorator-Decorator.html">Decorator</a></li><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-helper-Helper.html">Helper</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-TOC.html">TOC</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-utils-NjkLoader.html">NjkLoader</a></li><li><a href="module-watcher-Watcher.html">Watcher</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Thu Feb 15 2024 10:36:19 GMT+0800 (China Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Sun Feb 18 2024 22:21:48 GMT+0800 (China Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
