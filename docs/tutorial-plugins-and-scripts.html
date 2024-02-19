@@ -46,7 +46,7 @@ export default fn;
 <p>You are supposed to hint the plugin type with words like <code>renderer</code>, <code>compiler</code>, <code>processor</code>, <code>generator</code>, <code>decorator</code>, <code>helper</code>, <code>logger</code>, <code>translator</code>, <code>types</code>, <code>utils</code>.</p>
 <h2>If You Add Custom Template in Plugins and Want to Use Include...</h2>
 <p>If you want to add custom template via <code>decorator</code>, please notice that most templating engines has a base dir, from which they look up templates in include statement. Typically this is set to theme's <code>layouts/</code> dir. And when you use <code>include</code> in your plugin's template, it will also try to load file in theme's <code>layouts/</code> dir, which is notwhat you want.</p>
-<p>To load from your plugin dir, since Hikaru v1.12.0, you can pass custom ctx while registering a decorator. You can pass plugin's dir using it and join paths when calling include in template.</p>
+<p>To load from your plugin dir, since Hikaru v1.17.0, you could pass custom context to some specific layout via helper, or since Hikaru v1.12.0, you can pass custom context while registering a decorator. You can pass plugin's dir using it and join paths when calling include in template.</p>
 <p>For example, you can write those in <code>index.js</code>:</p>
 <pre class="prettyprint source lang-javascript"><code>import * as fs from &quot;node:fs/promises&quot;;
 import * as path from &quot;node:path&quot;;
@@ -86,6 +86,7 @@ const generateFeed = async (hikaru) => {
 export default generateFeed;
 </code></pre>
 <p>and if you wants to include <code>b.njk</code> in <code>a.njk</code>, don't write <code>{% include &quot;b.njk&quot; %}</code>, instead use <code>{% include dirname + pathSep + &quot;b.njk&quot; %}</code>.</p>
+<p><strong>WARNING</strong>: Templates provided by plugins are not cached due to some technical limitation, plugins are not expected to use very complex templates.</p>
 <p>For complete example, you can read the code of <a href="https://github.com/AlynxZhou/hikaru-generator-feed/">hikaru-generator-feed</a>.</p>
 </article>
 
@@ -94,13 +95,13 @@ export default generateFeed;
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-compiler.html">compiler</a></li><li><a href="module-decorator.html">decorator</a></li><li><a href="module-generator.html">generator</a></li><li><a href="module-helper.html">helper</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li><li><a href="module-watcher.html">watcher</a></li></ul><h3>Classes</h3><ul><li><a href="module-compiler-Compiler.html">Compiler</a></li><li><a href="module-decorator-Decorator.html">Decorator</a></li><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-helper-Helper.html">Helper</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-TOC.html">TOC</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-utils-NjkLoader.html">NjkLoader</a></li><li><a href="module-watcher-Watcher.html">Watcher</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-compiler.html">compiler</a></li><li><a href="module-decorator.html">decorator</a></li><li><a href="module-generator.html">generator</a></li><li><a href="module-helper.html">helper</a></li><li><a href="module-hikaru.html">hikaru</a></li><li><a href="module-index.html">index</a></li><li><a href="module-logger.html">logger</a></li><li><a href="module-processor.html">processor</a></li><li><a href="module-renderer.html">renderer</a></li><li><a href="module-router.html">router</a></li><li><a href="module-translator.html">translator</a></li><li><a href="module-types.html">types</a></li><li><a href="module-utils.html">utils</a></li><li><a href="module-watcher.html">watcher</a></li></ul><h3>Classes</h3><ul><li><a href="module-compiler-Compiler.html">Compiler</a></li><li><a href="module-decorator-Decorator.html">Decorator</a></li><li><a href="module-generator-Generator.html">Generator</a></li><li><a href="module-helper-Helper.html">Helper</a></li><li><a href="module-hikaru-Hikaru.html">Hikaru</a></li><li><a href="module-logger-Logger.html">Logger</a></li><li><a href="module-processor-Processor.html">Processor</a></li><li><a href="module-renderer-Renderer.html">Renderer</a></li><li><a href="module-router-Router.html">Router</a></li><li><a href="module-translator-Translator.html">Translator</a></li><li><a href="module-types-Category.html">Category</a></li><li><a href="module-types-File.html">File</a></li><li><a href="module-types-Site.html">Site</a></li><li><a href="module-types-TOC.html">TOC</a></li><li><a href="module-types-Tag.html">Tag</a></li><li><a href="module-watcher-Watcher.html">Watcher</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-dev.html">Dev</a></li><li><a href="tutorial-index_.html">Overview</a></li><li><a href="tutorial-user.html">User</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Sun Feb 18 2024 22:21:48 GMT+0800 (China Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Mon Feb 19 2024 15:16:59 GMT+0800 (China Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
