@@ -46,6 +46,11 @@ A `Generator` instance, you can register your generator functions to it.
 # `Hikaru::helper`
 
 A `Helper` instance, you can register your helper functions to it.
+
 # `Hikaru::decorator`
 
 A `Decorator` instance, you can register your layout decorator functions to it.
+
+# `Hikaru::watcher`
+
+A `Watcher` instance, you could register some dirs and globs to watch, this is only available when serving.

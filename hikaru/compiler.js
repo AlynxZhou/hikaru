@@ -47,7 +47,7 @@ class Compiler {
   async compile(srcPath, content) {
     const ext = path.extname(srcPath);
     if (!this._.has(ext)) {
-      throw new Error(`No avaliable compiler for \`${ext}\`.`);
+      throw new Error(`No available compiler for \`${ext}\`.`);
     }
     const handler = this._.get(ext);
     return handler["fn"](srcPath, content);

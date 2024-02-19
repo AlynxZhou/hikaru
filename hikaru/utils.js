@@ -1250,15 +1250,17 @@ const default404 = [
 // included template is updated, all templates that include it will be updated.
 // That means we don't need to handle file dependencies of nunjucks templates.
 //
-// By default, the FileSystemLoader of nunjucks could watch and reload files, so
-// we only needs to watch the toplevel layout files (because decorator manages
-// functions by itself, not nunjucks). However, FileSystemLoader refuses to load
-// files out of search paths, which is needed for plugins. And users may use
-// other templating engine that does not support watching and reloading, so it
-// is useful to control watching and reloading by ourselves, then we could
-// bypass nunjucks to load file contents from Hikaru via custom loader.
+// We already load and compile toplevel templates by ourselves, but for included
+// templates, they are loaded and compiled by nunjucks loader. By default, the
+// FileSystemLoader of nunjucks could watch and reload files, so we only need to
+// watch the toplevel layout files (because we load and compile them, not
+// nunjucks). However, FileSystemLoader refuses to load files out of search
+// paths, which is needed for plugins. And users may use other templating engine
+// that does not support watching and reloading, so it is useful to control
+// watching and reloading by ourselves, then we could also bypass nunjucks to
+// load file contents from Hikaru via custom loader.
 /**
- * @description Custom nunjucks loader that manage templates by ourselves.
+ * @private
  */
 class NjkLoader extends nunjucks.Loader {
   constructor(hikaru) {
@@ -1267,6 +1269,9 @@ class NjkLoader extends nunjucks.Loader {
     this.layouts = hikaru.site["layouts"];
     this.layoutDir = hikaru.site["siteConfig"]["themeLayoutDir"];
     if (this.watcher != null) {
+      // This is mainly for non-toplevel templates that will be included by
+      // other templates, because they are loaded by nunjucks, we need to tell
+      // nunjucks to update them.
       this.watcher.register(
         this.layoutDir, (srcDir, srcPaths) => {
           const {added, changed, removed} = srcPaths;
@@ -1282,7 +1287,7 @@ class NjkLoader extends nunjucks.Loader {
   }
 
   getSource(srcPath) {
-    // Layouts not in theme's layout dir, for example plugin's template,
+    // If template is not in theme's layout dir, for example plugin's templates,
     // fallback to read from disk.
     let result = null;
     if (!this.layouts.has(srcPath)) {
@@ -1295,9 +1300,11 @@ class NjkLoader extends nunjucks.Loader {
       result = {
         "src": fse.readFileSync(srcPath, "utf8"),
         "path": srcPath,
-        // Our watcher is hard to watch plugin templates which are out of our
-        // src dirs, so just disable cache for them.
-        "noCache": true
+        // We have no way in plugins to tell nunjucks to update included
+        // templates which will be loaded and compiled by loader, so if we are
+        // serving, we never cache those templates, this is not good for
+        // performance, but plugins should not use too complex templates.
+        "noCache": this.watcher !== null
       };
     } else {
       result = {

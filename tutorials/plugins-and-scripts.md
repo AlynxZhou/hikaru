@@ -31,7 +31,7 @@ You are supposed to hint the plugin type with words like `renderer`, `compiler`,
 
 If you want to add custom template via `decorator`, please notice that most templating engines has a base dir, from which they look up templates in include statement. Typically this is set to theme's `layouts/` dir. And when you use `include` in your plugin's template, it will also try to load file in theme's `layouts/` dir, which is notwhat you want.
 
-To load from your plugin dir, since Hikaru v1.12.0, you can pass custom ctx while registering a decorator. You can pass plugin's dir using it and join paths when calling include in template.
+To load from your plugin dir, since Hikaru v1.17.0, you could pass custom context to some specific layout via helper, or since Hikaru v1.12.0, you can pass custom context while registering a decorator. You can pass plugin's dir using it and join paths when calling include in template.
 
 For example, you can write those in `index.js`:
 
@@ -76,5 +76,6 @@ export default generateFeed;
 
 and if you wants to include `b.njk` in `a.njk`, don't write `{% include "b.njk" %}`, instead use `{% include dirname + pathSep + "b.njk" %}`.
 
+**WARNING**: Templates provided by plugins are not cached due to some technical limitation, plugins are not expected to use very complex templates.
 
 For complete example, you can read the code of [hikaru-generator-feed](https://github.com/AlynxZhou/hikaru-generator-feed/).
