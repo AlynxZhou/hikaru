@@ -193,7 +193,9 @@ const main = () => {
       });
 
       it("should return true if a URL with the same host is given", () => {
-        return expect(isCurrentHost("//localhost:2333/az/#top", true)).to.be.true;
+        return expect(isCurrentHost(
+          "//localhost:2333/az/#top", true
+        )).to.be.true;
       });
     });
 

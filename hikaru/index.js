@@ -84,7 +84,7 @@ command.on("command:*", () => {
 });
 
 /**
- * @method
+ * @function
  * @param {String[]} [argv]
  */
 const hikaru = (argv = process.argv) => {

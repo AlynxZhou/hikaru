@@ -40,7 +40,7 @@ class Helper {
   register(name, fn, layout = null) {
     checkType(name, "name", "String");
     checkType(fn, "fn", "Function");
-    checkType(layout, "layout", ["String", "null"]);
+    checkType(layout, "layout", "String", "null");
     this._.push({name, fn, layout});
   }
 

@@ -35,7 +35,7 @@ class Decorator {
    */
   register(layout, fn, ctx = null) {
     checkType(layout, "layout", "String");
-    checkType(fn, "fn", ["Function", "String"]);
+    checkType(fn, "fn", "Function", "String");
     if (ctx != null) {
       this.logger.warn("Hikaru suggests you to pass context for specific layouts by using helper function with layout filter because passing context while registering decorator function is deprecated!");
     }

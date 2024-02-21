@@ -64,7 +64,7 @@ Some templating engines have a root dir that all include commands is relative to
 
 You can access the following context properties in template:
 
-- `site`: A raw site object.
+- `site`: Site object.
 - `siteConfig`: Just `site["siteConfig"]`.
 - `themeConfig`: Just `site["themeConfig"]`.
 - `getVersion()`: Hikaru version.
@@ -77,8 +77,9 @@ You can access the following context properties in template:
 - `isArray(o)`.
 - `isFunction(o)`.
 - `isObject(o)`.
-- `checkType(variable, name, types = [])`: Check whether the type of given `variable` is one of `types`, elements of `types` should be one of `"Number"`, `"String"`, `"Array"`, `"Function"`, `"Buffer"`, `"Object"` or `"null"`.
+- `checkType(variable, name, ...types)`: Check whether the type of given `variable` is one of `types`, elements of `types` should be one of `"Number"`, `"String"`, `"Array"`, `"Function"`, `"Buffer"`, `"Object"` or `"null"`. Available since Hikaru v1.17.0.
 - `decorated`: A `Date` object contains the time when this template is used to render a page.
+- `formatDateTime(dt)`: If `Intl` is supported, format date and time with locale support, otherwise format date and time to `YYYY-MM-DD HH:mm:ss`. Available since Hikaru v1.20.0.
 - `__()`: Language translator via [`util.format`](https://nodejs.org/api/util.html#util_util_format_format_args).
 - `file`: Current file object, available since Hikaru v1.18.0.
 

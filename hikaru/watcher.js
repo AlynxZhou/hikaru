@@ -108,7 +108,7 @@ class Watcher {
     if (fn == null) {
       return;
     }
-    checkType(dirs, "dirs", ["Array", "String"]);
+    checkType(dirs, "dirs", "Array", "String");
     checkType(fn, "fn", "Function");
     if (!isArray(dirs) && isString(dirs)) {
       dirs = [dirs];
@@ -242,7 +242,7 @@ class Watcher {
     if (dirs == null) {
       return;
     }
-    checkType(dirs, "dirs", ["Array", "String"]);
+    checkType(dirs, "dirs", "Array", "String");
     if (!isArray(dirs) && isString(dirs)) {
       dirs = [dirs];
     }
