@@ -34,12 +34,15 @@ const {
   isObject,
   checkType,
   isReadableSync,
+  fallbackSort,
   matchFiles,
   getVersion,
   getPathFn,
   getURLFn,
   isCurrentHostFn,
   isCurrentPathFn,
+  localeCompareFn,
+  formatDateTimeFn,
   paginate,
   paginateCategoriesPosts,
   genCategories,
@@ -115,6 +118,9 @@ class Hikaru {
       }\` instead of \`${
         this.logger.cyan("--config")
       }\` because it's deprecated!`);
+    }
+    if (!isObject(Intl)) {
+      this.logger.warn("Hikaru found you are using Node.js built without ICU!");
     }
   }
 
@@ -725,6 +731,15 @@ class Hikaru {
    * @private
    */
   registerInternalProcessors() {
+    // Shared by categories and tags sorting.
+    const comparePostsLength = (a, b) => {
+      return -(a["posts"].length - b["posts"].length);
+    };
+    const localeCompare = localeCompareFn(this.site["siteConfig"]["language"]);
+    const compareName = (a, b) => {
+      return localeCompare(a["name"], b["name"]);
+    };
+
     if (!this.opts["draft"]) {
       this.processor.register("draft filter", (site) => {
         site["posts"] = site["posts"].filter((p) => {
@@ -733,17 +748,22 @@ class Hikaru {
       });
     }
 
-    this.processor.register("post sequence", (site) => {
-      site["posts"].sort((a, b) => {
-        return -(a["createdDate"] - b["createdDate"]);
-      });
-      for (let i = 0; i < site["posts"].length; ++i) {
-        if (i > 0) {
-          site["posts"][i]["next"] = site["posts"][i - 1];
+    // Always sort posts first, so categories and tags will have sorted posts.
+    this.processor.register("posts sequence", (site) => {
+      fallbackSort(
+        site["posts"],
+        (a, b) => {
+          return -(a["created"] - b["created"]);
+        },
+        (a, b) => {
+          return localeCompare(a["name"], b["name"]);
         }
-        if (i < site["posts"].length - 1) {
-          site["posts"][i]["prev"] = site["posts"][i + 1];
-        }
+      );
+      for (let i = 1; i < site["posts"].length; ++i) {
+        site["posts"][i]["next"] = site["posts"][i - 1];
+      }
+      for (let i = 0; i < site["posts"].length - 1; ++i) {
+        site["posts"][i]["prev"] = site["posts"][i + 1];
       }
     });
 
@@ -752,9 +772,7 @@ class Hikaru {
       site["categories"] = result["categories"];
       site["categoriesLength"] = result["categoriesLength"];
       const sortCategories = (categories) => {
-        categories.sort((a, b) => {
-          return -(a["posts"].length - b["posts"].length);
-        });
+        fallbackSort(categories, comparePostsLength, compareName);
         for (const category of categories) {
           sortCategories(category["subs"]);
         }
@@ -766,12 +784,10 @@ class Hikaru {
       const result = genTags(site["posts"]);
       site["tags"] = result["tags"];
       site["tagsLength"] = result["tagsLength"];
-      site["tags"].sort((a, b) => {
-        return -(a["posts"].length - b["posts"].length);
-      });
+      fallbackSort(site["tags"], comparePostsLength, compareName);
     });
 
-    this.processor.register("content resolving", async (site) => {
+    this.processor.register("contents resolving", async (site) => {
       const all = site["posts"].concat(site["pages"]);
       for (const p of all) {
         const node = parseNode(p["content"]);
@@ -853,15 +869,6 @@ class Hikaru {
         } else {
           perPage = site["siteConfig"]["perPage"] || 10;
         }
-        const sortCategoriesPosts = (categories) => {
-          for (const category of categories) {
-            category["posts"].sort((a, b) => {
-              return -(a["date"] - b["date"]);
-            });
-            sortCategoriesPosts(category["subs"]);
-          }
-        };
-        sortCategoriesPosts(site["categories"]);
         results.push(...paginateCategoriesPosts(
           site["categories"],
           site["siteConfig"]["categoryDir"],
@@ -890,9 +897,6 @@ class Hikaru {
           perPage = site["siteConfig"]["perPage"] || 10;
         }
         for (const tag of site["tags"]) {
-          tag["posts"].sort((a, b) => {
-            return -(a["date"] - b["date"]);
-          });
           tag["docPath"] = path.join(
             site["siteConfig"]["tagDir"], tag["name"], "index.html"
           );
@@ -932,6 +936,9 @@ class Hikaru {
     const isCurrentHost = isCurrentHostFn(
       this.site["siteConfig"]["baseURL"], this.site["siteConfig"]["rootDir"]
     );
+    const formatDateTime = formatDateTimeFn(
+      this.site["siteConfig"]["language"]
+    );
     this.helper.register("base context", (site, file) => {
       const lang = file["language"] || site["siteConfig"]["language"];
       const decorated = new Date();
@@ -956,6 +963,7 @@ class Hikaru {
         // starts, we will get context, so we can pass decorate date and time.
         "decorated": decorated,
         "decorateDate": decorated,
+        "formatDateTime": formatDateTime,
         "__": this.translator.getTranslateFn(lang)
       };
     });

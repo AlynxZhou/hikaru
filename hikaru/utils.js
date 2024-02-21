@@ -242,7 +242,7 @@ const removeHTMLTags = (str) => {
 /**
  * @description Sort an array with a fallback list, call comparing function
  * from first to last until there is a difference.
- * @param {*[]} arr
+ * @param {Array} arr
  * @param {...compareCallback} fns
  */
 const fallbackSort = (arr, ...fns) => {
