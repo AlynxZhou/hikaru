@@ -125,12 +125,11 @@ const typeCheckers = {
  * @description Check whether a variable is one of give types.
  * @param {*} var
  * @param {String} name Variable name.
- * @param {String[]|String} types
+ * @param {...String} types
  */
-const checkType = (variable, name, types = []) => {
-  if (isString(types)) {
-    types = [types];
-  }
+const checkType = (variable, name, ...types) => {
+  // Previously we accept String or Array of String, keep compatible.
+  types = types.flat();
   for (const type of types) {
     if (typeCheckers[type] == null) {
       throw new TypeError(`\`types\` should only contain following types: ${
@@ -231,6 +230,37 @@ const escapeHTML = (str) => {
  */
 const removeHTMLTags = (str) => {
   return str.replace(/<\/?[^>]+>/gi, "");
+};
+
+/**
+ * @callback compareCallback
+ * @description Comparing function accepted by `Array.sort()`.
+ * @param {*} a
+ * @param {*} b
+ * @return {Number}
+ */
+/**
+ * @description Sort an array with a fallback list, call comparing function
+ * from first to last until there is a difference.
+ * @param {*[]} arr
+ * @param {...compareCallback} fns
+ */
+const fallbackSort = (arr, ...fns) => {
+  fns = fns.filter((fn) => {
+    return isFunction(fn);
+  });
+  if (!isArray(arr) || fns.length === 0) {
+    return;
+  }
+  arr.sort((a, b) => {
+    for (const fn of fns) {
+      const result = fn(a, b);
+      if (result !== 0) {
+        return result;
+      }
+    }
+    return 0;
+  });
 };
 
 /**
@@ -597,6 +627,110 @@ const isCurrentPathFn = (rootDir = path.posix.sep, currentPath = "") => {
       }
     }
     return true;
+  };
+};
+
+/**
+ * @description Compare strings.
+ * @param {String} a
+ * @param {String} b
+ * @return {Number}
+ */
+const localeCompareSimple = (a, b) => {
+  if (!(isString(a) && isString(b))) {
+    return 0;
+  }
+  return a.localeCompare(b);
+};
+
+/**
+ * @callback localeCompare
+ * @description Compare strings, with locale support if `Intl` is available.
+ * @param {String} a
+ * @param {String} b
+ * @return {Number}
+ */
+/**
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Collator
+ * @description Get a function to compare strings, with locale support if `Intl`
+ * is available.
+ * @param {String} locales
+ * @return {localCompare}
+ */
+const localeCompareFn = (locales) => {
+  if (!isObject(Intl)) {
+    return localeCompareSimple;
+  }
+  const collator = new Intl.Collator(locales, {
+    "usage": "sort",
+    "localeMatcher": "best fit",
+    "numeric": true,
+    // `R` < `r` but `re` < `RI`, why?
+    "caseFirst": "upper",
+    "sensitivity": "variant",
+    "ignorePunctuation": false
+  });
+  return collator.compare.bind(collator);
+};
+
+/**
+ * @description Format date and time to `YYYY-MM-DD HH:mm:ss`.
+ * @param {*} [dt=new Date()]
+ * @return {String}
+ */
+const formatDateTimeSimple = (dt = new Date()) => {
+  if (!(dt instanceof Date)) {
+    dt = new Date(dt);
+  }
+  const year = dt.getFullYear().toString();
+  const month = (dt.getMonth() + 1).toString().padStart(2, "0");
+  const date = dt.getDate().toString().padStart(2, "0");
+  const hour = dt.getHours().toString().padStart(2, "0");
+  const minute = dt.getMinutes().toString().padStart(2, "0");
+  const second = dt.getSeconds().toString().padStart(2, "0");
+  return `${year}-${month}-${date} ${hour}:${minute}:${second}`;
+};
+
+/**
+ * @callback formatDateTime
+ * @description Format date and time, with locale support if `Intl` is
+ * available.
+ * @param {*} [dt=new Date()]
+ * @return {String}
+ */
+/**
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/formatToParts
+ * @description Get a function to format date and time, with locale support if
+ * `Intl` is available.
+ * @param {String} locales
+ * @return {formatDateTime}
+ */
+const formatDateTimeFn = (locales) => {
+  if (!isObject(Intl)) {
+    return formatDateTimeSimple;
+  }
+  const formatter = new Intl.DateTimeFormat(locales, {
+    "year": "numeric",
+    "month": "2-digit",
+    "day": "2-digit",
+    "weekday": "short",
+    "hour": "2-digit",
+    "minute": "2-digit",
+    "second": "2-digit",
+    "timeZoneName": "short",
+    "hour12": false
+  });
+  return (dt = new Date()) => {
+    if (!(dt instanceof Date)) {
+      dt = new Date(dt);
+    }
+    const parts = formatter.formatToParts(dt);
+    const obj = {};
+    for (const {type, value} of parts) {
+      obj[type] = value;
+    }
+    return `${obj["year"]}-${obj["month"]}-${obj["day"]} ${obj["weekday"]} ${obj["hour"]}:${obj["minute"]}:${obj["second"]} ${obj["timeZoneName"]}`;
   };
 };
 
@@ -1339,6 +1473,7 @@ export {
   isReadableSync,
   escapeHTML,
   removeHTMLTags,
+  fallbackSort,
   matchFiles,
   removeControlChars,
   getFrontMatter,
@@ -1350,6 +1485,10 @@ export {
   getURLFn,
   isCurrentHostFn,
   isCurrentPathFn,
+  localeCompareSimple,
+  localeCompareFn,
+  formatDateTimeSimple,
+  formatDateTimeFn,
   genCategories,
   genTags,
   putSite,
