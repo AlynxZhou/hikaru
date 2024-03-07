@@ -1,6 +1,6 @@
 {
   "name": "hikarujs",
-  "version": "1.20.0",
+  "version": "1.20.1",
   "description": "A static site generator that generates routes based on directories naturally.",
   "type": "module",
   "bin": {
