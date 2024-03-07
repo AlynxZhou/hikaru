@@ -117,8 +117,15 @@ class Watcher {
       opts["recursive"] = true;
     }
     // Globs must not contain windows spearators.
-    const starGlob = opts["recursive"] ? "**/*" : "*";
-    const glob = opts["customGlob"] || starGlob;
+    //
+    // If we use `**/*` here as recursive glob, we will trigger a chokidar bug,
+    // that we cannot get `unlink` event but only `add` event while moving dirs.
+    // Because we only support watching all files, and this is the default
+    // behavior when chokidar watches a dir, so we can use `./` as a workaround.
+    //
+    // See <https://github.com/paulmillr/chokidar/issues/1285>.
+    const defaultGlob = opts["recursive"] ? "./" : "./*";
+    const glob = opts["customGlob"] || defaultGlob;
     for (const srcDir of dirs) {
       if (this._.has(srcDir)) {
         const handler = this._.get(srcDir);
