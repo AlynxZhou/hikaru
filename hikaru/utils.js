@@ -1071,7 +1071,7 @@ const resolveHeadingIDs = (node, opts = {}) => {
     if (text != null) {
       // Replace some chars in escaped ID because scrollspy cannot support it.
       const encoded = encodeURI(text.trim().replace(
-        /[\s()[\]{}<>.,!@#$%^&*=|`'/?~]+/g,
+        /[\s()[\]{}<>.,!@#$%^&*=|`'/?~]/g,
         opts["safeChar"] || "-"
       ));
       const id = headingIDs[encoded] == null

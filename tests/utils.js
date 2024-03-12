@@ -516,12 +516,12 @@ const main = () => {
         ].join(""));
         resolveHeadingIDs(node);
         expect(serializeNode(node)).to.equal([
-          "<h1 id=\"%E4%B8%AD-%E6%96%87\">",
-          "<a class=\"heading-link header-link\" href=\"#%E4%B8%AD-%E6%96%87\"></a>",
+          "<h1 id=\"%E4%B8%AD--%E6%96%87\">",
+          "<a class=\"heading-link header-link\" href=\"#%E4%B8%AD--%E6%96%87\"></a>",
           "中&lt;&gt;文",
           "</h1>",
-          "<h2 id=\"%E4%B8%AD-%E6%96%87-1\">",
-          "<a class=\"heading-link header-link\" href=\"#%E4%B8%AD-%E6%96%87-1\"></a>",
+          "<h2 id=\"%E4%B8%AD--%E6%96%87-1\">",
+          "<a class=\"heading-link header-link\" href=\"#%E4%B8%AD--%E6%96%87-1\"></a>",
           "中&lt;&gt;文",
           "</h2>"
         ].join(""));
