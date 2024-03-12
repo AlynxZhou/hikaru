@@ -91,11 +91,11 @@ For example, if you want to use the title of file, you could use `title` or `fil
 
 Assets may be CSS or JavaScript files, Hikaru internally supports no CSS preprocessors but you can install some renderer plugins to support them.
 
-If you want to use Hikaru's builtin highlight processor, you need to add highlight.js theme CSS to your theme assets. But you can also tell user to disable builtin highlight processor and use a browser-side highlight library. Hikaru will generate elements like
+Hikaru could generate line numbers for you, but you are suggested to generate line numbers in browser so it won't mess things like RSS or atom feed. You could do code highlighting in browser, Hikaru will generate elements like
 
 ```html
 <figure data-raw="Raw code content" data-info="language-xxxx" data-lang="xxxx">
-  <pre class="gutter">
+  <pre class="line-numbers">
     <span class="line-number">1</span>
   </pre>
   <pre class="code">
@@ -114,7 +114,7 @@ Raw code content
 ```
 ~~~
 
-so you can easily theme them and also works with libraries like PrismJS.
+so you can easily hightlight them with libraries like PrismJS or highlight.js.
 
 # Language Files
 

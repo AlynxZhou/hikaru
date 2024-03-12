@@ -18,9 +18,7 @@ It's a static site generator, based on Markdown, CSS preprocessor and HTML templ
 
 - [X] Dir based router.
 - [X] Marked Markdown renderer.
-- [X] Stylus CSS renderer.
 - [X] Nunjucks template renderer.
-- [X] Highlight.js code highlight.
 - [X] Async loading, rendering and saving file.
 - [X] Pagination for index, archives, categories (different category pages) and tags (different tag pages).
 - [X] Archives info for templating.

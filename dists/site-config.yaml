@@ -37,10 +37,21 @@ nunjucks:
 marked:
   gfm: true
 
-highlight:
+contentsResolving:
   enable: true
-  gutter: true
-  hljs: true
+  headingIDs:
+    enable: true
+    # Set to `""` to keep compatible with Hikaru v1.20.1 and older.
+    safeChar: "-"
+  toc:
+    enable: true
+  anchors:
+    enable: true
+  images:
+    enable: true
+  codeBlocks:
+    enable: true
+    lineNumbers: false
 
 search:
   enable: true

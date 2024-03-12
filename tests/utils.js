@@ -516,12 +516,12 @@ const main = () => {
         ].join(""));
         resolveHeadingIDs(node);
         expect(serializeNode(node)).to.equal([
-          "<h1 id=\"%E4%B8%AD%E6%96%87\">",
-          "<a class=\"heading-link header-link\" href=\"#%E4%B8%AD%E6%96%87\"></a>",
+          "<h1 id=\"%E4%B8%AD-%E6%96%87\">",
+          "<a class=\"heading-link header-link\" href=\"#%E4%B8%AD-%E6%96%87\"></a>",
           "中&lt;&gt;文",
           "</h1>",
-          "<h2 id=\"%E4%B8%AD%E6%96%87-1\">",
-          "<a class=\"heading-link header-link\" href=\"#%E4%B8%AD%E6%96%87-1\"></a>",
+          "<h2 id=\"%E4%B8%AD-%E6%96%87-1\">",
+          "<a class=\"heading-link header-link\" href=\"#%E4%B8%AD-%E6%96%87-1\"></a>",
           "中&lt;&gt;文",
           "</h2>"
         ].join(""));
@@ -701,7 +701,7 @@ const main = () => {
     describe("resolveCodeBlocks", () => {
       it("should not add `<figure>` if `<pre>` is already under it", () => {
         const node = parseNode("<figure><pre><code></code></pre></figure>");
-        resolveCodeBlocks(node, {"enable": false, "gutter": false});
+        resolveCodeBlocks(node, {"enable": true, "lineNumbers": false});
         expect(
           serializeNode(node)
         ).to.equal("<figure><pre><code></code></pre></figure>");
@@ -713,7 +713,7 @@ const main = () => {
           const node = parseNode(
             "<figure><pre><code></code><code></code></pre></figure>"
           );
-          resolveCodeBlocks(node, {"enable": false, "gutter": false});
+          resolveCodeBlocks(node, {"enable": true, "lineNumbers": false});
           expect(
             serializeNode(node)
           ).to.equal("<figure><pre><code></code><code></code></pre></figure>");
@@ -724,18 +724,18 @@ const main = () => {
         const node = parseNode(
           "<pre><code>console.log(\"Hello world!\");</code></pre>"
         );
-        resolveCodeBlocks(node, {"enable": false, "gutter": false});
+        resolveCodeBlocks(node, {"enable": true, "lineNumbers": false});
         expect(node["childNodes"][0]["tagName"]).to.equal("figure");
       });
 
-      it("should add gutter if enabled", () => {
+      it("should add line numbers if enabled", () => {
         const node = parseNode(
           "<pre><code>console.log(\"Hello world!\");</code></pre>"
         );
-        resolveCodeBlocks(node, {"enable": false, "gutter": true});
+        resolveCodeBlocks(node, {"enable": true, "lineNumbers": true});
         expect(
           getNodeAttr(node["childNodes"][0]["childNodes"][0], "class")
-        ).to.equal("gutter");
+        ).to.include("line-numbers");
       });
     });
   });

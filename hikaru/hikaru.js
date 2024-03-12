@@ -787,29 +787,49 @@ class Hikaru {
       fallbackSort(site["tags"], comparePostsLength, compareName);
     });
 
-    this.processor.register("contents resolving", async (site) => {
-      const all = site["posts"].concat(site["pages"]);
-      for (const p of all) {
-        const node = parseNode(p["content"]);
-        resolveHeadingIDs(node);
-        p["toc"] = genTOC(node);
-        resolveAnchors(
-          node,
-          site["siteConfig"]["baseURL"],
-          site["siteConfig"]["rootDir"],
-          p["docPath"]
-        );
-        resolveImages(node, site["siteConfig"]["rootDir"], p["docPath"]);
-        await resolveCodeBlocks(node, site["siteConfig"]["highlight"]);
-        p["content"] = serializeNode(node);
-        if (p["content"].indexOf("<!--more-->") !== -1) {
-          const split = p["content"].split("<!--more-->");
-          p["excerpt"] = split[0];
-          p["more"] = split[1];
-          p["content"] = split.join("<a id=\"more\"></a>");
+    // Do contents resolving by default.
+    if (this.site["siteConfig"]["contentsResolving"]["enable"]) {
+      this.processor.register("contents resolving", async (site) => {
+        const crOpts = site["siteConfig"]["contentsResolving"];
+        const all = site["posts"].concat(site["pages"]);
+        for (const p of all) {
+          const node = parseNode(p["content"]);
+          if (crOpts["headingIDs"]["enable"]) {
+            resolveHeadingIDs(node, crOpts["headingIDs"]);
+          }
+          if (crOpts["toc"]["enable"]) {
+            p["toc"] = genTOC(node, crOpts["toc"]);
+          }
+          if (crOpts["anchors"]["enable"]) {
+            resolveAnchors(
+              node,
+              site["siteConfig"]["baseURL"],
+              site["siteConfig"]["rootDir"],
+              p["docPath"],
+              crOpts["anchors"]
+            );
+          }
+          if (crOpts["images"]["enable"]) {
+            resolveImages(
+              node,
+              site["siteConfig"]["rootDir"],
+              p["docPath"],
+              crOpts["images"]
+            );
+          }
+          if (crOpts["codeBlocks"]["enable"]) {
+            resolveCodeBlocks(node, crOpts["codeBlocks"]);
+          }
+          p["content"] = serializeNode(node);
+          if (p["content"].indexOf("<!--more-->") !== -1) {
+            const split = p["content"].split("<!--more-->");
+            p["excerpt"] = split[0];
+            p["more"] = split[1];
+            p["content"] = split.join("<a id=\"more\"></a>");
+          }
         }
-      }
-    });
+      });
+    }
   }
 
   /**

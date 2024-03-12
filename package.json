@@ -32,7 +32,6 @@
     "chokidar": "^3.6.0",
     "commander": "^12.0.0",
     "fs-extra": "^11.2.0",
-    "highlight.js": "^11.9.0",
     "marked": "^12.0.0",
     "nunjucks": "^3.2.4",
     "parse5": "^7.1.2",
