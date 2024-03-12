@@ -154,7 +154,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line1364">line 1364</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line1287">line 1287</a>
     </li></ul></dd>
     
 
@@ -345,7 +345,7 @@ compatibility because <code>isbinaryfile</code> dependency is dropped.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line1094">line 1094</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line1095">line 1095</a>
     </li></ul></dd>
     
 
@@ -1602,7 +1602,7 @@ from first to last until there is a difference.</p>
     
 
     
-    <h4 class="name" id="~genTOC"><span class="type-signature">(inner) </span>genTOC<span class="signature">(node)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="~genTOC"><span class="type-signature">(inner) </span>genTOC<span class="signature">(node, opts<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -1634,6 +1634,8 @@ from first to last until there is a difference.</p>
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -1659,10 +1661,51 @@ from first to last until there is a difference.</p>
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
             <td class="description last"><p>parse5 Node.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>opts</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
         </tr>
 
     
@@ -1703,7 +1746,7 @@ from first to last until there is a difference.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line1100">line 1100</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line1102">line 1102</a>
     </li></ul></dd>
     
 
@@ -3344,7 +3387,7 @@ should end with <code>---</code> in the next line.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line1132">line 1132</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line1134">line 1134</a>
     </li></ul></dd>
     
 
@@ -3454,7 +3497,7 @@ should end with <code>---</code> in the next line.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line1356">line 1356</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line1279">line 1279</a>
     </li></ul></dd>
     
 
@@ -8733,7 +8776,7 @@ string.</p>
     
 
     
-    <h4 class="name" id="~resolveAnchors"><span class="type-signature">(inner) </span>resolveAnchors<span class="signature">(node, baseURL, rootDir, docPath)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="~resolveAnchors"><span class="type-signature">(inner) </span>resolveAnchors<span class="signature">(node, baseURL, rootDir, docPath, opts<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -8743,212 +8786,6 @@ string.</p>
 <div class="description">
     <p>Update site's internal link to absolute path, and add attributes
 for external link.</p>
-</div>
-
-
-
-
-
-
-
-
-
-    <h5>Parameters:</h5>
-    
-
-<table class="params">
-    <thead>
-    <tr>
-        
-        <th>Name</th>
-        
-
-        <th>Type</th>
-
-        
-
-        
-
-        <th class="last">Description</th>
-    </tr>
-    </thead>
-
-    <tbody>
-    
-
-        <tr>
-            
-                <td class="name"><code>node</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Object</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>parse5 Node.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>baseURL</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Site baseURL.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>rootDir</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"><p>Site rootDir.</p></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>docPath</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">String</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-    </tbody>
-</table>
-
-
-
-
-
-
-<dl class="details">
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-source">Source:</dt>
-    <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line1149">line 1149</a>
-    </li></ul></dd>
-    
-
-    
-
-    
-
-    
-</dl>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
-            
-
-    
-
-    
-    <h4 class="name" id="~resolveCodeBlocks"><span class="type-signature">(async, inner) </span>resolveCodeBlocks<span class="signature">(node, hlOpts<span class="signature-attributes">opt</span>)</span><span class="type-signature"> &rarr; {Promise.&lt;null>}</span></h4>
-    
-
-    
-
-
-
-<div class="description">
-    <p>Format and highlight code block.</p>
 </div>
 
 
@@ -9017,7 +8854,100 @@ for external link.</p>
 
         <tr>
             
-                <td class="name"><code>hlOpts</code></td>
+                <td class="name"><code>baseURL</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Site baseURL.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>rootDir</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>Site rootDir.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>docPath</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>opts</code></td>
             
 
             <td class="type">
@@ -9043,7 +8973,7 @@ for external link.</p>
 
             
 
-            <td class="description last"><p>Highlight options.</p></td>
+            <td class="description last"></td>
         </tr>
 
     
@@ -9084,7 +9014,7 @@ for external link.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line1242">line 1242</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line1152">line 1152</a>
     </li></ul></dd>
     
 
@@ -9109,28 +9039,6 @@ for external link.</p>
 
 
 
-<h5>Returns:</h5>
-
-        
-<div class="param-desc">
-    <p>Importing hljs requires await.</p>
-</div>
-
-
-
-<dl>
-    <dt>
-        Type
-    </dt>
-    <dd>
-        
-<span class="param-type">Promise.&lt;null></span>
-
-
-    </dd>
-</dl>
-
-    
 
 
 
@@ -9142,7 +9050,256 @@ for external link.</p>
     
 
     
-    <h4 class="name" id="~resolveHeadingIDs"><span class="type-signature">(inner) </span>resolveHeadingIDs<span class="signature">(node)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="~resolveCodeBlocks"><span class="type-signature">(inner) </span>resolveCodeBlocks<span class="signature">(node, opts<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    <p>Update code blocks.</p>
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>node</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"><p>parse5 Node.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>opts</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>lineNumbers</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    false
+                
+                </td>
+            
+
+            <td class="description last"><p>Generate line numbers.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line1213">line 1213</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="~resolveHeadingIDs"><span class="type-signature">(inner) </span>resolveHeadingIDs<span class="signature">(node, opts<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -9174,6 +9331,8 @@ for external link.</p>
         <th>Type</th>
 
         
+        <th>Attributes</th>
+        
 
         
 
@@ -9199,10 +9358,120 @@ for external link.</p>
             </td>
 
             
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
 
             
 
             <td class="description last"><p>parse5 Node.</p></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>opts</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last">
+                <h6>Properties</h6>
+                
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+        <th>Default</th>
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>safeChar</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+                <td class="default">
+                
+                    "-"
+                
+                </td>
+            
+
+            <td class="description last"><p>Char used to replace unsupported chars.</p></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+            </td>
         </tr>
 
     
@@ -9243,7 +9512,7 @@ for external link.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line1061">line 1061</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line1063">line 1063</a>
     </li></ul></dd>
     
 
@@ -9279,7 +9548,7 @@ for external link.</p>
     
 
     
-    <h4 class="name" id="~resolveImages"><span class="type-signature">(inner) </span>resolveImages<span class="signature">(node, rootDir<span class="signature-attributes">opt</span>, docPath<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="~resolveImages"><span class="type-signature">(inner) </span>resolveImages<span class="signature">(node, rootDir, docPath, opts<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
     
 
     
@@ -9371,8 +9640,6 @@ for external link.</p>
             
                 <td class="attributes">
                 
-                    &lt;optional><br>
-                
 
                 
 
@@ -9396,6 +9663,37 @@ for external link.</p>
             
                 
 <span class="param-type">String</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>opts</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Object</span>
 
 
             
@@ -9456,7 +9754,7 @@ for external link.</p>
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line1184">line 1184</a>
+        <a href="utils.js.html">utils.js</a>, <a href="utils.js.html#line1188">line 1188</a>
     </li></ul></dd>
     
 
@@ -12104,7 +12402,7 @@ path is parent path of current path.</p></td>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Fri Mar 08 2024 01:38:17 GMT+0800 (China Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.2</a> on Tue Mar 12 2024 17:55:00 GMT+0800 (China Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
