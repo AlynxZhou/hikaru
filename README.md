@@ -19,7 +19,7 @@ $ npm i -s hikarujs && npx hikaru i
 
 **Hikaru works on Node.js v18.12.0 LTS or later.**
 
-# Setup site
+# Setup Site
 
 ```
 $ mkdir hikaru-site && cd hikaru-site
@@ -27,9 +27,7 @@ $ npm install --save hikarujs hikaru-generator-feed hikaru-generator-sitemap hik
 $ npx hikaru init --debug
 ```
 
-# Install theme
-
-## Clone theme
+# Clone Theme
 
 Using `hikaru-theme-aria` as example:
 
@@ -43,7 +41,7 @@ Or if you want commit the whole site you can use submodule:
 $ git submodule add https://github.com/AlynxZhou/hikaru-theme-aria.git themes/aria
 ```
 
-## Edit config
+# Edit Config
 
 ```
 $ $EDITOR site-config.yaml
@@ -62,15 +60,15 @@ $ cp themes/aria/theme-config.yaml theme-config.yaml
 $ $EDITOR theme-config.yaml
 ```
 
-# Create src file
+# Create Src File
 
-## Edit file
+## Edit File
 
 ```
 $ $EDITOR srcs/my-first-post.md
 ```
 
-## Add front matter
+## Add Front Matter
 
 ```yaml
 ---
@@ -80,7 +78,7 @@ layout: post
 ---
 ```
 
-## Add content
+## Add Content
 
 ```markdown
 Some content...
@@ -90,13 +88,13 @@ Some content...
 # This is my first post!
 ```
 
-# Start live server
+# Start Live Server
 
 ```
 $ npx hikaru serve --debug
 ```
 
-# Build static files
+# Build Static Files
 
 ```
 $ npx hikaru build --debug
@@ -138,7 +136,7 @@ I just prefer `class`.
 
 ## Common JS or ES Module
 
-I personally like Common JS, but more and more libraries uses ES module, so use ES module.
+I personally like Common JS, but more and more libraries use ES module, so use ES module.
 
 # More
 
@@ -152,4 +150,4 @@ My blog built with Hikaru and ARIA: [喵's StackHarbor](https://sh.alynx.one/)
 
 # License
 
-[Apache-2.0](LICENSE)
+[Apache-2.0](./LICENSE)
