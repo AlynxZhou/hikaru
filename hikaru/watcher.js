@@ -140,19 +140,19 @@ class Watcher {
       }
       handler["fns"].add(fn);
       const absdir = path.resolve(srcDir);
-      const watcher = chokidar.watch(".", {
-        // See <https://github.com/paulmillr/chokidar/issues/464>.
-        "cwd": absdir,
-        "ignoreInitial": true,
-        "ignored": opts["filter"] == null ? null : (filepath, stats) => {
+      // See <https://github.com/paulmillr/chokidar/issues/464>.
+      const watcherOpts = {"cwd": absdir, "ignoreInitial": true};
+      if (opts["filter"] != null) {
+        watcherOpts["ignored"] = (filepath, stats) => {
           const relpath = path.relative(absdir, filepath);
           // See <https://github.com/paulmillr/chokidar/issues/1350#issuecomment-2350100627>.
           //
           // You must not ignore dirs, otherwise it won't watch files in those
           // dirs, and yes, this also applys to `.`, strange design.
           return stats && !stats.isDirectory() && !opts["filter"](relpath);
-        }
-      });
+        };
+      }
+      const watcher = chokidar.watch(".", watcherOpts);
       handler["watcher"] = watcher;
       for (const event of ["add", "change", "unlink"]) {
         watcher.on(event, (srcPath) => {
