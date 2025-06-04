@@ -7,7 +7,7 @@ import * as path from "node:path";
 import fse from "fs-extra";
 import YAML from "yaml";
 import * as parse5 from "parse5";
-import readdirp from "readdirp";
+import {readdirpPromise} from "readdirp";
 import picomatch from "picomatch";
 import nunjucks from "nunjucks";
 
@@ -295,17 +295,16 @@ const matchFiles = (pattern, opts = {}) => {
     return !basename.startsWith(".") && matchWithHidden(entry);
   };
   const readdirpOpts = {
-    // readdirp supports glob patterns as filter and will call picomatch
-    // internally, but we won't use it because it does not support `**` and
-    // patterns must be all inclusive or all exclusive.
     "fileFilter": opts["ignoreHidden"] ? matchWithoutHidden : matchWithHidden,
     "type": opts["ignoreDir"] ? "files" : "files_directories"
   };
   if (!opts["recursive"]) {
     readdirpOpts["depth"] = 1;
   }
-  return readdirp.promise(opts["workDir"], readdirpOpts).then((entries) => {
-    return entries.map((entry) => {return entry["path"];});
+  return readdirpPromise(opts["workDir"], readdirpOpts).then((entries) => {
+    return entries.map((entry) => {
+      return entry["path"];
+    });
   });
 };
 

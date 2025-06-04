@@ -30,14 +30,14 @@
   "homepage": "https://hikaru.alynx.one/",
   "dependencies": {
     "chokidar": "^4.0.3",
-    "commander": "^12.0.0",
-    "fs-extra": "^11.2.0",
-    "marked": "^12.0.0",
+    "commander": "^14.0.0",
+    "fs-extra": "^11.3.0",
+    "marked": "^15.0.12",
     "nunjucks": "^3.2.4",
-    "parse5": "^7.1.2",
-    "picomatch": "^3.0.1",
-    "readdirp": "^3.6.0",
-    "yaml": "^2.3.4"
+    "parse5": "^7.3.0",
+    "picomatch": "^4.0.2",
+    "readdirp": "^4.1.2",
+    "yaml": "^2.8.0"
   },
   "devDependencies": {
     "0x": "^5.7.0",
@@ -47,6 +47,6 @@
     "standardx": "^7.0.0"
   },
   "engines": {
-    "node": ">=18.12.0"
+    "node": ">=20.0.0"
   }
 }
