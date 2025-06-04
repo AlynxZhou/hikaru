@@ -29,7 +29,7 @@
   },
   "homepage": "https://hikaru.alynx.one/",
   "dependencies": {
-    "chokidar": "^3.6.0",
+    "chokidar": "^4.0.3",
     "commander": "^12.0.0",
     "fs-extra": "^11.2.0",
     "marked": "^12.0.0",

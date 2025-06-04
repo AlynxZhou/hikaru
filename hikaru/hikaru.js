@@ -114,9 +114,9 @@ class Hikaru {
     if (this.opts["siteConfig"] == null && this.opts["config"] != null) {
       this.opts["siteConfig"] = this.opts["config"];
       this.logger.warn(`Hikaru suggests you to use \`${
-        this.logger.cyan("--site-config")
+        this.logger.yellow("--site-config")
       }\` instead of \`${
-        this.logger.cyan("--config")
+        this.logger.yellow("--config")
       }\` because it's deprecated!`);
     }
     if (!isObject(Intl)) {
@@ -228,7 +228,11 @@ class Hikaru {
     this.watcher.register(
       this.site["siteConfig"]["themeDir"],
       reloadFileDependencies,
-      {"customGlob": "file-dependencies.yaml"}
+      {
+        "filter": (p) => {
+          return p === "file-dependencies.yaml";
+        }
+      }
     );
     try {
       // Modules must be loaded before others.
@@ -597,7 +601,11 @@ class Hikaru {
             return load(srcDir, srcPath);
           }));
         },
-        {"customGlob": `*${ext}`}
+        {
+          "filter": (p) => {
+            return path.dirname(p) === "." && path.extname(p) === ext;
+          }
+        }
       );
     }
     return all;

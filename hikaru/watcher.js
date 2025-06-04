@@ -62,7 +62,6 @@ class Watcher {
     const dependencyMatchers = new Map();
     for (const srcDir of this.fileDependencies.keys()) {
       for (const dep of this.fileDependencies.get(srcDir).keys()) {
-        // There is no need to use `isGlob`, just let picomatch handle paths.
         if (!dependencyMatchers.has(dep)) {
           dependencyMatchers.set(dep, picomatch(dep));
         }
@@ -99,7 +98,7 @@ class Watcher {
    * if you register a dir twice with different opts, the latter will replace
    * the former.
    * @param {Boolean} [opts.recursive=true] Whether watch files in subdirs.
-   * @param {Boolean} [opts.customGlob] Custom glob pass to chokidar.
+   * @param {Function} [opts.filter] Custom file filter.
    */
   register(dirs, fn, opts = {}) {
     if (dirs == null) {
@@ -117,35 +116,44 @@ class Watcher {
       opts["recursive"] = true;
     }
     // Globs must not contain windows spearators.
-    //
-    // If we use `**/*` here as recursive glob, we will trigger a chokidar bug,
-    // that we cannot get `unlink` event but only `add` event while moving dirs.
-    // Because we only support watching all files, and this is the default
-    // behavior when chokidar watches a dir, so we can use `./` as a workaround.
-    //
-    // See <https://github.com/paulmillr/chokidar/issues/1285>.
-    const defaultGlob = opts["recursive"] ? "./" : "./*";
-    const glob = opts["customGlob"] || defaultGlob;
+    if (opts["filter"] == null && opts["customGlob"] != null) {
+      this.logger.warn(`Hikaru suggests you to use \`${
+        this.logger.yellow("opts.filter")
+      }\` instead of \`${
+        this.logger.yellow("opts.customGlob")
+      }\` because it's deprecated!`);
+      opts["filter"] = picomatch(opts["customGlob"]);
+    }
+    if (opts["filter"] == null && !opts["recursive"]) {
+      opts["filter"] = picomatch("./*");
+    }
     for (const srcDir of dirs) {
+      let handler;
       if (this._.has(srcDir)) {
-        const handler = this._.get(srcDir);
-        handler["fns"].add(fn);
-        // Always update glob.
-        if (handler["glob"] !== glob && handler["watcher"] != null) {
-          handler["watcher"].unwatch(handler["glob"]);
-          handler["watcher"].add(glob);
-          handler["glob"] = glob;
+        handler = this._.get(srcDir);
+        if (handler["watcher"] != null) {
+          handler["watcher"].close();
         }
-        continue;
+      } else {
+        handler = {"watcher": null, "fns": new Set()};
+        this._.set(srcDir, handler);
       }
-      const handler = {glob, "watcher": null, "fns": new Set()};
       handler["fns"].add(fn);
-      this._.set(srcDir, handler);
-      const watcher = chokidar.watch(
+      const absdir = path.resolve(srcDir);
+      const watcher = chokidar.watch(".", {
         // See <https://github.com/paulmillr/chokidar/issues/464>.
-        glob, {"cwd": path.resolve(srcDir), "ignoreInitial": true}
-      );
-      this._.get(srcDir)["watcher"] = watcher;
+        "cwd": absdir,
+        "ignoreInitial": true,
+        "ignored": opts["filter"] == null ? null : (filepath, stats) => {
+          const relpath = path.relative(absdir, filepath);
+          // See <https://github.com/paulmillr/chokidar/issues/1350#issuecomment-2350100627>.
+          //
+          // You must not ignore dirs, otherwise it won't watch files in those
+          // dirs, and yes, this also applys to `.`, strange design.
+          return stats && !stats.isDirectory() && !opts["filter"](relpath);
+        }
+      });
+      handler["watcher"] = watcher;
       for (const event of ["add", "change", "unlink"]) {
         watcher.on(event, (srcPath) => {
           this.logger.debug(
