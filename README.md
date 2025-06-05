@@ -17,7 +17,7 @@ Hikaru is a command line program (not a module) and you can install it from NPM,
 $ npm i -s hikarujs && npx hikaru i
 ```
 
-**Hikaru works on Node.js v18.12.0 LTS or later.**
+**Hikaru typically works on Node.js LTS and current version, EOL versions are not supported.**
 
 # Setup Site
 
