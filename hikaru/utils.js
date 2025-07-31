@@ -289,10 +289,11 @@ const matchFiles = (pattern, opts = {}) => {
   const matchWithHidden = (entry) => {
     return isMatch(entry["path"]);
   };
-  // We don't use picomatch for hidden files, basename is more reliable.
+  // We don't use picomatch for hidden files, name is more reliable.
   const matchWithoutHidden = (entry) => {
-    const basename = path.basename(entry["path"]);
-    return !basename.startsWith(".") && matchWithHidden(entry);
+    return !entry["path"].split(path.sep).some((name) => {
+      return name.startsWith(".");
+    }) && matchWithHidden(entry);
   };
   const readdirpOpts = {
     "fileFilter": opts["ignoreHidden"] ? matchWithoutHidden : matchWithHidden,

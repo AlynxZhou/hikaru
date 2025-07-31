@@ -2,13 +2,15 @@
  * @module logger
  */
 
+import {Console} from "node:console";
+
 import {isFunction} from "./utils.js";
 
 /**
  * @description A Logger with colored output.
  * @extends console.Console
  */
-class Logger extends console.Console {
+class Logger extends Console {
   /**
    * @param {Object} [opts] Optional arguments for `console.Console`.
    * @param {Boolean} [opts.debug=false] Enable debug output.
@@ -113,6 +115,7 @@ class Logger extends console.Console {
       }
       return super.log(`${this.green("DEBUG")}:`, ...strs);
     }
+    return null;
   }
 
   /**
