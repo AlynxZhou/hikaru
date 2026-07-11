@@ -29,24 +29,24 @@
   },
   "homepage": "https://hikaru.alynx.one/",
   "dependencies": {
-    "chokidar": "^4.0.3",
-    "commander": "^14.0.0",
-    "fs-extra": "^11.3.0",
-    "marked": "^15.0.12",
+    "chokidar": "^5.0.0",
+    "commander": "^15.0.0",
+    "fs-extra": "^11.3.6",
+    "marked": "^18.0.6",
     "nunjucks": "^3.2.4",
-    "parse5": "^7.3.0",
-    "picomatch": "^4.0.2",
-    "readdirp": "^4.1.2",
-    "yaml": "^2.8.0"
+    "parse5": "^8.0.1",
+    "picomatch": "^4.0.5",
+    "readdirp": "^5.0.0",
+    "yaml": "^2.9.0"
   },
   "devDependencies": {
-    "0x": "^5.8.0",
-    "chai": "^5.2.0",
-    "jsdoc": "^4.0.4",
-    "mocha": "^11.5.0",
+    "0x": "^6.0.0",
+    "chai": "^6.2.2",
+    "jsdoc": "^4.0.5",
+    "mocha": "^11.7.6",
     "standardx": "^7.0.0"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=22.0.0"
   }
 }
